@@ -1,11 +1,7 @@
 import cytoscape from "cytoscape";
 import type { Kind } from "@gen/types";
 import type { QueryEngine } from "../query/QueryEngine";
-
-const COLOURS: Record<Kind, string> = {
-  bone: "#b8b8b8", joint: "#e0a030", muscle: "#d05050", muscleGroup: "#e08080",
-  ligament: "#70a060", nerve: "#e0d040", movement: "#4060c0", phase: "#6080e0", jointAction: "#40a0c0",
-};
+import { COLOURS, kindIcon } from "./icons";
 
 /** GraphView: Cytoscape view of the graph. Reads through QueryEngine only. */
 export class GraphView {
@@ -59,14 +55,18 @@ export class GraphView {
     common.append(el("dt", "Common name"), el("dd", n.commonName ?? "-"));
     names.append(anat, common);
     const list = el("ul", "");
+    list.className = "neighbours";
     for (const nb of this.query.neighbours(id)) {
       const a = el("a", `${nb.node.commonName ?? nb.node.name} (${nb.node.name})`) as HTMLAnchorElement;
       a.href = "#";
       a.onclick = (ev) => { ev.preventDefault(); this.focus(nb.node.id); };
       const li = el("li", nb.direction === "out" ? `${nb.edge.relation} → ` : `${nb.edge.relation} ← `);
+      li.prepend(kindIcon(nb.node.kind));
       li.append(a);
       list.append(li);
     }
-    this.details.replaceChildren(el("h3", n.id), names, el("p", `kind: ${n.kind}, side: ${n.side}`), el("h4", "Neighbours"), list);
+    const heading = el("h3", n.id);
+    heading.prepend(kindIcon(n.kind));
+    this.details.replaceChildren(heading, names, el("p", `kind: ${n.kind}, side: ${n.side}`), el("h4", "Neighbours"), list);
   }
 }
