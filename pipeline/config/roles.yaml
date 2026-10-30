@@ -30,13 +30,14 @@ isometricMaxVelocity: 0.01
 samplesPerPhase: 21
 samplesPerStride: 51
 
-# The legs labelled (decision D-007): the right leg is the reference leg, and both legs take
-# their roles per phase of its seven phases. A muscle belongs to the leg its name's suffix names.
+# The muscles labelled (decision D-007): every muscle whose name ends in a side suffix, on both
+# sides, takes its roles per phase of the reference leg's seven phases.
 muscleSuffixes: ["_r", "_l"]
-# The joint coordinates whose actions are labelled, right leg then left leg. A coordinate ending
-# in a muscle suffix takes the muscles of that suffix (pipeline/label_roles.py `muscles_of`). The
-# subtalar and metatarsophalangeal coordinates are locked in the scaled model and carry no
-# moment arms.
+# The joint coordinates whose actions are labelled. A coordinate ending in a muscle suffix takes
+# the muscles of that side; a midline coordinate (lumbar, neck) takes the muscles of both sides
+# (pipeline/label_roles.py `muscles_of`). The legs' subtalar and metatarsophalangeal coordinates
+# are locked in the model and carry no moment arms. The neck coordinates rest on decision
+# D-010 (the head held level in space).
 coordinates:
   - hip_flexion_r
   - hip_adduction_r
@@ -48,3 +49,26 @@ coordinates:
   - hip_rotation_l
   - knee_angle_l
   - ankle_angle_l
+  - lumbar_extension
+  - lumbar_bending
+  - lumbar_rotation
+  - neck_lower_extension
+  - neck_lower_bending
+  - neck_lower_rotation
+  - neck_upper_extension
+  - neck_upper_bending
+  - neck_upper_rotation
+  - arm_flex_r
+  - arm_add_r
+  - arm_rot_r
+  - elbow_flex_r
+  - pro_sup_r
+  - wrist_flex_r
+  - wrist_dev_r
+  - arm_flex_l
+  - arm_add_l
+  - arm_rot_l
+  - elbow_flex_l
+  - pro_sup_l
+  - wrist_flex_l
+  - wrist_dev_l

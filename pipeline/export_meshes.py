@@ -1,12 +1,23 @@
-"""Stage `exportMeshes`: one glTF file per lower-body bone segment, from the model's `.vtp` meshes.
+"""Stage `exportMeshes`: one glTF file per bone segment of the merged model, from its `.vtp` meshes.
 
-Bodies: `BODIES`, the pelvis and both legs (pelvis, femur, patella, tibia, talus, calcn, toes).
-Each body's meshes are the `.vtp` files attached to it (`model.json` `bodies[].geometry`), read
-from the geometry directory (`pipeline_paths.GEOMETRY`) and multiplied per axis by the mesh's
-scale factors. The scale factors come from the scaled model (`pipeline_paths.SCALED_MODEL`,
-element `Mesh/scale_factors`): `model.json` lists the mesh files without them. Every mesh of
-this model hangs directly on its body frame (`socket_frame` ".."), so mesh coordinates are body
-coordinates.
+Bodies (`meshed_bodies`): every body of the merged model (`pipeline_paths.MERGED_MODEL`, listed in
+`model.json` `bodies`) that carries meshes, in model order: the pelvis, both legs, the torso
+(thoracic spine, ribs and shoulder blades), both arms with their hands, and the head (skull and
+jaw, which the model merge moved from the torso, D-009). Each body's meshes are the `.vtp`
+files attached to it (`model.json` `bodies[].geometry`), read from the geometry directory
+(`pipeline_paths.GEOMETRY`) and multiplied per axis by the mesh's scale factors. The scale
+factors come from the merged model's `Mesh/scale_factors` elements: `model.json` lists the mesh
+files without them. Every mesh of this model hangs directly on its body frame (`socket_frame`
+".."), so mesh coordinates are body coordinates.
+
+Bodies without meshes (`UNMESHED`, index.json `unmeshed`) carry no glTF file; the viewer finds
+their poses in `muscle_paths.json` beside the others:
+  - the lumbar vertebrae `lumbar1`..`lumbar5`: FBLS names its vertebra meshes, and its source
+    holds none of them (`data/raw/SOURCES.md`); Rajagopal draws the lumbar spine as part of the
+    torso's `hat_spine.vtp`;
+  - the cervical vertebrae `cerv1`..`cerv7`: Mortensen's geometry holds meshes for them
+    (`data/raw/mortensen/Geometry/`), and stage buildModel attaches none to the merged bodies;
+  - FBLS's wrapping bodies `Abdomen` and `LB_wrap`, which stand for soft tissue.
 
 VTP reading (`read_vtp`): VTK XML PolyData with ASCII data arrays (the format of every file of
 the Rajagopal geometry): `Points` (float triples) and `Polys` (`connectivity`, `offsets`);
@@ -21,8 +32,10 @@ OpenSim body axes unchanged (x forward, z to the right in the model's default po
 Output `data/out/meshes/index.json` (the web viewer's entry point):
   format      "bm-meshes/1"
   units       "m"
-  bodies      [{body, file, meshes: [{file, scaleFactors}], vertices, triangles}], in `BODIES`
+  bodies      [{body, file, meshes: [{file, scaleFactors}], vertices, triangles}], in model
               order; `file` is the glTF file name beside index.json
+  unmeshed    [{body, reason}]: the model's bodies without meshes, in model order, with the
+              reason `UNMESHED` gives
   transforms  {file, key}: where the per-frame body poses live: `muscle_paths.json` (beside the
               meshes directory) under `bodies`; there each body has, per frame, the pose of its
               frame in ground as [px, py, pz, qx, qy, qz, qw] (position in m, unit quaternion in
@@ -49,12 +62,24 @@ from pipeline.segment_phases import GENERATED
 
 import pipeline_paths as paths  # noqa: E402  (generated/py: see `GENERATED`)
 
-BODIES = (
-    "pelvis",
-    "femur_r", "patella_r", "tibia_r", "talus_r", "calcn_r", "toes_r",
-    "femur_l", "patella_l", "tibia_l", "talus_l", "calcn_l", "toes_l",
-)
-"""The bodies exported: pelvis and both legs."""
+UNMESHED: dict[str, str] = {
+    **{f"lumbar{i}": "FBLS lumbar vertebra: its source holds no vertebra meshes" for i in range(1, 6)},
+    **{f"cerv{i}": "Mortensen cervical vertebra: the merged model attaches no mesh" for i in range(1, 8)},
+    "Abdomen": "FBLS wrapping body (abdominal wall)",
+    "LB_wrap": "FBLS wrapping body (lower back)",
+}
+"""The merged model's bodies without meshes, and why (module docstring)."""
+
+
+def meshed_bodies(model: dict[str, Any]) -> list[str]:
+    """The bodies of `model.json` that carry meshes, in model order; every other body is one of
+    `UNMESHED`."""
+    out = [b["name"] for b in model["bodies"] if b["geometry"]]
+    bare = sorted(set(b["name"] for b in model["bodies"] if not b["geometry"]) - set(UNMESHED))
+    if bare:
+        raise ValueError(f"bodies without meshes outside UNMESHED: {bare}")
+    return out
+
 
 FORMAT = "bm-meshes/1"
 
@@ -191,7 +216,7 @@ def run(model_json: Path, geometry: Path, osim: Path, out: Path) -> list[dict[st
     scales = mesh_scale_factors(osim)
     out.parent.mkdir(parents=True, exist_ok=True)
     entries: list[dict[str, Any]] = []
-    for body in BODIES:
+    for body in meshed_bodies(model):
         meshes = [(f, read_vtp(geometry / f, scales[(body, f)])) for f in geometry_of[body]]
         file = f"{body}.gltf"
         (out.parent / file).write_text(json.dumps(gltf_document(body, meshes), separators=(",", ":")))
@@ -208,6 +233,7 @@ def run(model_json: Path, geometry: Path, osim: Path, out: Path) -> list[dict[st
         "format": FORMAT,
         "units": "m",
         "bodies": entries,
+        "unmeshed": [{"body": b["name"], "reason": UNMESHED[b["name"]]} for b in model["bodies"] if not b["geometry"]],
         "transforms": {"file": "../muscle_paths.json", "key": "bodies"},
     }
     out.write_text(json.dumps(index, indent=1) + "\n")
@@ -219,7 +245,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m pipeline.export_meshes", description=doc.split("\n")[0])
     ap.add_argument("--model", type=Path, default=REPO / paths.MODEL, help="model.json")
     ap.add_argument("--geometry", type=Path, default=REPO / paths.GEOMETRY)
-    ap.add_argument("--osim", type=Path, default=REPO / paths.SCALED_MODEL, help="scaled model (mesh scale factors)")
+    ap.add_argument("--osim", type=Path, default=REPO / paths.MERGED_MODEL, help="merged model (mesh scale factors)")
     ap.add_argument("--out", type=Path, default=REPO / paths.MESHES)
     a = ap.parse_args(argv)
     entries = run(a.model, a.geometry, a.osim, a.out)

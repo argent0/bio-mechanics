@@ -1,5 +1,5 @@
-"""Stage `exportDynamics`: each leg muscle's moment about each labelled joint coordinate of its
-leg, and the coordinate's angle, per frame, for the web's dynamics panel.
+"""Stage `exportDynamics`: each muscle's moment about each labelled joint coordinate it spans,
+and the coordinate's angle, per frame, for the web's dynamics panel.
 
 Moments. A muscle's moment about a coordinate at a frame is a·F·r in N·m, the moment of
 decision D-002 that stage `labelRoles` integrates: activation a (`activations.csv`), max isometric
@@ -7,11 +7,13 @@ force F (`model.json`), moment arm r (`moment_arms.csv`; r > 0 turns the coordin
 positive direction). A positive moment therefore pushes the coordinate toward its `positive`
 action, a negative one toward its `negative` action.
 
-Scope, from `roles.yaml` (`label_roles.Config`): the coordinates of `coordinates`, in that order
-(right leg, then left leg), and per coordinate the muscles of its leg (`label_roles.muscles_of`)
-whose |r| reaches `momentArmMinM` at some frame of the stride (the muscles of `roles.json`
-`crosses`). The joints and actions of the left leg come from mirroring the right leg's entries
-of anatomy.yaml (`enrich_anatomy.with_left`).
+Scope, from `roles.yaml` (`label_roles.Config`): the coordinates of `coordinates` that stage
+labelRoles labels (`label_roles.labelled_coordinates`), in that order (legs, lumbar spine, neck,
+right arm, left arm), and per coordinate the muscles of its side, both
+sides for a midline coordinate (`label_roles.muscles_of`), whose |r| reaches `momentArmMinM` at
+some frame of the stride (the muscles of `roles.json` `crosses`). The joints and actions of the
+left side come from mirroring the right side's entries of anatomy.yaml
+(`enrich_anatomy.with_left`).
 
 Frames: the frames of `muscle_paths.json` (`export_muscle_paths.frame_step`), so the two files
 share one time base and the viewer's playhead indexes both.
@@ -22,7 +24,7 @@ Output `data/out/dynamics.json`:
   time         [s] per frame
   stride       {start, end} in s, as in `muscle_paths.json` (`export_muscle_paths.stride_bounds`)
   coordinates  [{coordinate, joint, positive, negative, angleDeg, moments}] in `roles.yaml` order:
-               joint               graph id of the joint, e.g. `joint:knee_r`, `joint:knee_l`
+               joint               graph id of the joint, e.g. `joint:knee_r`, `joint:lumbarSpine`
                positive, negative  graph ids of the joint action each direction of the
                                    coordinate is (anatomy.yaml `coordinates`), e.g.
                                    `action:knee_flexion_r`, `action:knee_extension_r`
@@ -46,7 +48,7 @@ from typing import Any
 from pipeline.enrich_anatomy import load_anatomy, with_left
 from pipeline.export_graph import node_id
 from pipeline.export_muscle_paths import frame_step, stride_bounds
-from pipeline.label_roles import Config, Trial, labelled_muscles, load_config, muscles_of, read_trial
+from pipeline.label_roles import Config, Trial, labelled_coordinates, labelled_muscles, load_config, muscles_of, read_trial
 from pipeline.load_model import REPO, sample_rate
 from pipeline.segment_phases import GENERATED, Phases, read_phases
 
@@ -63,7 +65,8 @@ def stride_frames(time: Sequence[float], stride: dict[str, float]) -> tuple[int,
 
 
 def crossing(trial: Trial, coord: str, cfg: Config, f0: int, f1: int) -> list[str]:
-    """Muscles of `coord`'s leg whose |moment arm| about `coord` reaches the floor within the
+    """Muscles of `coord`'s side (both sides for a midline coordinate) whose |moment arm| about
+    `coord` reaches the floor within the
     stride."""
     return [
         m
@@ -74,15 +77,15 @@ def crossing(trial: Trial, coord: str, cfg: Config, f0: int, f1: int) -> list[st
 
 
 def build(trial: Trial, p: Phases, cfg: Config, anatomy: dict[str, Any]) -> dict[str, Any]:
-    """The contents of `dynamics.json`; `anatomy` is anatomy.yaml as read, the right leg's
-    entries, and the left leg's entries come from mirroring them."""
+    """The contents of `dynamics.json`; `anatomy` is anatomy.yaml as read (right side and
+    midline), and the left side's entries come from mirroring them."""
     anatomy = with_left(anatomy)
     step = frame_step(sample_rate(trial.time))
     frames = list(range(0, len(trial.time), step))
     stride = stride_bounds(p)
     f0, f1 = stride_frames(trial.time, stride)
     coords = []
-    for coord in cfg.coordinates:
+    for coord in labelled_coordinates(list(trial.coordinates), trial.moment_arm, cfg):
         c = anatomy["coordinates"][coord]
         q = trial.coordinates[coord]
         moments = {}
