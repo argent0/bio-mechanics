@@ -101,14 +101,22 @@ Source plan: `plan.md` (2026-10-30). The sections above are the first slice, kep
 | 0.6 **C3** fixture: left knee, lumbar joint, right shoulder and elbow, their muscles; `region` on every node | coordinator | opus | merged | C1 | `graph.sample.json` (50 nodes, 103 edges), `graph.bad-edge.json` | `checkGraph` passes the sample, names `edges[103]` of the bad one |
 | 0.6a Regions in the pipeline: `anatomy.yaml` `regions`, `enrich_anatomy.regions_of`; `data/out/graph.json` regenerated (edges unchanged) | coordinator | opus | merged | C1 | `region` on every node of `graph.json` | `checkGraph ../data/out/graph.json`; gate |
 | 0.6b `compare_graph.py --within-committed` | coordinator | opus | merged | — | `scripts/compare_graph.py`, `tests/test_compare_graph.py` | pytest |
-| 0.7 K19 picks confirmed against D-008 | coordinator | opus | todo | K19 report | picks below | picks before D2 |
+| 0.7 K19 picks confirmed against D-008 | coordinator | opus | merged | K19 report | picks below | picks before D2 |
 | 0.8 Module map: S, L, D2, W1, G2, M, P4, W2; APIs C8, C9 | coordinator | opus | merged | — | `Architecture.lean` | `lake exe arch check` |
 
 | ID | Investigation | Model / effort | Worker ID | State | Output |
 |---|---|---|---|---|---|
-| K19 | Upper-body model survey (trunk, arm, neck picks) | opus / high | `a61d8613137080615` | running | ranked table, one pick per region |
+| K19 | Upper-body model survey (trunk, arm, neck picks) | opus / high | `a61d8613137080615` | merged | ranked table, one pick per region |
 
-K19 picks: pending.
+K19 picks (each muscle-driven, merged onto Rajagopal bodies: consistent with D-008):
+
+| Region | Pick | Licence | Source | OpenSim 4.6 load |
+|---|---|---|---|---|
+| Trunk | Christophy 2012 lumbar model (Lumbar_C_210), 210–238 muscles | MIT (UC Berkeley 2010) | simtk.org group 567, login needed | to test (OpenSim 2 format) |
+| Arm | Holzbaur 2005 Stanford-VA upper limb, 50 muscles | BSD-3 (Stanford, VA Palo Alto 2005) | `mitkof6/OpenSimDatabase@0911687…` `upper_limb/complex/Stanford_VA_upper_limb/Stanford_VA_Upper_Limb_original.osim` | pass |
+| Neck | Mortensen 2018 HYOID 1.2, 72 muscles | MIT (2018) | `MyoHub/myoconverter@cadf380…` `models/osim/Neck6D/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim` | pass |
+
+Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coefficients); trunk frame offset and scale; shoulder points and wraps onto `torso` (no scapula body); Holzbaur via-bodies and couplers; wrist coordinates locked in Rajagopal; left arm by mirroring; muscle type to Millard2012; head split (7.72 kg out of `torso`, skull meshes move); Mortensen's two 3-axis neck groups need a split rule for D-010; Mortensen's bushings and extra actuators; clavicle and scapula neck attachments move to `torso`.
 
 ## Wave 1
 
