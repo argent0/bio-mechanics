@@ -738,9 +738,9 @@
     "loc": {
       "module": "BioMech.Components",
       "file": "spec/BioMech/Components.lean",
-      "line": 106,
-      "startLine": 105,
-      "endLine": 123
+      "line": 123,
+      "startLine": 122,
+      "endLine": 143
     },
     "components": [
       {
@@ -769,6 +769,11 @@
         "paths": ["web/src/phase/"]
       },
       {
+        "name": "RegionFilter",
+        "doc": "The selected body regions and sides, with the checkbox control that\npicks them; narrows the nodes a view passes it to those regions and sides,\nreading each node's `region` and `side` attributes.",
+        "paths": ["web/src/region/"]
+      },
+      {
         "name": "GraphView",
         "doc": "Cytoscape.js view of a node and its neighbours.",
         "paths": ["web/src/graphview/"]
@@ -795,12 +800,16 @@
       { "source": "Viewer3D", "target": "QueryEngine" },
       { "source": "PhasePanel", "target": "QueryEngine" },
       { "source": "GraphView", "target": "QueryEngine" },
+      { "source": "Viewer3D", "target": "RegionFilter" },
+      { "source": "PhasePanel", "target": "RegionFilter" },
+      { "source": "GraphView", "target": "RegionFilter" },
       { "source": "Viewer3D", "target": "Timeline" },
       { "source": "PhasePanel", "target": "Timeline" },
       { "source": "PhasePanel", "target": "Viewer3D" },
       { "source": "Timeline", "target": "TraceRecorder" },
       { "source": "Viewer3D", "target": "TraceRecorder" },
       { "source": "PhasePanel", "target": "TraceRecorder" },
+      { "source": "RegionFilter", "target": "TraceRecorder" },
       { "source": "GraphView", "target": "TraceRecorder" },
       { "source": "ArchitectureView", "target": "TraceRecorder" },
       { "source": "App", "target": "GraphStore" },
@@ -809,10 +818,11 @@
       { "source": "App", "target": "Timeline" },
       { "source": "App", "target": "Viewer3D" },
       { "source": "App", "target": "PhasePanel" },
+      { "source": "App", "target": "RegionFilter" },
       { "source": "App", "target": "GraphView" },
       { "source": "App", "target": "ArchitectureView" }
     ],
-    "topoOrder": ["App", "PhasePanel", "Viewer3D", "Timeline", "GraphView", "QueryEngine", "GraphStore", "ArchitectureView", "TraceRecorder"],
+    "topoOrder": ["App", "PhasePanel", "Viewer3D", "Timeline", "GraphView", "QueryEngine", "GraphStore", "RegionFilter", "ArchitectureView", "TraceRecorder"],
     "sharedImports": ["generated/ts/"]
   },
   "theorems": [
@@ -1630,9 +1640,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 60,
-        "startLine": 59,
-        "endLine": 60
+        "line": 75,
+        "startLine": 74,
+        "endLine": 75
       }
     },
     {
@@ -1643,9 +1653,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 63,
-        "startLine": 62,
-        "endLine": 63
+        "line": 78,
+        "startLine": 77,
+        "endLine": 78
       }
     },
     {
@@ -1656,9 +1666,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 95,
-        "startLine": 94,
-        "endLine": 95
+        "line": 112,
+        "startLine": 111,
+        "endLine": 112
       }
     },
     {
@@ -1669,9 +1679,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 137,
-        "startLine": 135,
-        "endLine": 137
+        "line": 157,
+        "startLine": 155,
+        "endLine": 157
       }
     },
     {
@@ -1682,9 +1692,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 140,
-        "startLine": 139,
-        "endLine": 140
+        "line": 160,
+        "startLine": 159,
+        "endLine": 160
       }
     },
     {
@@ -1695,9 +1705,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 145,
-        "startLine": 144,
-        "endLine": 146
+        "line": 165,
+        "startLine": 164,
+        "endLine": 166
       }
     },
     {
@@ -1708,9 +1718,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 149,
-        "startLine": 148,
-        "endLine": 151
+        "line": 169,
+        "startLine": 168,
+        "endLine": 171
       }
     },
     {
@@ -1721,9 +1731,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 154,
-        "startLine": 153,
-        "endLine": 155
+        "line": 174,
+        "startLine": 173,
+        "endLine": 175
       }
     },
     {
@@ -1734,9 +1744,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 158,
-        "startLine": 157,
-        "endLine": 159
+        "line": 178,
+        "startLine": 177,
+        "endLine": 179
       }
     },
     {
@@ -1747,9 +1757,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 163,
-        "startLine": 161,
-        "endLine": 165
+        "line": 183,
+        "startLine": 181,
+        "endLine": 185
       }
     },
     {
@@ -1760,9 +1770,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 168,
-        "startLine": 167,
-        "endLine": 169
+        "line": 188,
+        "startLine": 187,
+        "endLine": 189
       }
     },
     {
@@ -1773,9 +1783,35 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 173,
-        "startLine": 171,
-        "endLine": 175
+        "line": 193,
+        "startLine": 191,
+        "endLine": 195
+      }
+    },
+    {
+      "name": "BioMech.Components.regionFilter_importers",
+      "namespace": "BioMech.Components",
+      "statement": "∀ (c : Component),\n  graph.Adj c Component.RegionFilter ↔\n    c = Component.Viewer3D ∨ c = Component.PhasePanel ∨ c = Component.GraphView ∨ c = Component.App",
+      "doc": "The views that show muscles (`Viewer3D`, `PhasePanel`, `GraphView`) and\n`App` are the direct importers of `RegionFilter`.",
+      "loc": {
+        "module": "BioMech.Components",
+        "file": "spec/BioMech/Components.lean",
+        "line": 199,
+        "startLine": 197,
+        "endLine": 201
+      }
+    },
+    {
+      "name": "BioMech.Components.regionFilter_reach",
+      "namespace": "BioMech.Components",
+      "statement": "∀ (c : Component),\n  Relation.TransGen graph.Adj Component.RegionFilter c ↔ c = Component.TraceRecorder",
+      "doc": "`RegionFilter` reaches exactly `TraceRecorder`: it works on the nodes its\nimporters pass it and stays clear of the store and the query layer.",
+      "loc": {
+        "module": "BioMech.Components",
+        "file": "spec/BioMech/Components.lean",
+        "line": 205,
+        "startLine": 203,
+        "endLine": 207
       }
     },
     {
@@ -1786,9 +1822,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 178,
-        "startLine": 177,
-        "endLine": 178
+        "line": 210,
+        "startLine": 209,
+        "endLine": 210
       }
     },
     {
@@ -1799,9 +1835,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 182,
-        "startLine": 180,
-        "endLine": 182
+        "line": 214,
+        "startLine": 212,
+        "endLine": 214
       }
     },
     {
@@ -1812,9 +1848,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 186,
-        "startLine": 184,
-        "endLine": 188
+        "line": 218,
+        "startLine": 216,
+        "endLine": 220
       }
     }
   ]
