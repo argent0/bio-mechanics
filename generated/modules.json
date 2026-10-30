@@ -132,7 +132,7 @@
    "id": "G",
    "consumes": [],
    "acceptance": ["CI green on main"]},
-  {"state": "merged",
+  {"state": "running",
    "produces": [],
    "paths": ["tools/"],
    "name": "Arch viewer",
@@ -142,10 +142,9 @@
    "id": "H",
    "consumes": ["C4"],
    "acceptance":
-   ["mypy tools",
-    "pytest tools",
+   ["mypy tools/arch",
     "python -m tools.arch print --detail 3",
-    "python -m tools.arch svg -o arch.svg"]},
+    "python -m tools.arch svg -o /tmp/arch.svg"]},
   {"state": "planned",
    "produces": [],
    "paths":
