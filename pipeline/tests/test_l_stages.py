@@ -186,17 +186,32 @@ def test_left_gluteus_medius_holds_the_pelvis_in_left_single_leg_stance(out: Out
         assert frames and all(sum(m[i] for m in hip["moments"].values()) < 0 for i in frames), phase
 
 
+GASMED_L_FLOOR_BAND = 0.01
+"""The medial gastrocnemius's phase mean lies within this fraction of the D-006 floor (0.05)."""
+
+
 def test_left_calf_brakes_ankle_dorsiflexion_early_in_left_mid_stance(out: Out) -> None:
-    """The left tibia rolls forward over the planted left foot while soleus and the medial
-    gastrocnemius lengthen and resist it (eccentric antagonists). The lateral gastrocnemius sits
-    at mean activation ≈ 0.027 there, under the D-006 floor (0.05, or 25 % of its 0.37 stride
-    peak), and takes no role: on the right leg all three calf muscles brake in mid-stance."""
+    """The left tibia rolls forward over the planted left foot while soleus lengthens and resists
+    it (eccentric antagonist). The medial gastrocnemius sits at the D-006 floor there (phase mean
+    0.04997 with the exact static optimisation, 0.05021 with OpenSim's IPOPT): it brakes with
+    soleus when its mean reaches 0.05 and takes no role below. The lateral gastrocnemius sits at
+    mean activation ≈ 0.027, under the floor (0.05, or 25 % of its 0.37 stride peak), and takes
+    no role: on the right leg all three calf muscles brake in mid-stance."""
+    from pipeline.label_roles import trapezoid
+    from pipeline.load_model import read_csv
+
     phase = out.opened_by("toeOff")
     act = out.action(phase, "ankle_angle_l")
     assert act["direction"] == 1 and not act["stabilised"]
     roles = out.roles_in(phase, "ankle_angle_l")
-    for m in ("soleus_l", "gasmed_l"):
-        assert roles.get(m) == ("antagonist", "eccentric"), (m, roles)
+    assert roles.get("soleus_l") == ("antagonist", "eccentric"), roles
+    ph = next(p for p in out.roles["phases"] if p["phase"] == phase)
+    a = read_csv(out.dir / "activations.csv")
+    frames = [i for i, t in enumerate(a.time) if ph["start"] <= t <= ph["end"]]
+    t = [a.time[i] for i in frames]
+    mean = trapezoid(t, [a.columns["gasmed_l"][i] for i in frames]) / (t[-1] - t[0])
+    assert abs(mean - 0.05) < GASMED_L_FLOOR_BAND * 0.05, mean
+    assert roles.get("gasmed_l") == (("antagonist", "eccentric") if mean >= 0.05 else None), (mean, roles)
     assert "gaslat_l" not in roles
 
 
