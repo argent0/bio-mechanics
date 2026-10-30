@@ -364,9 +364,9 @@
         "doc": "Detect gait events and drive the generated gait FSM to label each frame\nwith its phase.",
         "script": "pipeline/segment_phases.py",
         "module": "pipeline.segment_phases",
-        "reads": ["kinematics", "grf"],
+        "reads": ["scaledModel", "kinematics", "grf"],
         "writes": ["phases"],
-        "inputs": ["data/work/kinematics.csv", "data/work/grf.csv"],
+        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/work/kinematics.csv", "data/work/grf.csv"],
         "outputs": ["data/work/phases.csv"]
       },
       {
@@ -374,9 +374,9 @@
         "doc": "Classify each muscle per phase and joint action as main mover, helper,\nstabiliser, or antagonist.",
         "script": "pipeline/label_roles.py",
         "module": "pipeline.label_roles",
-        "reads": ["activations", "momentArms", "mtLengths", "phases", "kinematics", "roleThresholds"],
+        "reads": ["model", "activations", "momentArms", "mtLengths", "phases", "kinematics", "roleThresholds"],
         "writes": ["roles"],
-        "inputs": ["data/work/activations.csv", "data/work/moment_arms.csv", "data/work/mt_lengths.csv", "data/work/phases.csv", "data/work/kinematics.csv", "pipeline/config/roles.yaml"],
+        "inputs": ["data/work/model.json", "data/work/activations.csv", "data/work/moment_arms.csv", "data/work/mt_lengths.csv", "data/work/phases.csv", "data/work/kinematics.csv", "pipeline/config/roles.yaml"],
         "outputs": ["data/work/roles.json"]
       },
       {
@@ -401,12 +401,12 @@
       },
       {
         "name": "exportMeshes",
-        "doc": "Convert the model's bone geometry to glTF, scaled by each body's scale\nfactors from `model.json`.",
+        "doc": "Convert the model's bone geometry to glTF, each mesh multiplied by its\nscale factors from the scaled model.",
         "script": "pipeline/export_meshes.py",
         "module": "pipeline.export_meshes",
-        "reads": ["model", "geometry"],
+        "reads": ["scaledModel", "model", "geometry"],
         "writes": ["meshes"],
-        "inputs": ["data/work/model.json", "data/raw/rajagopal/Geometry/"],
+        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/work/model.json", "data/raw/rajagopal/Geometry/"],
         "outputs": ["data/out/meshes/index.json"]
       },
       {
@@ -534,7 +534,7 @@
       },
       {
         "name": "model",
-        "doc": "Bodies, joints, coordinates, and muscles of the model, with OpenSim\nnames and each body's scale factors.",
+        "doc": "Bodies (with their mesh files), joints, coordinates, and muscles (with\nmaximum isometric forces) of the model, under their OpenSim names.",
         "path": "data/work/model.json",
         "isSource": false,
         "isDirectory": false
@@ -1350,9 +1350,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 289,
-        "startLine": 288,
-        "endLine": 292
+        "line": 298,
+        "startLine": 297,
+        "endLine": 301
       }
     },
     {
@@ -1363,9 +1363,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 295,
-        "startLine": 294,
-        "endLine": 295
+        "line": 304,
+        "startLine": 303,
+        "endLine": 304
       }
     },
     {
@@ -1376,9 +1376,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 298,
-        "startLine": 297,
-        "endLine": 298
+        "line": 307,
+        "startLine": 306,
+        "endLine": 307
       }
     },
     {
@@ -1389,9 +1389,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 303,
-        "startLine": 302,
-        "endLine": 305
+        "line": 312,
+        "startLine": 311,
+        "endLine": 314
       }
     },
     {
@@ -1402,9 +1402,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 309,
-        "startLine": 307,
-        "endLine": 309
+        "line": 318,
+        "startLine": 316,
+        "endLine": 318
       }
     },
     {
@@ -1415,9 +1415,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 312,
-        "startLine": 311,
-        "endLine": 313
+        "line": 321,
+        "startLine": 320,
+        "endLine": 322
       }
     },
     {
@@ -1428,9 +1428,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 316,
-        "startLine": 315,
-        "endLine": 317
+        "line": 325,
+        "startLine": 324,
+        "endLine": 326
       }
     },
     {
@@ -1441,9 +1441,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 321,
-        "startLine": 319,
-        "endLine": 321
+        "line": 330,
+        "startLine": 328,
+        "endLine": 330
       }
     },
     {

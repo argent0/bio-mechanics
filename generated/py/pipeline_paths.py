@@ -59,8 +59,8 @@ ROLE_THRESHOLDS: Final = "pipeline/config/roles.yaml"
 """Role-classification thresholds."""
 
 MODEL: Final = "data/work/model.json"
-"""Bodies, joints, coordinates, and muscles of the model, with OpenSim
-names and each body's scale factors.
+"""Bodies (with their mesh files), joints, coordinates, and muscles (with
+maximum isometric forces) of the model, under their OpenSim names.
 """
 
 KINEMATICS: Final = "data/work/kinematics.csv"
@@ -136,7 +136,7 @@ SEGMENT_PHASES: Final = Stage(
     name="segmentPhases",
     script="pipeline/segment_phases.py",
     module="pipeline.segment_phases",
-    inputs=(KINEMATICS, GRF),
+    inputs=(SCALED_MODEL, KINEMATICS, GRF),
     outputs=(PHASES,),
 )
 """Detect gait events and drive the generated gait FSM to label each frame
@@ -147,7 +147,7 @@ LABEL_ROLES: Final = Stage(
     name="labelRoles",
     script="pipeline/label_roles.py",
     module="pipeline.label_roles",
-    inputs=(ACTIVATIONS, MOMENT_ARMS, MT_LENGTHS, PHASES, KINEMATICS, ROLE_THRESHOLDS),
+    inputs=(MODEL, ACTIVATIONS, MOMENT_ARMS, MT_LENGTHS, PHASES, KINEMATICS, ROLE_THRESHOLDS),
     outputs=(ROLES,),
 )
 """Classify each muscle per phase and joint action as main mover, helper,
@@ -176,11 +176,11 @@ EXPORT_MESHES: Final = Stage(
     name="exportMeshes",
     script="pipeline/export_meshes.py",
     module="pipeline.export_meshes",
-    inputs=(MODEL, GEOMETRY),
+    inputs=(SCALED_MODEL, MODEL, GEOMETRY),
     outputs=(MESHES,),
 )
-"""Convert the model's bone geometry to glTF, scaled by each body's scale
-factors from `model.json`.
+"""Convert the model's bone geometry to glTF, each mesh multiplied by its
+scale factors from the scaled model.
 """
 
 EXPORT_MUSCLE_PATHS: Final = Stage(
