@@ -41,7 +41,7 @@
    "acceptance":
    ["cd spec && lake build",
     "! grep -n sorry spec/BioMech/GaitFsm.lean spec/BioMech/UiFsm.lean"]},
-  {"state": "running",
+  {"state": "merged",
    "produces": ["C6"],
    "paths":
    ["spec/BioMech/Pipeline.lean",
@@ -56,7 +56,7 @@
    "acceptance":
    ["cd spec && lake build",
     "! grep -n sorry spec/BioMech/Pipeline.lean spec/BioMech/Components.lean spec/BioMech/Acyclic.lean"]},
-  {"state": "planned",
+  {"state": "running",
    "produces": ["C2"],
    "paths": ["spec/BioMech/Gen/"],
    "name": "Emitters",
