@@ -1,6 +1,41 @@
 # Handover: Bio-Mechanics Explorer
 
-Status as of 2026-10-29: design agreed, implementation pending. This document records the decisions so far and the plan for the first slice.
+Status as of 2026-10-29: the first slice (walking, right lower limb) is built, proved, tested, and live at https://argent0.github.io/bio-mechanics/. The section **Status** below describes the merged code; the sections after it keep the original design record.
+
+## Status (end of Wave 4, 2026-10-29)
+
+Repository: https://github.com/argent0/bio-mechanics. Site: https://argent0.github.io/bio-mechanics/ (routes `#/` explore, `#/walking` movement view, `#/architecture`). Task board: `TASKS.md`. Decisions: `DECISIONS.md` (D-001 … D-006). Module map: `spec/BioMech/Architecture.lean`, drawn by `cd spec && lake exe arch print --detail 2` or `python -m tools.arch watch`.
+
+**New jargon**
+
+| Term | Meaning |
+|---|---|
+| **Gate** | `scripts/gate.sh`: Lean build with zero `sorry`, regenerate-and-diff, ownership check, `checkGraph`/`conform` on fixtures, mypy, tsc, web tests with a recorded trace through `conform`, pytest, and the OpenSim tests when the pipeline env exists. CI (`.github/workflows/ci.yml`) runs the same checks plus the full pipeline. |
+| **Role floor** | The activation a muscle needs in a phase to earn a role (D-006): phase mean ≥ 0.015 and (≥ 0.05 or ≥ 25 % of its own stride peak). |
+| **Teaching example** | A biomechanics fact the app shows and a pipeline test pins exactly, e.g. the vasti braking knee flexion in loading response. |
+
+**Lean specification (`spec/`)** — 84 theorems in the specification modules, listed with source locations in `generated/architecture.json`; all proofs by `decide`, `rfl`, `simp`, or short tactic proofs, zero `sorry`, zero `native_decide`.
+- `Schema.lean`: the schema quiver (9 kinds, 11 arrows) and attribute structures, read by reflection.
+- `GaitFsm.lean`, `UiFsm.lean`: the gait DFA (seven phases plus `invalid`, D-001) and the UI DFA, with stride, reachability, and scrubbing theorems.
+- `Pipeline.lean`, `Components.lean`, `Acyclic.lean`: the 9-stage pipeline DAG with its artefact contract and topological order, the component import DAG with layering theorems.
+- `CheckGraph.lean`, `Conform.lean`: `lake exe checkGraph` (a passing graph carries a prefunctor into the schema quiver) and `lake exe conform` (trace format C7, soundness lemmas).
+- `Gen/`: `lake exe gen` writes every file under `generated/`; `Architecture.lean` + `Arch/`: `lake exe arch check | export | print`.
+
+**Pipeline (`pipeline/`)** — `ninja -f generated/pipeline.ninja` runs all 9 stages in about 25 s with the env from `pipeline/env/setup.sh` (OpenSim 4.6, Python 3.12).
+- Data: the scaled Rajagopal model and one walking trial (`pipeline/env/fetch_data.sh`), Uberon subset (committed) and FMA subset (local, licence) via `data/raw/ontology/fetch.sh`.
+- Output (committed, 2.1 MB): `data/out/graph.json` (108 nodes, 550 edges), `data/out/meshes/` (13 bodies, glTF), `data/out/muscle_paths.json` (80 muscles, 50 Hz, stride bounds).
+- Roles follow D-002 (moment share) with the D-006 floor. Teaching examples pinned by tests: vasti eccentric antagonists of knee flexion in loading response; semimembranosus and gluteus maximus driving hip extension; calf eccentric antagonists of ankle dorsiflexion in mid-stance; gluteus medius and minimus stabilising the hip in mid-stance; tibialis anterior active after initial contact.
+- Investigation K12 confirmed stages 1–3 against inverse dynamics (knee extensor peak −0.75 N·m/kg) and the trial's EMG timing; static optimisation gives no co-contraction in early loading response, a property of its minimum-activation cost.
+
+**Web app (`web/`)** — Vite + TypeScript (strict) + Three.js + Cytoscape.js; 60 web tests; import boundaries from the component DAG checked by `tests/test_boundaries.py`.
+- GraphStore → QueryEngine → GraphView, Timeline, Viewer3D (bone glTF, muscle tubes coloured by activation, hue by braking/driving/holding), PhasePanel (roles in plain language, common and anatomical names), ArchitectureView (four diagrams, theorems with links to Lean source).
+- Dev mode records FSM traces (`window.__bmTrace`); a recorded browser session lives in `data/fixtures/trace.walking-session.json` and conforms.
+
+**Known limits**
+- One subject, one trial; the left foot leaves the force plates before 0.40 s and after 1.98 s, so left-leg events there come from markers.
+- The graph covers the right lower limb and pelvis; the viewer draws all 80 muscles and selects the 40 right-leg ones.
+- Solver drift across machines changes up to about 2 % of edges (CI compares with `scripts/compare_graph.py`); three roles sit within 10 % of a threshold: gluteus maximus 1 as a mid-stance stabiliser of hip abduction (mean 0.103 against 0.1), and gluteus medius 1 and semitendinosus near the 0.05 helper share in loading-response hip extension.
+- 16 anatomy entities have no Uberon or FMA identifier.
 
 ## Jargon
 
@@ -214,20 +249,11 @@ Mathlib setup: add it as a Lake dependency, set `lean-toolchain` to Mathlib's, t
 
 ## Next steps
 
-1. `git init`; create the layout above.
-2. Scaffold `spec/` with Mathlib; write `Schema.lean` and `GaitFsm.lean` with their theorems.
-3. Write `Pipeline.lean` and `Components.lean` with acyclicity proofs.
-4. Build the first emitters: `types.ts`, `schema.py`, gait FSM tables, `architecture.json`, Mermaid.
-5. Install OpenSim; fetch the Rajagopal model and walking trial into `data/raw/`.
-6. Implement pipeline stages 1–3 and confirm activations and moment arms look plausible (e.g. tibialis anterior active after initial contact, gluteus medius active in single-leg stance).
-7. Implement stages 4–7 and pass `lake exe checkGraph`.
-8. Scaffold `web/`: `ArchitectureView` first (it exercises the codegen end to end), then `Viewer3D`, `Timeline`, `PhasePanel`, `GraphView`.
-9. Add trace recording and `lake exe conform`.
-10. CI: build Lean, run theorems, regenerate and diff, `tsc`, `mypy`, pipeline smoke test.
+1. Later movements (squat, plié, relevé, jump), in the order the director sets: a trial per movement through the same pipeline, a movement node per trial.
+2. Stretch and strengthen exercise links per muscle, as extra graph edges (Audience, "Later").
+3. Optional: EMG-informed optimisation for co-contraction in early stance (K12, proposal 4).
+4. Optional: `supportInterpreter := true` on `lean_exe gen` (K2), and a dagre layout for the architecture diagrams.
 
 ## Open items for the director
 
-- Whether initial contact gets its own short DFA state or stays an instant at the start of loading response.
-- Role-classification thresholds (activation level for "main mover" vs "helper").
-- Hosting target (GitHub Pages proposed).
 - Order of later movements after walking (e.g. squat, plié, relevé, jump).

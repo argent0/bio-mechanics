@@ -73,7 +73,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | Replace fixture references with pipeline output | merged (`web/src/config.ts` reads `data/out/graph.json`; Vite serves `data/out/`) |
 | Full gate on `main` | merged (local with OpenSim; CI run 40993670056 all six jobs green) |
 | Record a walking trace, pass `lake exe conform` | merged (`data/fixtures/trace.walking-session.json`: ui 6, gait 17 + 10 steps; in the gate) |
-| Fresh `handover.md` status from merged code | todo |
+| Fresh `handover.md` status from merged code | merged |
 | Director: order of later movements | todo |
 
 ## Escalations
