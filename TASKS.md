@@ -42,6 +42,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K1 Add `data/work/forces.csv`, `data/work/static_opt.json` to `runStaticOpt` writes in `Pipeline.lean` | dropped | side outputs with no reader; `read_unless_out` requires a reader for every non-final artefact |
 | K2 `supportInterpreter := true` on `lean_exe gen`, then C deletes `runInterpreted` | todo | optional speed-up |
 | K3 `data/raw/ontology/` moves from D to P2 | merged | P2 fetches Uberon/FMA subsets |
+| K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | todo | after P2 merges |
 
 ## Wave 3
 
@@ -49,7 +50,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 |---|---|---|---|---|---|---|---|
 | P2 | Pipeline stages 4–7 | opus / high | `ab4d531a834c2a987` | 0 | running | P1, C, D-002 | `ninja`; `lake exe checkGraph data/out/graph.json` |
 | E3 | Movement views | sonnet / high | — | 0 | todo | C, P2 | `tsc`, eslint boundaries; walking plays and scrubs |
-| G | CI and traces | sonnet / medium | `a9065076c8beaed8a` | 0 | running | F, C | CI green on `main` |
+| G | CI and traces | sonnet / medium | `a9065076c8beaed8a` | 0 | merged (CI run pending hosting) | F, C | CI green on `main` |
 
 ## Wave 4 — Integration (coordinator)
 

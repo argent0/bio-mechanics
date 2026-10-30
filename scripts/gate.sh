@@ -43,8 +43,11 @@ for d in pipeline tools; do [ -d "$d" ] && targets+=("$d"); done
 if [ -f web/package.json ]; then
   step "tsc"
   (cd web && npx --no-install tsc --noEmit)
-  step "npm test"
-  (cd web && npm test --silent)
+  step "npm test, recorded trace through lake exe conform"
+  trace="$(mktemp --suffix=.json)"
+  (cd web && BM_TRACE_OUT="$trace" npm test --silent)
+  (cd spec && lake exe conform "$trace" 2>&1 | grep -vE '^(⚠|✔|warning|trace:)' || true; exit "${PIPESTATUS[0]}")
+  rm -f "$trace"
 fi
 
 step "pytest"

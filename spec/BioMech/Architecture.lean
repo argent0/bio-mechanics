@@ -87,7 +87,7 @@ def modules : List Module := [
     paths := ["spec/BioMech/CheckGraph.lean", "spec/BioMech/Conform.lean"],
     acceptance := ["cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json",
       "cd spec && lake exe conform ../data/fixtures/trace.sample.json"] },
-  { id := .G, name := "CI and traces", lang := "YAML", model := "sonnet", state := .running,
+  { id := .G, name := "CI and traces", lang := "YAML", model := "sonnet", state := .merged,
     paths := [".github/workflows/", "web/src/trace/"],
     acceptance := ["CI green on main"] },
   { id := .H, name := "Arch viewer", lang := "Python", model := "sonnet", state := .merged,

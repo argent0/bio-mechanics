@@ -124,7 +124,7 @@
    "acceptance":
    ["cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json",
     "cd spec && lake exe conform ../data/fixtures/trace.sample.json"]},
-  {"state": "running",
+  {"state": "merged",
    "produces": [],
    "paths": [".github/workflows/", "web/src/trace/"],
    "name": "CI and traces",
