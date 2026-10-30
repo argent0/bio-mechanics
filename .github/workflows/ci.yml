@@ -1,0 +1,147 @@
+# CI: the same checks as scripts/gate.sh, split into jobs.
+# Sharing between jobs: the web job writes trace.json (BM_TRACE_OUT) and uploads it as an
+# artifact; the trace-conform job (needs: web) downloads it and runs `lake exe conform`
+# on the cached Lean build (same cache key as the lean job).
+name: ci
+on:
+  push:
+  pull_request:
+
+env:
+  # One variable: the ninja target of the pipeline smoke test. Stages 1-3 today;
+  # extend to the full graph once P2 merges.
+  PIPELINE_TARGET: computeMomentArms
+
+jobs:
+  lean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan (toolchain pinned by spec/lean-toolchain)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain "$(cat spec/lean-toolchain)"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - uses: actions/cache@v4
+        with:
+          path: spec/.lake
+          key: lake-${{ runner.os }}-${{ hashFiles('spec/lake-manifest.json', 'spec/lean-toolchain') }}
+      - name: lake exe cache get
+        working-directory: spec
+        run: lake exe cache get
+      - name: lake build (theorems are part of the build; sorry fails)
+        working-directory: spec
+        run: |
+          lake build 2>&1 | tee build.log
+          if grep -q "declaration uses 'sorry'" build.log; then grep -B2 "declaration uses 'sorry'" build.log; exit 1; fi
+      - name: Regenerate and diff generated/
+        working-directory: spec
+        run: lake exe gen && lake exe arch export
+      - name: Empty diff under generated/
+        run: |
+          git diff --exit-code -- generated/
+          test -z "$(git ls-files --others --exclude-standard -- generated/)"
+      - name: arch check
+        working-directory: spec
+        run: lake exe arch check
+      - name: checkGraph (fixture, bad fixture, pipeline output when present)
+        working-directory: spec
+        run: |
+          lake exe checkGraph ../data/fixtures/graph.sample.json
+          if lake exe checkGraph ../data/fixtures/graph.bad-edge.json; then echo "accepted bad-edge"; exit 1; fi
+          if [ -f ../data/out/graph.json ]; then lake exe checkGraph ../data/out/graph.json; fi
+      - name: conform (sample, bad fixtures)
+        working-directory: spec
+        run: |
+          lake exe conform ../data/fixtures/trace.sample.json
+          for bad in trace.bad-gait.json trace.bad-ui.json; do
+            if lake exe conform "../data/fixtures/$bad"; then echo "accepted $bad"; exit 1; fi
+          done
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - name: Tests (also write the recorded trace)
+        run: BM_TRACE_OUT="$RUNNER_TEMP/trace.json" npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trace
+          path: ${{ runner.temp }}/trace.json
+
+  trace-conform:
+    needs: web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain "$(cat spec/lean-toolchain)"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - uses: actions/cache@v4
+        with:
+          path: spec/.lake
+          key: lake-${{ runner.os }}-${{ hashFiles('spec/lake-manifest.json', 'spec/lean-toolchain') }}
+      - run: cd spec && lake exe cache get && lake build BioMech conform
+      - uses: actions/download-artifact@v4
+        with:
+          name: trace
+          path: ${{ runner.temp }}/trace
+      - name: conform on the recorded trace
+        working-directory: spec
+        run: lake exe conform "$RUNNER_TEMP/trace/trace.json"
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: venv
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install mypy pytest pyyaml
+      - run: .venv/bin/python -m mypy generated/py tests pipeline tools
+      - run: .venv/bin/python -m pytest -q
+
+  pipeline-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: pipeline/env/environment.yml
+          cache-environment: true
+      - run: bash pipeline/env/fetch_data.sh
+        shell: micromamba-shell {0}
+      - name: ninja target ${{ env.PIPELINE_TARGET }}
+        shell: micromamba-shell {0}
+        run: |
+          command -v ninja >/dev/null || micromamba install -y -n bm-opensim -c conda-forge ninja
+          ninja -f generated/pipeline.ninja "$PIPELINE_TARGET"
+      - run: python -m pytest -q pipeline/tests
+        shell: micromamba-shell {0}
+
+  # Deployment (GitHub Pages): enabled once the director chooses hosting.
+  # deploy:
+  #   needs: [lean, web, python, pipeline-smoke, trace-conform]
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   permissions: { pages: write, id-token: write }
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: cd web && npm ci && npm run build
+  #     - uses: actions/upload-pages-artifact@v3
+  #       with: { path: web/dist }
+  #     - uses: actions/deploy-pages@v4
