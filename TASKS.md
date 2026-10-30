@@ -126,7 +126,7 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 | L | Left leg | opus / high | `a3bc0e6b1242c20ea` | 0 | merged | `ws/L` | C1–C3, D-007 | both legs on the reference timeline; left anatomy by mirroring; left meshes, paths, dynamics | 40 left-leg muscles; `compare_graph.py --within-committed` passes; mirrored teaching examples; `checkGraph` |
 | D2 | Upper-body data | sonnet / high | `a25da4ada23abbe0a` | 0 | merged (arm 50, neck 72 muscles load; trunk waits on the director's download) | `ws/D2` | D-008, K19 picks | fetch script, `SHA256SUMS`, `SOURCES.md` section | `check_env.py` loads the model in OpenSim 4.6 |
 | W1 | Web, whole-body views | sonnet / high | `a208befd13ed6f3b2` | 0 | merged | `ws/W1` | C2, C3 | whole-skeleton framing; region and side filter; panels grouped by region and side; search across regions | `tsc`; web tests; boundary test with `RegionFilter` once S merges |
-| G2 | CI | sonnet / medium | — | 0 | todo | `ws/G2` | D2 | CI fetches and caches the upper-body model; every stage runs | CI green on `main`; pipeline job under 15 minutes |
+| G2 | CI | sonnet / medium | `a975d8edca84b9c28` | 0 | running | `ws/G2` | D2 | CI fetches and caches the upper-body model; every stage runs | CI green on `main`; pipeline job under 15 minutes |
 
 | Task | State | Detail |
 |---|---|---|
@@ -142,7 +142,7 @@ L findings: left vasti brake left knee flexion in reference pre-swing (left load
 
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Branch | Inputs | Outputs | Acceptance |
 |---|---|---|---|---|---|---|---|---|---|
-| M | Model merge | opus / xhigh | — | 0 | todo | `ws/M` | D2, S, D-008–D-010 | merged model, head split, neck angles holding the head level, reserves | static optimisation over the stride; reserves RMS < 10 N·m lumbar, < 2 N·m arm, < 1 N·m neck; leg activations within 0.02 RMS of today |
+| M | Model merge | opus / xhigh | `ac5f4d49260d0cc4a` | 0 | running (arm, neck; trunk after the download) | `ws/M` | D2, S, D-008–D-010 | merged model, head split, neck angles holding the head level, reserves | static optimisation over the stride; reserves RMS < 10 N·m lumbar, < 2 N·m arm, < 1 N·m neck; leg activations within 0.02 RMS of today |
 | P4 | Trunk and arm stages | opus / high | — | 0 | todo | `ws/P4` | M, L, D-009 | roles for neck, lumbar, shoulder, elbow, forearm, wrist; curated anatomy; meshes | erector spinae two bursts per stride; posterior deltoid in backward swing; neck extensors stabilising; D-006 floor test; `checkGraph` |
 | W2 | Web, real output | sonnet / medium | — | 0 | todo | `ws/W2` | P4, S | real graph wired in; tubes for every muscle | ≥ 30 fps with every muscle; `data/out/` < 8 MB; recorded trace conforms |
 
