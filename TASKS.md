@@ -54,6 +54,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K14 `exportMusclePaths` reads `phases` (edge `segmentPhases → exportMusclePaths`) | merged | B's worker |
 | K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | review | merged; first CI run pending |
 | K16 CI `python` job installs `types-PyYAML` | merged | coordinator fix in `ci.yml` (G's file), one package |
+| K17 CI compares regenerated graph.json structurally (`scripts/compare_graph.py`) | review | byte diff failed on float drift |
 | K15 D-005 relative role floor | merged | vasti braking restored; calf mid-stance role lost, adductors back (director question) |
 
 ## Wave 3

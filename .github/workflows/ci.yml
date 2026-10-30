@@ -141,9 +141,13 @@ jobs:
           export PATH="$HOME/.local/share/bm-opensim/bin:$PATH"
           command -v ninja >/dev/null || sudo apt-get install -y ninja-build
           ninja -f generated/pipeline.ninja $PIPELINE_TARGET
-      # If static optimisation proves non-deterministic across machines, drop this diff.
-      - name: Regenerated graph.json equals the committed one
-        run: git diff --exit-code -- data/out/graph.json
+      # Static optimisation drifts in floating point across machines, so the
+      # regenerated graph matches the committed one in structure and roles
+      # exactly, and in numbers within a tolerance (scripts/compare_graph.py).
+      - name: Regenerated graph.json matches the committed one
+        run: |
+          git show HEAD:data/out/graph.json > "$RUNNER_TEMP/committed-graph.json"
+          python3 scripts/compare_graph.py "$RUNNER_TEMP/committed-graph.json" data/out/graph.json
       - name: Install elan
         run: |
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain "$(cat spec/lean-toolchain)"

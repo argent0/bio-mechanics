@@ -36,7 +36,7 @@ for bad in trace.bad-gait.json trace.bad-ui.json; do
 done
 
 step "mypy"
-targets=(generated/py tests)
+targets=(generated/py tests scripts)
 for d in pipeline tools; do [ -d "$d" ] && targets+=("$d"); done
 "$py" -m mypy "${targets[@]}"
 
