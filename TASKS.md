@@ -53,6 +53,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K12 Investigate low vasti activation in loading response (static optimisation) | merged | no defect in stages 1–3; D-004's whole-phase floor hides the braking; evidence test in `test_p1_stages.py` |
 | K14 `exportMusclePaths` reads `phases` (edge `segmentPhases → exportMusclePaths`) | merged | B's worker |
 | K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | review | merged; first CI run pending |
+| K16 CI `python` job installs `types-PyYAML` | merged | coordinator fix in `ci.yml` (G's file), one package |
 | K15 D-005 relative role floor | running | P2's worker |
 
 ## Wave 3

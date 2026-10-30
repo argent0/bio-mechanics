@@ -110,7 +110,7 @@ jobs:
       - name: venv
         run: |
           python -m venv .venv
-          .venv/bin/pip install mypy pytest pyyaml
+          .venv/bin/pip install mypy pytest pyyaml types-PyYAML
       - run: .venv/bin/python -m mypy generated/py tests pipeline tools
       - run: .venv/bin/python -m pytest -q
 
