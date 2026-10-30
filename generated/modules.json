@@ -111,7 +111,10 @@
    "lang": "TypeScript",
    "id": "E3",
    "consumes": ["C2", "C3"],
-   "acceptance": ["cd web && npx tsc --noEmit", "cd web && npx eslint src"]},
+   "acceptance":
+   ["cd web && npx tsc --noEmit",
+    "cd web && npm test",
+    "pytest tests/test_boundaries.py"]},
   {"state": "merged",
    "produces": ["C7"],
    "paths": ["spec/BioMech/CheckGraph.lean", "spec/BioMech/Conform.lean"],

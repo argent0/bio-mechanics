@@ -82,7 +82,7 @@ def modules : List Module := [
     acceptance := ["cd web && npx tsc --noEmit"] },
   { id := .E3, name := "Movement views", lang := "TypeScript", model := "sonnet", state := .running,
     paths := ["web/src/viewer/", "web/src/timeline/", "web/src/phase/"],
-    acceptance := ["cd web && npx tsc --noEmit", "cd web && npx eslint src"] },
+    acceptance := ["cd web && npx tsc --noEmit", "cd web && npm test", "pytest tests/test_boundaries.py"] },
   { id := .F, name := "Lean checkers", lang := "Lean", model := "opus", state := .merged,
     paths := ["spec/BioMech/CheckGraph.lean", "spec/BioMech/Conform.lean"],
     acceptance := ["cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json",
