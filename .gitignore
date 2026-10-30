@@ -12,3 +12,5 @@ web/dist/
 data/raw/**/*.mot
 data/raw/**/*.trc
 data/raw/**/*.vtp
+data/raw/**/*.sto
+data/work/

@@ -25,7 +25,7 @@ inductive ModuleId
 
 /-- API identifiers: the contracts between modules. -/
 inductive ApiId
-  | C1 | C2 | C3 | C4
+  | C1 | C2 | C3 | C4 | C5 | C6
   deriving DecidableEq, Repr, Inhabited
 
 /-- Where a module stands. `planned` modules appear on the map before their code exists. -/
@@ -62,7 +62,7 @@ def modules : List Module := [
       "spec/BioMech/Schema.lean", "spec/BioMech/Architecture.lean", "spec/BioMech/Arch/",
       "spec/BioMech/ArchMain.lean"],
     acceptance := ["scripts/gate.sh"] },
-  { id := .A, name := "Lean FSMs", lang := "Lean", model := "opus", state := .running,
+  { id := .A, name := "Lean FSMs", lang := "Lean", model := "opus", state := .merged,
     paths := ["spec/BioMech/GaitFsm.lean", "spec/BioMech/UiFsm.lean"],
     acceptance := ["cd spec && lake build", "! grep -n sorry spec/BioMech/GaitFsm.lean spec/BioMech/UiFsm.lean"] },
   { id := .B, name := "Lean graphs", lang := "Lean", model := "opus", state := .running,
@@ -71,28 +71,28 @@ def modules : List Module := [
   { id := .C, name := "Emitters", lang := "Lean", model := "opus", state := .planned,
     paths := ["spec/BioMech/Gen/"],
     acceptance := ["cd spec && lake exe gen && git diff --exit-code -- ../generated", "ninja -n -f generated/pipeline.ninja"] },
-  { id := .D, name := "Data acquisition", lang := "Python", model := "sonnet", state := .running,
+  { id := .D, name := "Data acquisition", lang := "Python", model := "sonnet", state := .merged,
     paths := ["data/raw/", "pipeline/env/"],
-    acceptance := ["python -c \"import opensim\""] },
-  { id := .E, name := "Web scaffold", lang := "TypeScript", model := "sonnet", state := .running,
+    acceptance := ["~/.local/share/bm-opensim/bin/python pipeline/env/check_env.py"] },
+  { id := .E, name := "Web scaffold", lang := "TypeScript", model := "sonnet", state := .merged,
     paths := ["web/"],
-    acceptance := ["cd web && npx tsc --noEmit", "cd web && npm run build"] },
+    acceptance := ["cd web && npx tsc --noEmit", "cd web && npm test", "cd web && npm run build"] },
   { id := .E2, name := "ArchitectureView", lang := "TypeScript", model := "sonnet", state := .planned,
     paths := ["web/src/architecture/"],
     acceptance := ["cd web && npx tsc --noEmit"] },
   { id := .E3, name := "Movement views", lang := "TypeScript", model := "sonnet", state := .planned,
     paths := ["web/src/viewer/", "web/src/timeline/", "web/src/phase/"],
     acceptance := ["cd web && npx tsc --noEmit", "cd web && npx eslint src"] },
-  { id := .F, name := "Lean checkers", lang := "Lean", model := "opus", state := .planned,
+  { id := .F, name := "Lean checkers", lang := "Lean", model := "opus", state := .running,
     paths := ["spec/BioMech/CheckGraph.lean", "spec/BioMech/Conform.lean"],
     acceptance := ["cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json"] },
   { id := .G, name := "CI and traces", lang := "YAML", model := "sonnet", state := .planned,
     paths := [".github/workflows/", "web/src/trace/"],
     acceptance := ["CI green on main"] },
-  { id := .H, name := "Arch viewer", lang := "Python", model := "sonnet", state := .running,
+  { id := .H, name := "Arch viewer", lang := "Python", model := "sonnet", state := .merged,
     paths := ["tools/"],
-    acceptance := ["mypy tools/arch", "python -m tools.arch print --detail 3", "python -m tools.arch svg -o /tmp/arch.svg"] },
-  { id := .P1, name := "Pipeline stages 1-3", lang := "Python", model := "opus", state := .planned,
+    acceptance := ["mypy tools", "pytest tools", "python -m tools.arch print --detail 3", "python -m tools.arch svg -o arch.svg"] },
+  { id := .P1, name := "Pipeline stages 1-3", lang := "Python", model := "opus", state := .running,
     paths := ["pipeline/load_model.py", "pipeline/static_opt.py", "pipeline/moment_arms.py",
       "pipeline/tests/test_p1_*.py"],
     acceptance := ["mypy pipeline", "pytest pipeline/tests -k p1"] },
@@ -111,7 +111,12 @@ def apis : List Api := [
   { id := .C3, name := "graph.json", files := ["data/fixtures/graph.sample.json", "data/out/graph.json"],
     producer := .P2, consumers := [.E, .F, .E3] },
   { id := .C4, name := "Module map", files := ["spec/BioMech/Architecture.lean", "generated/modules.json"],
-    producer := .coordinator, consumers := [.H] }
+    producer := .coordinator, consumers := [.H] },
+  { id := .C5, name := "FSMs", files := ["spec/BioMech/GaitFsm.lean", "spec/BioMech/UiFsm.lean"],
+    producer := .A, consumers := [.C, .F] },
+  { id := .C6, name := "Pipeline and component graphs",
+    files := ["spec/BioMech/Pipeline.lean", "spec/BioMech/Components.lean"],
+    producer := .B, consumers := [.C] }
 ]
 
 def ModuleId.all : List ModuleId :=
@@ -141,7 +146,7 @@ theorem ModuleId.mem_all (m : ModuleId) : m ∈ ModuleId.all := by cases m <;> d
 theorem modules_ids : modules.map (·.id) = ModuleId.all := by decide
 
 /-- Each API appears exactly once in `apis`. -/
-theorem apis_ids : apis.map (·.id) = [.C1, .C2, .C3, .C4] := by decide
+theorem apis_ids : apis.map (·.id) = [.C1, .C2, .C3, .C4, .C5, .C6] := by decide
 
 def lookup (m : ModuleId) : Option Module := modules.find? (·.id == m)
 
