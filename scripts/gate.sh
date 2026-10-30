@@ -50,4 +50,11 @@ fi
 step "pytest"
 "$py" -m pytest -q
 
+# OpenSim tests need the pipeline env (pipeline/env/setup.sh); the step runs when it exists.
+osim_py="$HOME/.local/share/bm-opensim/bin/python"
+if [ -x "$osim_py" ] && [ "${GATE_SKIP_OPENSIM:-0}" != 1 ]; then
+  step "pytest with OpenSim"
+  "$osim_py" -m pytest -q pipeline/tests
+fi
+
 printf '\ngate: pass\n'

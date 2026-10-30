@@ -148,7 +148,7 @@
     "pytest tools",
     "python -m tools.arch print --detail 3",
     "python -m tools.arch svg -o arch.svg"]},
-  {"state": "running",
+  {"state": "merged",
    "produces": [],
    "paths":
    ["pipeline/load_model.py",
@@ -161,7 +161,9 @@
    "lang": "Python",
    "id": "P1",
    "consumes": ["C2"],
-   "acceptance": ["mypy pipeline", "pytest pipeline/tests -k p1"]},
+   "acceptance":
+   ["mypy pipeline",
+    "~/.local/share/bm-opensim/bin/python -m pytest pipeline/tests -k p1"]},
   {"state": "planned",
    "produces": ["C3"],
    "paths":
