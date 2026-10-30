@@ -17,9 +17,14 @@
  * muscle; a click on a muscle with a graph node selects `muscle:<opensim name>` through the
  * Timeline (`selectNode`); a click on empty space clears the selection.
  *
- * Performance: one geometry per muscle with preallocated buffers (`tube.ts`), rewritten in
- * place per frame; one shared material for all bones; the scene draws on demand (when the
- * playhead, the selection, or the camera changes).
+ * Bones hide with the region filter: a body shows while any bone node on it (matched by
+ * `opensimName`) passes the selection (`region/bones.ts`).
+ *
+ * Performance: the tubes of one region and side share one geometry and one draw call
+ * (`MuscleBatch.ts`, grouping in `batch.ts`), buffers preallocated and rewritten in place per
+ * frame; one shared material for all bones; the scene draws on demand (when the playhead, the
+ * selection, or the camera changes). In dev mode a readout in the corner and a console line
+ * per second give the frame rate and the draw calls (`fpsLine`).
  */
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -28,10 +33,12 @@ import type { QueryEngine } from "../query/QueryEngine";
 import { frameAt, type MusclePaths } from "../timeline/clip";
 import type { Timeline } from "../timeline/Timeline";
 import { A_ACTIVE, L_MAX, L_MIN, OPACITY_MIN, V_ISOMETRIC, WORK_LABEL, hslToRgb, muscleColour, cssColour, type WorkType } from "./colour";
-import type { RegionFilter } from "../region";
+import { bodyPasses, bodyPlacements, type Placed, type RegionFilter } from "../region";
 import { fitCamera, unionBounds } from "./frame";
 import { parseMeshIndex } from "./meshIndex";
-import { RADIAL, RINGS, resamplePath, tubeIndices, writeTube } from "./tube";
+import { planBatches } from "./batch";
+import { MuscleBatch, type BatchTube, type TubeLook } from "./MuscleBatch";
+import { RINGS, lerp, resamplePath } from "./tube";
 
 /** Nominal tube radius: a muscle belly is wider than the model's path points suggest; this reads well at body scale. */
 export const TUBE_RADIUS_M = 0.011;
@@ -51,18 +58,12 @@ export interface Viewer3DOptions {
   filter?: RegionFilter;
 }
 
-interface MuscleTube {
-  name: string;
-  mesh: THREE.Mesh;
-  material: THREE.MeshStandardMaterial;
-  positions: Float32Array;
-  normals: Float32Array;
-  /** Per frame, the path resampled to `RINGS` points. */
-  frames: Float32Array[];
-  activation: Float32Array;
-  velocity: Float32Array;
-  nodeId: string;
+/** The dev readout line: frame rate and draw calls of the last second. */
+export function fpsLine(fps: number, calls: number, batches: number, muscles: number): string {
+  return `${fps.toFixed(1)} fps, ${calls} draw calls (${batches} muscle batches, ${muscles} muscles shown)`;
 }
+
+const DEV = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true;
 
 export class Viewer3D {
   private readonly renderer: THREE.WebGLRenderer;
@@ -70,7 +71,11 @@ export class Viewer3D {
   private readonly camera = new THREE.PerspectiveCamera(40, 1, 0.05, 50);
   private readonly controls: OrbitControls;
   private readonly bodyNodes = new Map<string, THREE.Object3D>();
-  private readonly tubes: MuscleTube[] = [];
+  private readonly batches: MuscleBatch[] = [];
+  private readonly bodyPlaces = new Map<string, Placed[]>();
+  private readonly tubeMaterial = new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0, vertexColors: true, transparent: true, side: THREE.DoubleSide, depthWrite: false });
+  private fpsEl: HTMLDivElement | null = null;
+  private pendingHover: PointerEvent | null = null;
   private readonly raycaster = new THREE.Raycaster();
   private readonly tooltip: HTMLDivElement;
   private readonly offs: (() => void)[] = [];
@@ -88,6 +93,8 @@ export class Viewer3D {
   private fpsWindowStart = performance.now();
   /** Frames drawn per second, measured over the last second of drawing. */
   fps = 0;
+  /** Draw calls of the last frame (muscle batches plus bone meshes). */
+  drawCalls = 0;
 
   private constructor(private readonly el: HTMLElement, private readonly opts: Viewer3DOptions) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false });
@@ -99,6 +106,12 @@ export class Viewer3D {
     this.tooltip = Object.assign(document.createElement("div"), { className: "bm-v-tip" });
     this.tooltip.style.cssText = "position:absolute;pointer-events:none;padding:2px 6px;border-radius:3px;background:rgba(0,0,0,.75);color:#fff;font:12px system-ui;display:none;";
     el.append(this.tooltip, this.buildLegend());
+    if (DEV) {
+      this.fpsEl = Object.assign(document.createElement("div"), { className: "bm-v-fps", textContent: "fps: move the playhead" });
+      this.fpsEl.style.cssText = "position:absolute;right:10px;top:10px;padding:3px 8px;border-radius:4px;background:rgba(10,12,16,.72);color:#9fe3a8;font:12px ui-monospace,monospace;pointer-events:none;";
+      el.append(this.fpsEl);
+      (window as unknown as { __bmViewer?: Viewer3D }).__bmViewer = this;
+    }
 
     this.scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x303845, 1.6));
     const sun = new THREE.DirectionalLight(0xffffff, 1.8);
@@ -132,6 +145,7 @@ export class Viewer3D {
   private async loadBones(): Promise<void> {
     const base = this.opts.dataBase ?? "./";
     const index = parseMeshIndex(await (await fetch(`${base}meshes/index.json`)).json());
+    for (const [body, places] of bodyPlacements(this.opts.query.allNodes())) this.bodyPlaces.set(body, places);
     const loader = new GLTFLoader();
     const bone = new THREE.MeshStandardMaterial({ color: 0xe9e2d0, roughness: 0.85, metalness: 0 });
     await Promise.all(
@@ -177,30 +191,21 @@ export class Viewer3D {
 
   private buildMuscles(): void {
     const clip = this.opts.timeline.clip;
-    const indices = new THREE.BufferAttribute(tubeIndices(), 1);
-    for (const [name, track] of clip.muscles) {
-      const positions = new Float32Array(RINGS * RADIAL * 3);
-      const normals = new Float32Array(RINGS * RADIAL * 3);
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage));
-      geometry.setAttribute("normal", new THREE.BufferAttribute(normals, 3).setUsage(THREE.DynamicDrawUsage));
-      geometry.setIndex(indices);
-      const material = new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0, transparent: true, side: THREE.DoubleSide, depthWrite: false });
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.frustumCulled = false;
-      mesh.renderOrder = 1;
-      this.scene.add(mesh);
-      this.tubes.push({
-        name,
-        mesh,
-        material,
-        positions,
-        normals,
-        frames: track.points.map((p) => resamplePath(p, new Float32Array(RINGS * 3))),
-        activation: track.activation,
-        velocity: track.velocity,
-        nodeId: `muscle:${name}`,
+    const nodeOf = (name: string) => this.opts.query.node(`muscle:${name}`);
+    for (const plan of planBatches(clip.muscles.keys(), nodeOf)) {
+      const tubes = plan.members.map((name): BatchTube => {
+        const track = clip.muscles.get(name) as NonNullable<ReturnType<typeof clip.muscles.get>>;
+        return {
+          name,
+          nodeId: `muscle:${name}`,
+          frames: track.points.map((p) => resamplePath(p, new Float32Array(RINGS * 3))),
+          activation: track.activation,
+          velocity: track.velocity,
+        };
       });
+      const batch = new MuscleBatch(plan.key, tubes, this.tubeMaterial);
+      this.scene.add(batch.mesh);
+      this.batches.push(batch);
     }
   }
 
@@ -224,7 +229,7 @@ export class Viewer3D {
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 4) this.click(e);
       down = null;
     });
-    dom.addEventListener("pointermove", (e) => this.hover(e));
+    dom.addEventListener("pointermove", (e) => (this.pendingHover = e));
     dom.addEventListener("pointerleave", () => (this.tooltip.style.display = "none"));
 
     const ro = new ResizeObserver(() => this.resize());
@@ -233,6 +238,11 @@ export class Viewer3D {
     this.resize();
     const loop = () => {
       this.raf = requestAnimationFrame(loop);
+      if (this.pendingHover) {
+        const e = this.pendingHover;
+        this.pendingHover = null;
+        this.hover(e);
+      }
       if (!this.dirty) return;
       this.dirty = false;
       this.update();
@@ -286,7 +296,15 @@ export class Viewer3D {
       node.quaternion.slerpQuaternions(this.scratchA, this.scratchB, f);
       if (body === "pelvis") this.followPelvis(node.position.x);
     }
-    for (const t of this.tubes) this.updateTube(t, i0, i1, f);
+    const look = (t: BatchTube): TubeLook => {
+      const selected = t.name === this.selectedName;
+      return {
+        radius: TUBE_RADIUS_M * (selected ? SELECTED_RADIUS_FACTOR : 1),
+        opacityFactor: this.selectedName ? DIMMED_OPACITY_FACTOR : 1,
+        solid: selected,
+      };
+    };
+    for (const b of this.batches) b.update(i0, i1, f, look, this.scratch);
   }
 
   private followPelvis(x: number): void {
@@ -299,32 +317,17 @@ export class Viewer3D {
     this.ground.position.x = Math.round(x / 0.5) * 0.5;
   }
 
-  private updateTube(t: MuscleTube, i0: number, i1: number, f: number): void {
-    const a = t.frames[i0];
-    const b = t.frames[i1];
-    if (!a || !b) return;
-    const s = this.scratch;
-    for (let k = 0; k < s.length; k++) s[k] = lerp(a[k], b[k], f);
-    const selected = t.name === this.selectedName;
-    writeTube(s, TUBE_RADIUS_M * (selected ? SELECTED_RADIUS_FACTOR : 1), t.positions, t.normals);
-    const g = t.mesh.geometry;
-    (g.getAttribute("position") as THREE.BufferAttribute).needsUpdate = true;
-    (g.getAttribute("normal") as THREE.BufferAttribute).needsUpdate = true;
-    g.computeBoundingSphere();
-
-    const act = lerp(t.activation[i0], t.activation[i1], f);
-    const vel = lerp(t.velocity[i0], t.velocity[i1], f);
-    const c = muscleColour(act, vel);
-    const [r, gr, bl] = hslToRgb(c.h, c.s, c.l);
-    t.material.color.setRGB(r, gr, bl);
-    t.material.opacity = selected ? 1 : this.selectedName ? c.opacity * DIMMED_OPACITY_FACTOR : c.opacity;
-  }
-
   private countFrame(): void {
     this.frameCount++;
     const now = performance.now();
     if (now - this.fpsWindowStart >= 1000) {
       this.fps = (this.frameCount * 1000) / (now - this.fpsWindowStart);
+      this.drawCalls = this.renderer.info.render.calls;
+      if (DEV) {
+        const line = fpsLine(this.fps, this.drawCalls, this.batches.filter((b) => b.mesh.visible).length, this.batches.reduce((n, b) => n + b.visibleCount, 0));
+        if (this.fpsEl) this.fpsEl.textContent = line;
+        console.info(`[bm] ${line}`);
+      }
       this.frameCount = 0;
       this.fpsWindowStart = now;
     }
@@ -340,23 +343,27 @@ export class Viewer3D {
     this.dirty = true;
   }
 
-  /** Show the muscles that pass the region filter. */
+  /** Show the muscles and bones that pass the region filter. */
   private applyFilter(): void {
     const { filter, query } = this.opts;
-    for (const t of this.tubes) {
-      const node = query.node(t.nodeId);
-      t.mesh.visible = !filter || !node || filter.passes(node);
+    for (const b of this.batches) {
+      b.setVisible((t) => {
+        const node = query.node(t.nodeId);
+        return !filter || !node || filter.passes(node);
+      });
     }
+    const sel = filter?.selection;
+    for (const [body, node] of this.bodyNodes) node.visible = !sel || bodyPasses(sel, this.bodyPlaces.get(body));
     this.dirty = true;
   }
 
   // ---- picking ----
-  private pick(e: PointerEvent): MuscleTube | undefined {
+  private pick(e: PointerEvent): BatchTube | undefined {
     const rect = this.renderer.domElement.getBoundingClientRect();
     const ndc = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
     this.raycaster.setFromCamera(ndc, this.camera);
-    const hit = this.raycaster.intersectObjects(this.tubes.filter((t) => t.mesh.visible).map((t) => t.mesh), false)[0];
-    return hit && this.tubes.find((t) => t.mesh === hit.object);
+    const hit = this.raycaster.intersectObjects(this.batches.filter((b) => b.mesh.visible).map((b) => b.mesh), false)[0];
+    return hit && this.batches.find((b) => b.mesh === hit.object)?.tubeAtFace(hit.faceIndex);
   }
 
   private click(e: PointerEvent): void {
@@ -398,9 +405,4 @@ export class Viewer3D {
       <div style="opacity:.7;margin-top:4px">Scale: active above ${A_ACTIVE}; steady within ${V_ISOMETRIC} m/s; lightness ${L_MIN}-${L_MAX}; opacity ${OPACITY_MIN}-1.</div>`;
     return el;
   }
-}
-
-function lerp(a: number | undefined, b: number | undefined, f: number): number {
-  const x = a ?? 0;
-  return x + ((b ?? x) - x) * f;
 }

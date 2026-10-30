@@ -1,7 +1,7 @@
 import cytoscape from "cytoscape";
 import type { Edge, Kind, Period } from "@gen/types";
 import type { QueryEngine } from "../query/QueryEngine";
-import type { RegionFilter } from "../region";
+import { neckAssumption, type RegionFilter } from "../region";
 import { COLOURS, kindIcon } from "./icons";
 import { placeLabel } from "./search";
 
@@ -304,6 +304,9 @@ export class GraphView {
     heading.prepend(kindIcon(n.kind));
     const span = this.query.phaseCycle(id)?.phases.find((p) => p.phase.id === id);
     const where = span ? [el("p", `${span.startPct.toFixed(0)}–${span.endPct.toFixed(0)} % of the cycle, phase ${span.order + 1}`)] : [];
-    this.details.replaceChildren(heading, names, el("p", `kind: ${n.kind}, place: ${placeLabel(n)}`), ...where, el("h4", "Neighbours"), list);
+    const assumed = neckAssumption(n);
+    const note = assumed ? [Object.assign(el("p", assumed), { className: "assumption" })] : [];
+    if (note[0]) note[0].style.cssText = "padding:4px 8px;border-radius:4px;background:#fff1d6;color:#7a4a00;";
+    this.details.replaceChildren(heading, names, el("p", `kind: ${n.kind}, place: ${placeLabel(n)}`), ...note, ...where, el("h4", "Neighbours"), list);
   }
 }

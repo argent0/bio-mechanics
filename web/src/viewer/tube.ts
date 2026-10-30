@@ -115,3 +115,9 @@ export function writeTube(centre: Float32Array, radius: number, positions: Float
     }
   }
 }
+
+/** Linear interpolation; a missing end counts as the start, a missing start as 0. */
+export function lerp(a: number | undefined, b: number | undefined, f: number): number {
+  const x = a ?? 0;
+  return x + ((b ?? x) - x) * f;
+}
