@@ -199,6 +199,12 @@ structure StageSpec where
   /-- Paths, from `Stage.inputs` and `Stage.outputs`. -/
   inputs : List String
   outputs : List String
+  /-- Names of the stages whose scripts this stage's script imports, from
+  `Stage.imports`. -/
+  imports : List String
+  /-- The scripts whose code the stage runs, from `Stage.codeInputs`: its own
+  script first. -/
+  codeInputs : List String
 
 structure PipelineSpec where
   doc : Option String
@@ -234,12 +240,15 @@ def pipelineSpec : MetaM PipelineSpec := do
     (inNs "Stage.all.map fun s => (s.name, s.script, s.inputs, s.outputs)")
   let readsWrites ← evalTerm (List (List Nat × List Nat))
     (inNs "Stage.all.map fun s => (s.reads.map Artefact.ctorIdx, s.writes.map Artefact.ctorIdx)")
+  let code ← evalTerm (List (List String × List String))
+    (inNs "Stage.all.map fun s => (s.imports.map Stage.name, s.codeInputs)")
   let artCtors ← ctorNames artTy
-  let stages ← ((stageIdx.zip vals).zip readsWrites).mapM fun ((i, name, script, inputs, outputs), (r, w)) => do
+  let stages ← (((stageIdx.zip vals).zip readsWrites).zip code).mapM
+      fun (((i, name, script, inputs, outputs), (r, w)), (imports, codeInputs)) => do
     let ctor ← ctorAt stageCtors stageTy i
     return { name, doc := ← docOf (stageTy ++ ctor.toName), script, inputs, outputs,
-             reads := ← r.mapM (ctorAt artCtors artTy), writes := ← w.mapM (ctorAt artCtors artTy) :
-             StageSpec }
+             reads := ← r.mapM (ctorAt artCtors artTy), writes := ← w.mapM (ctorAt artCtors artTy),
+             imports, codeInputs : StageSpec }
   return {
     doc := ← docOf (ns ++ `Stage), stages, artefacts,
     edges := ← evalTerm (List (String × String)) (inNs "edges.map fun e => (e.1.name, e.2.name)"),
