@@ -225,7 +225,7 @@
     "data/raw/SOURCES.md",
     "data/raw/holzbaur/",
     "data/raw/mortensen/",
-    "data/raw/christophy/"],
+    "data/raw/fbls/"],
    "name": "Upper-body data",
    "model": "sonnet",
    "layer": 0,

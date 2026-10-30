@@ -14,6 +14,8 @@ data/raw/**/*.trc
 data/raw/**/*.vtp
 data/raw/**/*.sto
 data/work/
+# FBLS trunk model: its licence forbids redistribution (D-011); fetched by pipeline/env/fetch_data.sh
+data/raw/fbls/
 # Ontology downloads: re-fetched by data/raw/ontology/ scripts
 data/raw/ontology/*.obo
 data/raw/ontology/*.owl

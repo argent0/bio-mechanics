@@ -115,7 +115,7 @@ def modules : List Module := [
       "~/.local/share/bm-opensim/bin/python -m pytest pipeline/tests -k l_"] },
   { id := .D2, name := "Upper-body data", lang := "Python", model := "sonnet", state := .planned,
     paths := ["pipeline/env/", "data/raw/SHA256SUMS", "data/raw/SOURCES.md", "data/raw/holzbaur/",
-      "data/raw/mortensen/", "data/raw/christophy/"],
+      "data/raw/mortensen/", "data/raw/fbls/"],
     acceptance := ["~/.local/share/bm-opensim/bin/python pipeline/env/check_env.py"] },
   { id := .W1, name := "Web, whole-body views", lang := "TypeScript", model := "sonnet", state := .planned,
     paths := ["web/src/viewer/", "web/src/phase/", "web/src/graphview/", "web/src/region/"],

@@ -134,7 +134,7 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 | K21 App wires `RegionFilter` (`web/src/main.ts`, `web/index.html`) | merged | search, GraphView, PhasePanel, DynamicsPanel, Viewer3D share one filter |
 | K22 Stage scripts default to `paths.MERGED_MODEL`, `paths.IK_FULL` (the reads ninja declares) | todo | M: `load_model.py`, `static_opt.py`, `moment_arms.py`, `segment_phases.py`; P4: export scripts |
 | K23 `buildModel` reads the upper-body model files once D2 fixes their paths | todo | S follow-up |
-| K25 D2: fetch FBLS from its pinned mirror, git-ignored, checksummed (D-011) | running | D2 worker resumed |
+| K25 D2: fetch FBLS from its pinned mirror, git-ignored, checksummed (D-011) | merged | 324 muscles load; mirror holds no meshes (vertebra meshes absent); full licence text unobtained (simtk.org down) |
 | K24 L's web-test line (ten coordinates in `dynamics.json`); left-aware FMA subset on main | merged | graph 207 nodes, 1096 edges; reproduces on main |
 
 L findings: left vasti brake left knee flexion in reference pre-swing (left loading response); lateral gastrocnemius_l stays under the D-006 floor early in left mid-stance (mean 0.027), while soleus_l and gasmed_l brake. Left foot on a force plate 0.84–1.59 s; left events at 0.45 s and 1.97 s come from markers. Five left entities share a side-neutral FMA id (`mtp`, `gluteals`, `hamstrings`, `deltoid`, `nervePiriformis`).
