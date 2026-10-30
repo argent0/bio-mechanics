@@ -41,3 +41,31 @@
 **Terms:** *Mean activation over the phase* — the average of the muscle's activation (0–1) across the frames of the phase. *Own peak over the stride* — the largest activation the muscle reaches between the two right initial contacts that bound the stride. *Inactive* — present in the model, with too little activation in the phase to count for the action. *`drivenBy` edge* — the knowledge-graph edge from a joint action to a muscle that carries the muscle's role in one phase.
 **Why:** Unstated by the director, who chose the coordinator's recommended option. The recommendation's reason, from the pipeline's numbers for this trial: the relative clause keeps the vasti braking knee flexion in loading response (phase means 0.019–0.046, at 35–46 % of their peaks); the 0.05 clause keeps the calf braking ankle dorsiflexion in mid-stance (soleus 0.066, gastrocnemius 0.08–0.14, under 25 % of their push-off peaks); the 0.015 floor drops near-silent muscles whose own peak is tiny (adductor magnus parts at 0.010) and tibialis anterior in mid-stance (0.010).
 **Code:** `pipeline/label_roles.py`, `pipeline/config/roles.yaml` (`roleMinPeakFraction` from D-005), `pipeline/tests/test_p2_*.py` (workstream P2); outputs `data/work/roles.json` and `data/out/graph.json`.
+
+## D-007 — One phase timeline for the whole body (2026-10-30)
+
+**Decision:** Every muscle of the body, on both sides and in every region, takes its roles per phase of the reference leg's seven gait phases. The knowledge graph keeps one set of phase nodes, and the app keeps one `Timeline`. The left leg's own phases read off this timeline about half a stride later.
+**Terms:** *Reference leg* — the right leg, whose initial contacts bound the stride. *Gait phase* — one of the seven intervals of the gait DFA, from loading response to terminal swing.
+**Why:** Unstated by the director, who chose the coordinator's recommended option. The recommendation's reason: one timeline keeps one set of phase nodes and one `Timeline` component, and a single scrub shows the whole body at one instant.
+**Code:** `spec/BioMech/GaitFsm.lean`, `pipeline/label_roles.py`, `pipeline/config/roles.yaml` (workstream L, `plan.md`).
+
+## D-008 — Trunk and arm muscles merged onto the Rajagopal model (2026-10-30)
+
+**Decision:** Stage `buildModel` builds one OpenSim model from the Rajagopal model plus the trunk, arm and neck muscles of muscle-driven models chosen by investigation K19, attached to the matching Rajagopal bodies. Muscles replace the torque actuators on the coordinates they span; reserve actuators stay on every coordinate. Every role in the trunk, arms and neck comes from these muscles.
+**Terms:** *Torque actuator* — an OpenSim `CoordinateActuator`, a motor driving one joint coordinate; the Rajagopal model drives its lumbar and arm coordinates this way. *Reserve actuator* — a weak torque actuator that static optimisation uses for the moment the muscles leave unexplained. *Model merge* — attaching a second model's muscles to the matching bodies of the Rajagopal model.
+**Why:** Unstated by the director, who chose the coordinator's recommended option. The recommendation's reason: handover D1 makes the musculoskeletal model the source of movement facts, and muscles in the model keep every trunk and arm role traceable to model output.
+**Code:** `pipeline/build_model.py`, `pipeline/config/model.yaml`, `spec/BioMech/Pipeline.lean` stage `buildModel` (workstreams S, D2, M, `plan.md`).
+
+## D-009 — A neck with muscles (2026-10-30)
+
+**Decision:** The head becomes its own body, joined to the torso by a neck joint, with neck muscles from the model K19 picks (merged under D-008). The neck's muscles take roles per phase like every other muscle (D-007).
+**Terms:** *Neck joint* — the joint between the head and the torso; in the Rajagopal model the head is part of the `torso` body (geometry `hat_skull.vtp`, `hat_jaw.vtp`).
+**Why:** Unstated by the director, who chose the option beside the coordinator's recommendation (a rigid head).
+**Code:** `pipeline/build_model.py`, `pipeline/config/model.yaml` (workstreams M, P4, `plan.md`).
+
+## D-010 — Neck angles hold the head level in space (2026-10-30)
+
+**Decision:** Refines D-009. The walking trial carries markers down from the shoulders and clavicles only, so the neck angles come from an assumption: at every frame the neck joint angles cancel the torso's rotation in the ground frame, keeping the head at its static-pose orientation (level gaze). Stage `buildModel` writes these angles beside the inverse-kinematics coordinates, and static optimisation reads them like any other coordinate.
+**Terms:** *Head level in space* — the head's orientation in the ground frame stays constant over the trial. *Static pose* — the standing calibration recording (`static_walk_*.trc`). *Ground frame* — the laboratory's fixed axes: y up, x forward, z to the right.
+**Why:** Unstated by the director, who chose the coordinator's recommended option. The recommendation's reason: walkers keep gaze and head steady, so the neck muscles show the work of steadying the head against the trunk's motion.
+**Code:** `pipeline/build_model.py`, `pipeline/config/model.yaml` (workstream M, `plan.md`).

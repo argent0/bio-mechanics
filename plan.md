@@ -52,9 +52,10 @@ Status as of 2026-10-30. Goal: extend the Explorer from the right lower limb and
 
 | # | Asked when | Question | Coordinator's recommendation |
 |---|---|---|---|
-| Q1 | Wave 0, before 0.3 | Phase timeline for the whole body: the reference leg's seven phases for every muscle, or a phase set per leg | Reference leg: one timeline, one `Timeline` component, and the left leg's own phases read off as half a stride later. |
-| Q2 | Wave 0, after investigation K19 | Source of trunk and arm muscles: merge a muscle-driven model (K19's pick) onto Rajagopal, or keep torque actuators and show the trunk and arms with joint moments and anatomy only | Model merge: it keeps principle 5. |
-| Q3 | When P4 starts | Head and neck: head rigid with the torso (as in Rajagopal), or a neck with muscles | Rigid head for this plan; neck muscles join the later list. |
+| Q1 | Wave 0, before 0.3 (answered: D-007) | Phase timeline for the whole body: the reference leg's seven phases for every muscle, or a phase set per leg | Reference leg: one timeline, one `Timeline` component, and the left leg's own phases read off as half a stride later. |
+| Q2 | Wave 0, after investigation K19 (answered: D-008) | Source of trunk and arm muscles: merge a muscle-driven model (K19's pick) onto Rajagopal, or keep torque actuators and show the trunk and arms with joint moments and anatomy only | Model merge: it keeps principle 5. |
+| Q3 | When P4 starts | Head and neck: head rigid with the torso (as in Rajagopal), or a neck with muscles | Answered: neck with muscles (D-009). |
+| Q4 | When M starts (answered: D-010, head level) | Neck motion: the trial's markers stop at the shoulders and clavicles, so neck angles come from an assumption. Hold the head level in the ground frame (neck angles from the torso's motion), or hold the neck at its static-pose angle | Head level: walkers keep gaze and head steady, so neck muscles show the work of steadying the head. |
 
 ## Roles
 
@@ -107,9 +108,9 @@ A Haiku or Sonnet worker that fails its gate twice escalates one tier up; an Opu
 | 0.4 Contract C1: `Region` enum and a `region` field in `NodeAttrs`; a theorem that every `Kind` used for anatomy carries a region | `spec/BioMech/Schema.lean` | `lake build`, zero `sorry` |
 | 0.5 Contract C2: regenerate | `generated/ts/types.ts`, `generated/py/schema.py` | regenerate gives an empty diff |
 | 0.6 Contract C3: extend the fixtures with a left knee, the lumbar joint, a right shoulder and elbow, and their muscles | `data/fixtures/graph.sample.json`, `graph.bad-edge.json` | between 40 and 50 nodes; `lake exe checkGraph` passes the sample and names the bad edge |
-| 0.7 Ask Q2 with K19's report; record D-008 | `DECISIONS.md` | answer before M starts |
+| 0.7 Q2 answered (D-008); the coordinator confirms K19's picks against D-008 | K19 picks in `TASKS.md` | picks in hand before D2 starts |
 
-**K19 — Upper-body model survey.** Candidates to assess include the Christophy 2012 lumbar spine model, the Raabe & Chaudhari 2016 full-body lumbar spine model (built on Rajagopal), the Holzbaur 2005 upper-extremity model, and MoBL-ARMS (Saul 2015). Per candidate: licence, OpenSim 4.6 load test, muscle count per region, body and joint names against Rajagopal's `torso`, `humerus_*`, `ulna_*`, `radius_*`, `hand_*`, and the work a merge needs. Output: a ranked table with one pick and the reason, in the K19 report. Model `opus`, effort `high`.
+**K19 — Upper-body model survey.** Candidates to assess include the Christophy 2012 lumbar spine model, the Raabe & Chaudhari 2016 full-body lumbar spine model (built on Rajagopal), the Holzbaur 2005 upper-extremity model, MoBL-ARMS (Saul 2015), and for the neck (D-009) the Vasavada 1998 head-neck model and its successors. Per candidate: licence, OpenSim 4.6 load test, muscle count per region, body and joint names against Rajagopal's `torso`, `humerus_*`, `ulna_*`, `radius_*`, `hand_*`, and the work a merge needs, including splitting the head from `torso`. Output: a ranked table with one pick per region (trunk, arm, neck) and the reason, in the K19 report. Model `opus`, effort `high`.
 
 ### Wave 1 — Five parallel workstreams
 
@@ -127,8 +128,8 @@ Wave 1 sizing: K19 finishes in Wave 0, so five workers run here. D2 starts once 
 
 | ID | Workstream | Owned paths | Inputs | Outputs | Acceptance |
 |---|---|---|---|---|---|
-| **M** | Model merge | `pipeline/build_model.py`, `pipeline/static_opt.py`, `pipeline/config/model.yaml` | D2, S (`buildModel` stage), D-008 | one model with leg, trunk and arm muscles; muscles replace the torque actuators on the coordinates they span; reserves on every coordinate | model loads; static optimisation completes over the stride; reserve moments under 10 N·m RMS on lumbar coordinates and under 2 N·m RMS on arm coordinates; leg activations change by under 0.02 RMS from today's run |
-| **P4** | Trunk and arm stages | `pipeline/label_roles.py`, `enrich_anatomy.py`, `export_*.py`, `pipeline/config/roles.yaml`, `data/curated/anatomy.yaml` (takes these over from L once L merges) | M, L, Q3 | roles for lumbar, shoulder, elbow, forearm and wrist actions; curated anatomy for trunk, arms and head with Uberon and FMA ids; meshes for torso, head, arms and hands | teaching examples pinned by tests: erector spinae active within 10 % of the stride around each initial contact (two bursts per stride); posterior deltoid active during the arm's backward swing; a test that records which arm muscles fall below the D-006 floor; `checkGraph` passes |
+| **M** | Model merge | `pipeline/build_model.py`, `pipeline/static_opt.py`, `pipeline/config/model.yaml` | D2, S (`buildModel` stage), D-008, D-009, D-010 | one model with leg, trunk, arm and neck muscles; the head split from `torso` with a neck joint (D-009) and neck angles holding the head level in space (D-010); muscles replace the torque actuators on the coordinates they span; reserves on every coordinate | model loads; static optimisation completes over the stride; reserve moments under 10 N·m RMS on lumbar coordinates, under 2 N·m RMS on arm coordinates and under 1 N·m RMS on neck coordinates; leg activations change by under 0.02 RMS from today's run |
+| **P4** | Trunk and arm stages | `pipeline/label_roles.py`, `enrich_anatomy.py`, `export_*.py`, `pipeline/config/roles.yaml`, `data/curated/anatomy.yaml` (takes these over from L once L merges) | M, L, D-009 | roles for neck, lumbar, shoulder, elbow, forearm and wrist actions; curated anatomy for neck, trunk, arms and head with Uberon and FMA ids; meshes for torso, head, arms and hands | teaching examples pinned by tests: erector spinae active within 10 % of the stride around each initial contact (two bursts per stride); posterior deltoid active during the arm's backward swing; neck extensors (e.g. splenius capitis) stabilising the head in at least one phase; a test that records which arm muscles fall below the D-006 floor; `checkGraph` passes |
 | **W2** | Web, real output | `web/src/` (the paths W1 owned) | P4 output, S | real graph wired in; muscle tubes for every muscle | viewer holds 30 fps or more with every muscle drawn on the director's machine; `data/out/` stays under 8 MB; a recorded session trace conforms |
 
 ### Wave 3 — Integration (coordinator)
@@ -177,6 +178,7 @@ The director starts the coordinator on Opus 5.5 (`claude --model opus`, effort `
 | The chosen upper-body model names bodies differently from Rajagopal | M maps bodies in `pipeline/config/model.yaml` and checks every muscle path point lands on an existing body. |
 | Merged muscles leave large reserves | M tunes path points and optimal fibre lengths within the source model's ranges; past two rounds the coordinator opens an investigation (K20) and asks the director. |
 | Static optimisation shows arm swing as nearly passive | That is a known feature of walking; P4 records it in a test and the app shows it as a teaching example. |
+| The trial has head markers for zero frames, so neck angles rest on D-010's assumption | M pins the assumption in `pipeline/config/model.yaml` and its code comments; the app labels neck roles as resting on it. |
 | The left foot leaves the force plates outside 0.40–1.98 s | L takes left events from markers there, as today, and pins the method in code comments. |
 | Many more tubes slow the viewer | W2 merges tube geometry per region and measures frame rate in its acceptance test. |
 | Right-leg roles drift through the merged model | Principle 6: `compare_graph.py` gates every merge into `main`. |
@@ -184,4 +186,4 @@ The director starts the coordinator on Opus 5.5 (`claude --model opus`, effort `
 
 ## Later
 
-Further movements (order deferred by the director), exercise links per muscle, neck muscles, sculpted muscle meshes: see `handover.md`.
+Further movements (order deferred by the director), exercise links per muscle, sculpted muscle meshes: see `handover.md`.
