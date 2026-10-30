@@ -152,6 +152,12 @@ theorem graphView_via_queryEngine : ReachesOnlyVia graph .GraphView .QueryEngine
 theorem timeline_via_queryEngine : ReachesOnlyVia graph .Timeline .QueryEngine .GraphStore := by
   decide
 
+/-- The general rule behind the four theorems above: once `QueryEngine` is
+deleted, `App` is the one component that still reaches `GraphStore`. -/
+theorem graphStore_behind_queryEngine : ∀ c, c ≠ .App → c ≠ .QueryEngine →
+    ¬ Relation.TransGen (deleteVertex graph .QueryEngine).Adj c .GraphStore := by
+  decide
+
 /-- `QueryEngine` and `App` are the two direct importers of `GraphStore`. -/
 theorem graphStore_importers : ∀ c, graph.Adj c .GraphStore ↔ c = .QueryEngine ∨ c = .App := by
   decide
