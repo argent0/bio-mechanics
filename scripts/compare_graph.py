@@ -1,18 +1,25 @@
 """Compare two `graph.json` files: structure exactly, numbers within a tolerance.
 
-Usage: python scripts/compare_graph.py COMMITTED REGENERATED [--tol 0.02]
+Usage: python scripts/compare_graph.py COMMITTED REGENERATED [--tol 0.02] [--rel 0.05] [--max-edge-frac 0.05]
 
-Static optimisation is a numerical solver, so a pipeline run on another machine
-reproduces the committed graph up to floating-point drift. This script holds
+Inverse kinematics and static optimisation are numerical solvers, so a pipeline
+run on another machine reproduces the committed graph up to solver drift, and a
+muscle sitting at a role threshold (D-002, D-006) may flip. This script holds
 the regenerated graph to the committed one:
 
-* exactly: the node set (every node field), and per edge its source, target,
-  relation, and every string or integer attribute (phase, role, contraction,
-  order, coordinate);
-* within `--tol` (absolute): every float attribute, element by element for
-  sample lists of equal length.
+* exactly: the node set (every node field);
+* per edge (keyed by source, relation, target, phase, coordinate): string and integer
+  attributes (role, contraction, order, coordinate) exactly, and float
+  attributes within `--tol` absolute or `--rel` relative, element by element
+  for sample lists of equal length;
+* edges present in one graph only, and edges whose attributes differ, count as
+  differing edges; at most `--max-edge-frac` of the committed edges may differ.
 
-Exit 0 when they agree, 1 with the differences listed.
+The teaching facts (e.g. the vasti braking knee flexion in loading response)
+are held exactly by the pipeline's env tests in `pipeline/tests/`.
+
+Every difference is listed. Exit 0 when the node sets agree and the differing
+edges stay within the fraction, 1 otherwise.
 """
 
 from __future__ import annotations
@@ -26,22 +33,27 @@ Json = object
 
 
 def edge_key(edge: dict[str, Json]) -> tuple[str, ...]:
-    return tuple(str(edge.get(k)) for k in ("source", "relation", "target", "phase"))
+    return tuple(str(edge.get(k)) for k in ("source", "relation", "target", "phase", "coordinate"))
 
 
-def close(a: Json, b: Json, tol: float) -> bool:
+def close(a: Json, b: Json, tol: float, rel: float = 0.0) -> bool:
     if isinstance(a, bool) or isinstance(b, bool) or isinstance(a, str) or isinstance(b, str):
         return a == b
     if isinstance(a, int) and isinstance(b, int):
         return a == b
     if isinstance(a, (int, float)) and isinstance(b, (int, float)):
-        return abs(float(a) - float(b)) <= tol
+        diff = abs(float(a) - float(b))
+        return diff <= tol or diff <= rel * max(abs(float(a)), abs(float(b)))
     if isinstance(a, list) and isinstance(b, list):
-        return len(a) == len(b) and all(close(x, y, tol) for x, y in zip(a, b))
+        return len(a) == len(b) and all(close(x, y, tol, rel) for x, y in zip(a, b))
     return a == b
 
 
-def differences(old: dict[str, Json], new: dict[str, Json], tol: float) -> list[str]:
+def differences(
+    old: dict[str, Json], new: dict[str, Json], tol: float, rel: float
+) -> tuple[list[str], bool, set[tuple[str, ...]], int]:
+    """Listed differences, whether the node sets agree, the differing edge keys,
+    and the committed edge count."""
     out: list[str] = []
     old_nodes = old["nodes"]
     new_nodes = new["nodes"]
@@ -50,21 +62,26 @@ def differences(old: dict[str, Json], new: dict[str, Json], tol: float) -> list[
         json.dumps(n, sort_keys=True) for n in new_nodes
     ):
         out.append("nodes differ")
+    nodes_agree = not out
     old_edges = old["edges"]
     new_edges = new["edges"]
     assert isinstance(old_edges, list) and isinstance(new_edges, list)
     olds = {edge_key(e): e for e in old_edges}
     news = {edge_key(e): e for e in new_edges}
+    differing: set[tuple[str, ...]] = set()
     for key in sorted(olds.keys() - news.keys()):
         out.append(f"edge only in committed: {key}")
+        differing.add(key)
     for key in sorted(news.keys() - olds.keys()):
         out.append(f"edge only in regenerated: {key}")
+        differing.add(key)
     for key in sorted(olds.keys() & news.keys()):
         a, b = olds[key], news[key]
         for field in sorted(set(a) | set(b)):
-            if not close(a.get(field), b.get(field), tol):
-                out.append(f"edge {key}: field {field} differs beyond {tol}")
-    return out
+            if not close(a.get(field), b.get(field), tol, rel):
+                out.append(f"edge {key}: field {field}: {a.get(field)!r:.60} vs {b.get(field)!r:.60}")
+                differing.add(key)
+    return out, nodes_agree, differing, len(olds)
 
 
 def main() -> int:
@@ -72,14 +89,19 @@ def main() -> int:
     parser.add_argument("committed", type=Path)
     parser.add_argument("regenerated", type=Path)
     parser.add_argument("--tol", type=float, default=0.02)
+    parser.add_argument("--rel", type=float, default=0.05)
+    parser.add_argument("--max-edge-frac", type=float, default=0.05)
     args = parser.parse_args()
     old = json.loads(args.committed.read_text())
     new = json.loads(args.regenerated.read_text())
-    diffs = differences(old, new, args.tol)
+    diffs, nodes_agree, differing, total = differences(old, new, args.tol, args.rel)
     for line in diffs:
         print(line)
-    print(f"compare_graph: {len(diffs)} difference(s)")
-    return 1 if diffs else 0
+    frac = len(differing) / total if total else 0.0
+    ok = nodes_agree and frac <= args.max_edge_frac
+    print(f"compare_graph: {len(differing)} of {total} edges differ ({frac:.1%}, limit "
+          f"{args.max_edge_frac:.0%}); nodes {'agree' if nodes_agree else 'differ'}: {'pass' if ok else 'fail'}")
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
