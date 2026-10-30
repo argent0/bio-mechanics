@@ -24,7 +24,9 @@ The code is the source of truth. Each item names the file that defines it.
 | Module ownership map | `spec/BioMech/Architecture.lean` |
 | Theorems, with source locations | `generated/architecture.json`, shown at `#/architecture` |
 | Pipeline scripts (OpenSim, Python) | `pipeline/` |
-| Role thresholds | `pipeline/config/` |
+| Merged whole-body model: sources, body map, neck assumption | `pipeline/config/model.yaml`, `pipeline/build_model.py` |
+| Body regions and curated anatomy (right side; the left side comes from code) | `data/curated/anatomy.yaml`, `pipeline/enrich_anatomy.py` |
+| Role thresholds and labelled coordinates | `pipeline/config/roles.yaml` |
 | Pipeline output | `data/out/` |
 | Data provenance and licences | `data/raw/SOURCES.md`, `data/raw/ontology/SOURCES.md` |
 | Web app (Vite, TypeScript, Three.js, Cytoscape.js) | `web/src/` |

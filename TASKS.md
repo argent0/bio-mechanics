@@ -164,10 +164,10 @@ L findings: left vasti brake left knee flexion in reference pre-swing (left load
 
 | Task | State |
 |---|---|
-| Fixture references replaced by real output; full gate on `main` | todo |
-| Whole-body walking trace; `lake exe conform` | todo |
-| `README.md` pointers, `handover.md` | todo |
-| Deploy; `#/walking` shows both legs, trunk and arms | todo |
+| Fixture references replaced by real output; full gate on `main` | merged (the app reads `data/out/`; web unit tests keep the fixture by design) |
+| Whole-body walking trace; `lake exe conform` | merged (`data/fixtures/trace.walking-session.json`: ui 6, gait 22 + 15 steps, headless Chromium on the dev server) |
+| `README.md` pointers, `handover.md` | merged |
+| Deploy; `#/walking` shows both legs, trunk and arms | todo (needs a push; director: FBLS licence and publishing) |
 
 ## Escalations (whole body)
 
