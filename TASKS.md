@@ -39,7 +39,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Inputs | Acceptance |
 |---|---|---|---|---|---|---|---|
-| P2 | Pipeline stages 4–7 | opus / high | — | 0 | todo | P1, C, thresholds decision | `ninja`; `lake exe checkGraph data/out/graph.json` |
+| P2 | Pipeline stages 4–7 | opus / high | — | 0 | todo | P1, C, D-002 | `ninja`; `lake exe checkGraph data/out/graph.json` |
 | E3 | Movement views | sonnet / high | — | 0 | todo | C, P2 | `tsc`, eslint boundaries; walking plays and scrubs |
 | G | CI and traces | sonnet / medium | — | 0 | todo | F, C | CI green on `main` |
 
@@ -60,6 +60,5 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 
 ## Open items for the director
 
-1. Role-classification thresholds (blocks P2).
-2. Hosting target (blocks G deployment).
-3. Order of later movements (Wave 4).
+1. Hosting target (blocks G deployment).
+2. Order of later movements (Wave 4).
