@@ -98,7 +98,9 @@ MESHES: Final = "data/out/meshes/index.json"
 """Manifest of the bone meshes; one glTF file per body sits beside it."""
 
 MUSCLE_PATHS: Final = "data/out/muscle_paths.json"
-"""Muscle path points, activation, and lengthening velocity per frame."""
+"""Muscle path points, activation, and lengthening velocity per frame, and
+the start and end times of the stride.
+"""
 
 
 LOAD_MODEL: Final = Stage(
@@ -187,10 +189,12 @@ EXPORT_MUSCLE_PATHS: Final = Stage(
     name="exportMusclePaths",
     script="pipeline/export_muscle_paths.py",
     module="pipeline.export_muscle_paths",
-    inputs=(SCALED_MODEL, KINEMATICS, ACTIVATIONS, MT_LENGTHS),
+    inputs=(SCALED_MODEL, KINEMATICS, ACTIVATIONS, MT_LENGTHS, PHASES),
     outputs=(MUSCLE_PATHS,),
 )
-"""Write muscle path points per frame for the tube renderer."""
+"""Write muscle path points per frame for the tube renderer, with the
+bounds of the stride the knowledge graph describes.
+"""
 
 
 ARTEFACTS: Final[dict[str, str]] = {
@@ -237,5 +241,6 @@ EDGES: Final[tuple[tuple[Stage, Stage], ...]] = (
     (LOAD_MODEL, EXPORT_MESHES),
     (COMPUTE_MOMENT_ARMS, EXPORT_MUSCLE_PATHS),
     (RUN_STATIC_OPT, EXPORT_MUSCLE_PATHS),
+    (SEGMENT_PHASES, EXPORT_MUSCLE_PATHS),
 )
 """Stage order: `a → b` means `b` runs after `a`."""

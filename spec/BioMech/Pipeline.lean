@@ -55,7 +55,8 @@ inductive Stage
   /-- Convert the model's bone geometry to glTF, each mesh multiplied by its
   scale factors from the scaled model. -/
   | exportMeshes
-  /-- Write muscle path points per frame for the tube renderer. -/
+  /-- Write muscle path points per frame for the tube renderer, with the
+  bounds of the stride the knowledge graph describes. -/
   | exportMusclePaths
   deriving DecidableEq, Repr, Inhabited
 
@@ -102,7 +103,8 @@ def edges : List (Stage × Stage) :=
    (.computeMomentArms, .segmentPhases), (.segmentPhases, .labelRoles),
    (.labelRoles, .enrichAnatomy), (.enrichAnatomy, .exportGraph),
    (.loadModel, .exportMeshes),
-   (.computeMomentArms, .exportMusclePaths), (.runStaticOpt, .exportMusclePaths)]
+   (.computeMomentArms, .exportMusclePaths), (.runStaticOpt, .exportMusclePaths),
+   (.segmentPhases, .exportMusclePaths)]
 
 /-- The stage digraph: adjacency is membership in `edges`. -/
 abbrev graph : Digraph Stage := ofEdges edges
@@ -185,7 +187,8 @@ inductive Artefact
   | knowledgeGraph
   /-- Manifest of the bone meshes; one glTF file per body sits beside it. -/
   | meshes
-  /-- Muscle path points, activation, and lengthening velocity per frame. -/
+  /-- Muscle path points, activation, and lengthening velocity per frame, and
+  the start and end times of the stride. -/
   | musclePaths
   deriving DecidableEq, Repr, Inhabited
 
@@ -258,7 +261,10 @@ less evident from the stage's purpose:
 * `labelRoles` reads `model`: each muscle's maximum isometric force scales its
   activation into a force, and so into a joint moment.
 * `exportMeshes` reads `scaledModel`: each mesh's scale factors live there,
-  and `model` lists the mesh files only. -/
+  and `model` lists the mesh files only.
+* `exportMusclePaths` reads `phases`: the gait events there give the stride
+  bounds, the opening and closing right initial contacts of the stride whose
+  phase percentages `graph.json` carries, so the viewer plays that stride. -/
 def Stage.reads : Stage → List Artefact
   | .loadModel => [.scaledModel, .ikMotion, .grfMotion]
   | .runStaticOpt => [.scaledModel, .externalLoads, .grfMotion, .kinematics]
@@ -269,7 +275,7 @@ def Stage.reads : Stage → List Artefact
   | .enrichAnatomy => [.roles, .model, .uberon, .fma, .curatedAnatomy]
   | .exportGraph => [.enriched]
   | .exportMeshes => [.scaledModel, .model, .geometry]
-  | .exportMusclePaths => [.scaledModel, .kinematics, .activations, .mtLengths]
+  | .exportMusclePaths => [.scaledModel, .kinematics, .activations, .mtLengths, .phases]
 
 /-- The files a stage writes. -/
 def Stage.writes : Stage → List Artefact

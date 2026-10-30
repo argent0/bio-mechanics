@@ -21,4 +21,5 @@ digraph pipeline {
   "loadModel" -> "exportMeshes" [label="model"];
   "computeMomentArms" -> "exportMusclePaths" [label="mtLengths"];
   "runStaticOpt" -> "exportMusclePaths" [label="activations"];
+  "segmentPhases" -> "exportMusclePaths" [label="phases"];
 }

@@ -68,9 +68,10 @@ rule exportMeshes
 build data/out/meshes/index.json: exportMeshes data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/work/model.json data/raw/rajagopal/Geometry | pipeline/export_meshes.py
 build exportMeshes: phony data/out/meshes/index.json
 
-# Write muscle path points per frame for the tube renderer.
+# Write muscle path points per frame for the tube renderer, with the
+# bounds of the stride the knowledge graph describes.
 rule exportMusclePaths
   command = $python -m pipeline.export_muscle_paths
-  description = exportMusclePaths: Write muscle path points per frame for the tube renderer.
-build data/out/muscle_paths.json: exportMusclePaths data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/work/kinematics.csv data/work/activations.csv data/work/mt_lengths.csv | pipeline/export_muscle_paths.py
+  description = exportMusclePaths: Write muscle path points per frame for the tube renderer, with the bounds of the stride the knowledge graph describes.
+build data/out/muscle_paths.json: exportMusclePaths data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/work/kinematics.csv data/work/activations.csv data/work/mt_lengths.csv data/work/phases.csv | pipeline/export_muscle_paths.py
 build exportMusclePaths: phony data/out/muscle_paths.json
