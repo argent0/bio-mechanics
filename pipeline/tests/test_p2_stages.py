@@ -67,7 +67,7 @@ def out(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Out]:
     assert enrich_anatomy.main(["--roles", w["roles.json"], "--model", w["model.json"], "--uberon", str(uberon), "--fma", str(fma), "--out", w["enriched.json"]]) == 0
     assert export_graph.main(["--enriched", w["enriched.json"], "--out", w["graph.json"]]) == 0
     assert export_meshes.main(["--model", w["model.json"], "--out", str(d / "meshes" / "index.json")]) == 0
-    assert export_muscle_paths.main([*common, "--kinematics", w["kinematics.csv"], "--out", w["muscle_paths.json"]]) == 0
+    assert export_muscle_paths.main([*common, "--kinematics", w["kinematics.csv"], "--phases", w["phases.csv"], "--out", w["muscle_paths.json"]]) == 0
     yield Out(d)
 
 
@@ -160,6 +160,7 @@ def test_muscle_paths_match_opensim_lengths(out: Out) -> None:
     """The exported polyline (wrap arcs included) has the muscle-tendon length OpenSim reports."""
     p = out.paths
     assert p["rateHz"] <= 60 and len(p["time"]) == len(p["bodies"]["femur_r"])
+    assert p["stride"] == {"start": out.roles["stride"]["start"], "end": out.roles["stride"]["end"]}
     assert (out.dir / "muscle_paths.json").stat().st_size < 20e6
     lengths: dict[str, dict[float, float]] = {}
     with (out.dir / "mt_lengths.csv").open() as f:
