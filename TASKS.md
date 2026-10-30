@@ -20,11 +20,11 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Branch | Inputs | Outputs | Acceptance |
 |---|---|---|---|---|---|---|---|---|---|
-| A | Lean FSMs | opus / xhigh | — | 0 | todo | `ws/A` | C1, decision 0.6 | `GaitFsm.lean`, `UiFsm.lean` | `lake build`, zero `sorry` |
-| B | Lean graphs | opus / xhigh | — | 0 | todo | `ws/B` | C1 | `Pipeline.lean`, `Components.lean`, `Acyclic.lean` | `lake build`, zero `sorry` |
-| D | Data acquisition | sonnet / high | — | 0 | todo | `ws/D` | — | `pipeline/env/`, `data/raw/` | `python -c "import opensim"` loads model and trial |
-| E | Web scaffold | sonnet / medium | — | 0 | todo | `ws/E` | C2, C3 | `web/` | `tsc` clean; `npm run build` |
-| H | Arch viewer | sonnet / high | — | 0 | todo | `ws/H` | C4 | `tools/arch/` | `mypy`; `print --detail 0..3`; `svg`; watch redraw < 2 s |
+| A | Lean FSMs | opus / xhigh | `ae7b4cbffa4f406b3` | 0 | running | `ws/A` | C1, decision 0.6 | `GaitFsm.lean`, `UiFsm.lean` | `lake build`, zero `sorry` |
+| B | Lean graphs | opus / xhigh | `a54604c9ec4fc8fac` | 0 | running | `ws/B` | C1 | `Pipeline.lean`, `Components.lean`, `Acyclic.lean` | `lake build`, zero `sorry` |
+| D | Data acquisition | sonnet / high | `a896e3b530ce7f2c7` | 0 | running | `ws/D` | — | `pipeline/env/`, `data/raw/` | `python -c "import opensim"` loads model and trial |
+| E | Web scaffold | sonnet / medium | `ac8730c51e9090ac6` | 0 | running | `ws/E` | C2, C3 | `web/` | `tsc` clean; `npm run build` |
+| H | Arch viewer | sonnet / high | `a9e35040ecfdb0d36` | 0 | running | `ws/H` | C4 | `tools/arch/` | `mypy`; `print --detail 0..3`; `svg`; watch redraw < 2 s |
 
 ## Wave 2
 
