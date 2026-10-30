@@ -191,7 +191,7 @@ RUN_STATIC_OPT: Final = Stage(
     module="pipeline.static_opt",
     inputs=(MERGED_MODEL, EXTERNAL_LOADS, GRF_MOTION, KINEMATICS),
     outputs=(ACTIVATIONS,),
-    imports=("pipeline.load_model",),
+    imports=("pipeline.load_model", "pipeline.build_model"),
 )
 """Static optimisation: muscle activations per frame."""
 

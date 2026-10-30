@@ -50,8 +50,10 @@ ARM_BELOW_FLOOR = {
         "PECM1", "PECM2", "PECM3", "CORB", "TRIlat", "TRImed", "ANC", "ECRB", "PT", "PQ",
         "FDSL", "EDCL", "EDCR", "EDCM", "EDCI", "EDM", "EIP", "EPL", "EPB",
     )
-}
-"""Arm muscles whose phase-mean activation stays under the D-006 floor in all seven phases."""
+} | {"TMIN_r"}
+"""Arm muscles whose phase-mean activation stays under the D-006 floor in all seven phases: 19
+on each side, and the right teres minor (the left one helps internal rotation in loading
+response)."""
 
 
 class Run:
@@ -143,7 +145,7 @@ def test_graph_holds_the_whole_body(run: Run) -> None:
         ("head", "right"): 30, ("head", "left"): 30,
     }
     assert sum(muscles.values()) == len(run.model["muscles"]) == 462
-    assert (len(g["nodes"]), len(g["edges"])) == (827, 5045)
+    assert (len(g["nodes"]), len(g["edges"])) == (827, 5013)
     ids = {n["id"] for n in g["nodes"]}
     for i in ("joint:lumbarSpine", "joint:cervicalSpine", "joint:craniovertebral", "joint:shoulder_l", "joint:wrist_r",
               "bone:skull", "bone:l3", "bone:atlas", "action:neck_extension", "action:forearm_supination_l",
@@ -210,8 +212,8 @@ def test_out_stays_under_8_mb(run: Run) -> None:
 def test_erector_spinae_burst_around_each_initial_contact(run: Run) -> None:
     """Each side's trunk erector spinae rise above the D-006 floor in two bursts per stride, one
     within 10 % of the stride of each initial contact. This trial (force-weighted mean, % of the
-    stride): right 95-17 % (peak 0.083 at 7 %) and 58-72 % (peak 0.065 at 63 %); left 3-22 %
-    (peak 0.105 at 15 %) and 44-50 % (peak 0.025 at 48 %). Right initial contact at 0 %, left at
+    stride): right 94-17 % (peak 0.083 at 7 %) and 58-72 % (peak 0.066 at 63 %); left 2-22 %
+    (peak 0.105 at 15 %) and 45-50 % (peak 0.024 at 48 %). Right initial contact at 0 %, left at
     49.6 %. The bursts peak after the contacts, in each loading response."""
     floor = run.roles["config"]["roleMinActivation"]
     contacts = [0.0, run.event_pct("oppositeInitialContact")]
@@ -256,7 +258,8 @@ def test_neck_extensors_hold_the_head(run: Run) -> None:
     """With the head held level (D-010), the lower neck changes by under 5 degrees in every
     phase while the muscles' net moment extends it: the extensors hold the head against
     gravity. Splenius capitis (from the thorax, right) stabilises the neck in pre-swing (mean
-    activation 0.105)."""
+    activation 0.1055, close above the 0.10 stabiliser floor); in the other six phases it helps
+    extend it."""
     for p in run.roles["phases"]:
         a = run.action(p["phase"], "neck_lower_extension")
         assert a["stabilised"] and a["direction"] == 1, p["phase"]
@@ -266,9 +269,10 @@ def test_neck_extensors_hold_the_head(run: Run) -> None:
 
 
 def test_arm_muscles_below_the_d006_floor(run: Run) -> None:
-    """Arm swing is largely passive: 38 of the 94 arm muscles stay under the D-006 floor in all
+    """Arm swing is largely passive: 39 of the 94 arm muscles stay under the D-006 floor in all
     seven phases (pectoralis major, coracobrachialis, the lateral and medial triceps, anconeus,
-    the pronators, extensor carpi radialis brevis, and most finger muscles)."""
+    the pronators, extensor carpi radialis brevis, most finger muscles, and the right teres
+    minor)."""
     cfg = label_roles.load_config(REPO / paths.ROLE_THRESHOLDS)
     groups = {f"{g}_{s}" for g in ARM_GROUPS for s in "rl"}
     arm = sorted(m for m, a in run.enriched["muscles"].items() if groups & set(a["groups"]))
