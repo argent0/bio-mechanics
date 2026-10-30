@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { GRAPH } from "../config";
+import type { Graph } from "@gen/types";
+import fixture from "../../../data/fixtures/graph.sample.json";
 import { GraphStore } from "../store/GraphStore";
 import { QueryEngine } from "./QueryEngine";
 
-const q = new QueryEngine(new GraphStore(GRAPH));
+const q = new QueryEngine(new GraphStore(fixture as unknown as Graph));
 
 describe("QueryEngine over the fixture", () => {
   it("indexes the sample graph", () => {

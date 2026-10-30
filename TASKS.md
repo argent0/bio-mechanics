@@ -62,7 +62,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 
 | Task | State |
 |---|---|
-| Replace fixture references with pipeline output | todo |
+| Replace fixture references with pipeline output | merged (`web/src/config.ts` reads `data/out/graph.json`; Vite serves `data/out/`) |
 | Full gate on `main` | todo |
 | Record a walking trace, pass `lake exe conform` | todo |
 | Fresh `handover.md` status from merged code | todo |
