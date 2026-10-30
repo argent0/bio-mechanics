@@ -129,8 +129,8 @@ def test_roles_yaml_holds_the_d002_thresholds() -> None:
         label_roles.Config.from_yaml({**c.as_json(), "extra": 1})
 
 
-def muscle(a: float, r: float, v: float = 0.0, f: float = 1000.0, n: int = 3) -> label_roles.MuscleInPhase:
-    return label_roles.MuscleInPhase([a] * n, [r] * n, [v] * n, f)
+def muscle(a: float, r: float, v: float = 0.0, f: float = 1000.0, n: int = 3, peak: float | None = None) -> label_roles.MuscleInPhase:
+    return label_roles.MuscleInPhase([a] * n, [r] * n, [v] * n, f, a if peak is None else peak)
 
 
 T = [0.0, 0.05, 0.1]
@@ -171,10 +171,16 @@ def test_classify_by_moment_share() -> None:
 
 
 def test_inactive_muscles_earn_no_role() -> None:
-    """D-004: a share-dominant muscle at mean activation 0.01 gets no role."""
+    """D-005: a share-dominant muscle whose phase mean (0.01) sits under 25 % of its own stride
+    peak (0.5) gets no role; a weak muscle near its own peak keeps its role."""
     c = config()
-    assert c.role_min_activation == 0.05
-    ms = {"quiet": muscle(0.01, 0.05, f=100000.0), "busy": muscle(0.06, 0.006, f=10000.0), "anta": muscle(0.01, -0.05)}
+    assert c.role_min_peak_fraction == 0.25
+    ms = {
+        "quiet": muscle(0.01, 0.05, f=100000.0, peak=0.5),
+        "busy": muscle(0.06, 0.006, f=10000.0, peak=0.2),  # 0.06 ≥ 0.25 × 0.2
+        "anta": muscle(0.01, -0.05, peak=0.1),
+        "low": muscle(0.01, -0.05, f=1000.0, peak=0.03),  # a small activation, a third of its peak
+    }
     shares = {k: label_roles.moment_integrals(T, m, 1, c.moment_arm_min_m) for k, m in ms.items()}
     total = label_roles.Shares(sum(s.agonist for s in shares.values()), sum(s.opposing for s in shares.values()))
     assert shares["quiet"].agonist / total.agonist > 0.9
@@ -182,18 +188,20 @@ def test_inactive_muscles_earn_no_role() -> None:
     assert label_roles.classify(T, ms["anta"], shares["anta"], total, False, c) is None
     busy = label_roles.classify(T, ms["busy"], shares["busy"], total, False, c)
     assert busy is not None and busy[0] == "helper"
+    low = label_roles.classify(T, ms["low"], shares["low"], total, False, c)
+    assert low is not None and low[0] == "antagonist"
 
 
 def test_moment_arm_sign_change_splits_the_integrals() -> None:
     c = config()
-    m = label_roles.MuscleInPhase([1.0, 1.0, 1.0], [0.02, 0.0, -0.02], [0.0] * 3, 100.0)
+    m = label_roles.MuscleInPhase([1.0, 1.0, 1.0], [0.02, 0.0, -0.02], [0.0] * 3, 100.0, 1.0)
     s = label_roles.moment_integrals(T, m, 1, c.moment_arm_min_m)
     assert s.agonist == pytest.approx(0.05) and s.opposing == pytest.approx(0.05)
 
 
 def test_contraction_from_activation_weighted_velocity() -> None:
     c = config()
-    m = label_roles.MuscleInPhase([0.0, 1.0, 0.0], [0.02] * 3, [-0.5, 0.05, -0.5], 100.0)
+    m = label_roles.MuscleInPhase([0.0, 1.0, 0.0], [0.02] * 3, [-0.5, 0.05, -0.5], 100.0, 1.0)
     v = label_roles.mean_velocity(T, m)
     assert v == pytest.approx(0.05)
     assert label_roles.contraction(v, c) == "eccentric"
