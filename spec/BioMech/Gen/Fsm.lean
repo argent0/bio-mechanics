@@ -19,7 +19,7 @@ Each file holds, for one DFA (`FsmSpec`):
 
 namespace BioMech.Gen
 
-def FsmSpec.source (f : FsmSpec) : String := moduleFile f.module.toName
+def FsmSpec.source (f : FsmSpec) : String := f.loc.file
 
 /-- A sentence on the steps of pairs absent from `TRANSITIONS`. -/
 def Implicit.describe : Implicit → String

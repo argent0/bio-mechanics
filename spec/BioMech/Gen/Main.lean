@@ -57,10 +57,24 @@ def outputs (env : Lean.Environment) : IO (List (String × String)) := do
 /-- Set in the environment of the interpreted run. -/
 def interpretedVar : String := "BIOMECH_GEN_INTERPRETED"
 
+/-- `args` with a relative `--root` value resolved against the current
+directory, since the interpreted run starts in `spec/`. -/
+def absoluteRoot (args : List String) : IO (List String) := do
+  let cwd ← IO.currentDir
+  let rec go : List String → List String
+    | "--root" :: v :: rest =>
+      let p := System.FilePath.mk v
+      "--root" :: (if p.isAbsolute then v else (cwd / p).toString) :: go rest
+    | a :: rest => a :: go rest
+    | [] => []
+  return go args
+
 /-- Runs this file under `lean --run` with `args`; returns its exit code. The
 executable sits at `spec/.lake/build/bin/gen`, so the source sits four levels
-up, at `spec/BioMech/Gen/Main.lean`. -/
+up, at `spec/BioMech/Gen/Main.lean`. The interpreted run starts in `spec/`, so
+the default root `..` is the repository root wherever `gen` starts. -/
 def runInterpreted (args : List String) : IO UInt32 := do
+  let args ← absoluteRoot args
   let app ← IO.appPath
   let some spec := app.parent.bind (·.parent) |>.bind (·.parent) |>.bind (·.parent)
     | throw <| IO.userError s!"cannot locate spec/ from {app}"

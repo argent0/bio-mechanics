@@ -136,11 +136,6 @@ structure FsmSpec where
   words : List NamedList
   loc : Loc
 
-def FsmSpec.target (f : FsmSpec) (s e : String) : Option String := do
-  let (_, ts) ← f.table.find? (·.1 == s)
-  let i ← f.events.findIdx? (·.name == e)
-  ts[i]?
-
 def fsmSpec (c : FsmConfig) : MetaM FsmSpec := do
   let q (n : String) : Name := c.ns ++ n.toName
   let st := q c.state
