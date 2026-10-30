@@ -2,7 +2,8 @@ import { GRAPH } from "./config";
 import { GraphStore } from "./store/GraphStore";
 import { QueryEngine } from "./query/QueryEngine";
 import { GraphView } from "./graphview/GraphView";
-import { mountArchitectureView } from "./architecture";
+import { highlightState, mountArchitectureView } from "./architecture";
+import { recorder } from "./trace";
 
 /** App: wires store, query, and view; the search box focuses a node. */
 const query = new QueryEngine(new GraphStore(GRAPH));
@@ -21,16 +22,32 @@ search.addEventListener("input", () => {
   if (found) view.focus(found.id);
 });
 
-/** Routes: `#/architecture` shows the ArchitectureView, mounted on first visit; any other hash shows the graph explorer. */
-let archMounted = false;
+/** Movement view (`#/walking`): Timeline, Viewer3D and PhasePanel over the pipeline's
+ * walking clip. The viewer (and three.js) loads on first visit, in its own chunk. */
+async function mountWalking(): Promise<void> {
+  const [{ Timeline, loadMusclePaths, mountTimeline }, { mountPhasePanel }, { mountViewer3D }] =
+    await Promise.all([import("./timeline"), import("./phase"), import("./viewer")]);
+  const clip = await loadMusclePaths("./");
+  const timeline = new Timeline({ query, clip });
+  mountTimeline(byId("walk-timeline"), timeline);
+  mountPhasePanel(byId("walk-phase"), { query, timeline });
+  await mountViewer3D(byId("walk-view"), { query, timeline, dataBase: "./" });
+}
+
+/** In dev mode, every recorded FSM step lights the matching state on the architecture page. */
+recorder.onStep((machine, _step, state) => highlightState(machine === "gait" ? "gaitFsm" : "uiFsm", state));
+
+/** Routes: `#/walking` shows the movement view and `#/architecture` the ArchitectureView,
+ * each mounted on first visit; any other hash shows the graph explorer. */
+const views = { explore: "", walking: "#/walking", arch: "#/architecture" } as const;
+const mounted = new Set<string>();
 const route = () => {
-  const arch = location.hash === "#/architecture";
-  byId("arch").hidden = !arch;
-  byId("explore").hidden = arch;
-  if (arch && !archMounted) {
-    mountArchitectureView(byId("arch"));
-    archMounted = true;
-  }
+  const active = (Object.keys(views) as (keyof typeof views)[]).find((id) => views[id] === location.hash) ?? "explore";
+  for (const id of Object.keys(views)) byId(id).hidden = id !== active;
+  if (mounted.has(active)) return;
+  mounted.add(active);
+  if (active === "arch") mountArchitectureView(byId("arch"));
+  if (active === "walking") void mountWalking();
 };
 window.addEventListener("hashchange", route);
 route();

@@ -80,7 +80,7 @@ def modules : List Module := [
   { id := .E2, name := "ArchitectureView", lang := "TypeScript", model := "sonnet", state := .merged,
     paths := ["web/src/architecture/"],
     acceptance := ["cd web && npx tsc --noEmit"] },
-  { id := .E3, name := "Movement views", lang := "TypeScript", model := "sonnet", state := .running,
+  { id := .E3, name := "Movement views", lang := "TypeScript", model := "sonnet", state := .merged,
     paths := ["web/src/viewer/", "web/src/timeline/", "web/src/phase/"],
     acceptance := ["cd web && npx tsc --noEmit", "cd web && npm test", "pytest tests/test_boundaries.py"] },
   { id := .F, name := "Lean checkers", lang := "Lean", model := "opus", state := .merged,

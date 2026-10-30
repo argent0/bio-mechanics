@@ -10,6 +10,11 @@
   #search { width: 20em; padding: 4px 8px; }
   main { flex: 1; display: flex; min-height: 0; }
   #arch { flex: 1; min-height: 0; overflow: auto; }
+  #walking { flex: 1; display: flex; min-height: 0; }
+  #walk-left { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #walk-view { flex: 1; min-height: 0; }
+  #walk-timeline { border-top: 1px solid #ccc; }
+  #walk-phase { width: 26em; border-left: 1px solid #ccc; overflow: auto; }
   [hidden] { display: none !important; }
   #graph { flex: 1; }
   #details { width: 22em; padding: 12px; overflow: auto; border-left: 1px solid #ccc; }
@@ -21,8 +26,9 @@
 <body>
 <header><strong>Bio-Mechanics Explorer</strong>
   <input id="search" type="search" placeholder="Search: walking, gluteus medius ..." list="hits"><datalist id="hits"></datalist>
-  <nav><a href="#/">Explore</a> · <a href="#/architecture">Architecture</a></nav></header>
+  <nav><a href="#/">Explore</a> · <a href="#/walking">Walking</a> · <a href="#/architecture">Architecture</a></nav></header>
 <div id="arch" hidden></div>
+<div id="walking" hidden><div id="walk-left"><div id="walk-view"></div><div id="walk-timeline"></div></div><aside id="walk-phase"></aside></div>
 <main id="explore"><div id="graph"></div><aside id="details">Click a node.</aside></main>
 <script type="module" src="./src/main.ts"></script>
 </body>

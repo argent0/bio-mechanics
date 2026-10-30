@@ -102,7 +102,7 @@
    "id": "E2",
    "consumes": [],
    "acceptance": ["cd web && npx tsc --noEmit"]},
-  {"state": "running",
+  {"state": "merged",
    "produces": [],
    "paths": ["web/src/viewer/", "web/src/timeline/", "web/src/phase/"],
    "name": "Movement views",
