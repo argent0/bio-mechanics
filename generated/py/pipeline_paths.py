@@ -30,8 +30,20 @@ SCALED_MODEL: Final = "data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_wal
 model `buildModel` merges the upper-body muscles onto.
 """
 
+SCALE_SET: Final = "data/raw/rajagopal/walk_pipeline/Scale/scaleSet_applied_walk.xml"
+"""The subject's scale factors per body, from the OpenSim ScaleTool:
+`buildModel` multiplies each merged point by its body's factors.
+"""
+
+STATIC_POSE: Final = "data/raw/rajagopal/walk_pipeline/Scale/scale_output_walk.mot"
+"""Joint coordinates of the standing calibration pose (the static pose):
+the head orientation that the neck angles hold (D-010).
+"""
+
 GEOMETRY: Final = "data/raw/rajagopal/Geometry/"
-"""The bone surface meshes (`.vtp`) the model refers to, at generic size."""
+"""The bone surface meshes (`.vtp`) the model refers to, at generic size;
+`buildModel` places the neck model on `hat_skull.vtp` among them.
+"""
 
 IK_MOTION: Final = "data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot"
 """Joint coordinates per frame of the walking trial, from inverse kinematics
@@ -44,6 +56,26 @@ GRF_MOTION: Final = "data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot"
 EXTERNAL_LOADS: Final = "data/raw/rajagopal/walk_pipeline/ID/grf_walk.xml"
 """OpenSim external loads: each foot's ground reaction force on `calcn_r`
 and `calcn_l`, read from `grfMotion`.
+"""
+
+FBLS_MODEL: Final = "data/raw/fbls/FBLSmodel.osim"
+"""The full-body lumbar spine model of Raabe and Chaudhari (2016, FBLS):
+the lumbar vertebrae and the trunk and latissimus muscles (D-011).
+"""
+
+HOLZBAUR_MODEL: Final = "data/raw/holzbaur/Stanford_VA_Upper_Limb_original.osim"
+"""The Stanford VA upper-limb model of Holzbaur (2005), right arm: the arm
+muscles, mirrored for the left arm.
+"""
+
+MORTENSEN_MODEL: Final = "data/raw/mortensen/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim"
+"""The HYOID 1.2 head and neck model of Mortensen (2018): the cervical
+vertebrae, the skull, and the neck muscles (D-009).
+"""
+
+MORTENSEN_SKULL: Final = "data/raw/mortensen/Geometry/skull.vtp"
+"""The skull mesh of `mortensenModel`: its bounding box, laid on that of
+Rajagopal's `hat_skull.vtp`, places the neck model on the torso.
 """
 
 UBERON: Final = "data/raw/ontology/uberon.obo"
@@ -60,7 +92,9 @@ ROLE_THRESHOLDS: Final = "pipeline/config/roles.yaml"
 
 MERGE_RECIPE: Final = "pipeline/config/model.yaml"
 """The merge recipe: the source models, the Rajagopal body each source body
-maps onto, and the neck assumption (D-008, D-010).
+maps onto, the paths of the scale set, static pose, and meshes, and the
+neck assumption (D-008 to D-011). Each file it names is a read of
+`buildModel`.
 """
 
 MERGED_MODEL: Final = "data/work/model.osim"
@@ -129,7 +163,7 @@ BUILD_MODEL: Final = Stage(
     name="buildModel",
     script="pipeline/build_model.py",
     module="pipeline.build_model",
-    inputs=(SCALED_MODEL, IK_MOTION, MERGE_RECIPE),
+    inputs=(SCALED_MODEL, IK_MOTION, MERGE_RECIPE, SCALE_SET, STATIC_POSE, FBLS_MODEL, HOLZBAUR_MODEL, MORTENSEN_MODEL, MORTENSEN_SKULL, GEOMETRY),
     outputs=(MERGED_MODEL, IK_FULL),
 )
 """Merge the trunk, arm, and neck muscles of the upper-body models onto the
@@ -243,10 +277,16 @@ coordinate's angle, per frame, for the dynamics panel.
 
 ARTEFACTS: Final[dict[str, str]] = {
     "scaledModel": SCALED_MODEL,
+    "scaleSet": SCALE_SET,
+    "staticPose": STATIC_POSE,
     "geometry": GEOMETRY,
     "ikMotion": IK_MOTION,
     "grfMotion": GRF_MOTION,
     "externalLoads": EXTERNAL_LOADS,
+    "fblsModel": FBLS_MODEL,
+    "holzbaurModel": HOLZBAUR_MODEL,
+    "mortensenModel": MORTENSEN_MODEL,
+    "mortensenSkull": MORTENSEN_SKULL,
     "uberon": UBERON,
     "fma": FMA,
     "curatedAnatomy": CURATED_ANATOMY,
@@ -270,7 +310,7 @@ ARTEFACTS: Final[dict[str, str]] = {
 }
 """Every artefact by its Lean name."""
 
-SOURCES: Final[tuple[str, ...]] = (SCALED_MODEL, GEOMETRY, IK_MOTION, GRF_MOTION, EXTERNAL_LOADS, UBERON, FMA, CURATED_ANATOMY, ROLE_THRESHOLDS, MERGE_RECIPE)
+SOURCES: Final[tuple[str, ...]] = (SCALED_MODEL, SCALE_SET, STATIC_POSE, GEOMETRY, IK_MOTION, GRF_MOTION, EXTERNAL_LOADS, FBLS_MODEL, HOLZBAUR_MODEL, MORTENSEN_MODEL, MORTENSEN_SKULL, UBERON, FMA, CURATED_ANATOMY, ROLE_THRESHOLDS, MERGE_RECIPE)
 """Paths maintained outside the pipeline."""
 
 STAGES: Final[tuple[Stage, ...]] = (BUILD_MODEL, LOAD_MODEL, RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS, SEGMENT_PHASES, LABEL_ROLES, ENRICH_ANATOMY, EXPORT_GRAPH, EXPORT_MESHES, EXPORT_MUSCLE_PATHS, EXPORT_DYNAMICS)

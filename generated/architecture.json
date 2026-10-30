@@ -377,9 +377,9 @@
     "loc": {
       "module": "BioMech.Pipeline",
       "file": "spec/BioMech/Pipeline.lean",
-      "line": 127,
-      "startLine": 126,
-      "endLine": 133
+      "line": 128,
+      "startLine": 127,
+      "endLine": 134
     },
     "stages": [
       {
@@ -387,9 +387,9 @@
         "doc": "Merge the trunk, arm, and neck muscles of the upper-body models onto the\nscaled Rajagopal model, give the head its own body behind a neck joint, and\nadd the neck angles that hold the head level in space to the joint angles\n(D-008, D-009, D-010).",
         "script": "pipeline/build_model.py",
         "module": "pipeline.build_model",
-        "reads": ["scaledModel", "ikMotion", "mergeRecipe"],
+        "reads": ["scaledModel", "ikMotion", "mergeRecipe", "scaleSet", "staticPose", "fblsModel", "holzbaurModel", "mortensenModel", "mortensenSkull", "geometry"],
         "writes": ["mergedModel", "ikFull"],
-        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot", "pipeline/config/model.yaml"],
+        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot", "pipeline/config/model.yaml", "data/raw/rajagopal/walk_pipeline/Scale/scaleSet_applied_walk.xml", "data/raw/rajagopal/walk_pipeline/Scale/scale_output_walk.mot", "data/raw/fbls/FBLSmodel.osim", "data/raw/holzbaur/Stanford_VA_Upper_Limb_original.osim", "data/raw/mortensen/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim", "data/raw/mortensen/Geometry/skull.vtp", "data/raw/rajagopal/Geometry/"],
         "outputs": ["data/work/model.osim", "data/work/ik_full.mot"]
       },
       {
@@ -565,8 +565,22 @@
         "isDirectory": false
       },
       {
+        "name": "scaleSet",
+        "doc": "The subject's scale factors per body, from the OpenSim ScaleTool:\n`buildModel` multiplies each merged point by its body's factors.",
+        "path": "data/raw/rajagopal/walk_pipeline/Scale/scaleSet_applied_walk.xml",
+        "isSource": true,
+        "isDirectory": false
+      },
+      {
+        "name": "staticPose",
+        "doc": "Joint coordinates of the standing calibration pose (the static pose):\nthe head orientation that the neck angles hold (D-010).",
+        "path": "data/raw/rajagopal/walk_pipeline/Scale/scale_output_walk.mot",
+        "isSource": true,
+        "isDirectory": false
+      },
+      {
         "name": "geometry",
-        "doc": "The bone surface meshes (`.vtp`) the model refers to, at generic size.",
+        "doc": "The bone surface meshes (`.vtp`) the model refers to, at generic size;\n`buildModel` places the neck model on `hat_skull.vtp` among them.",
         "path": "data/raw/rajagopal/Geometry/",
         "isSource": true,
         "isDirectory": true
@@ -589,6 +603,34 @@
         "name": "externalLoads",
         "doc": "OpenSim external loads: each foot's ground reaction force on `calcn_r`\nand `calcn_l`, read from `grfMotion`.",
         "path": "data/raw/rajagopal/walk_pipeline/ID/grf_walk.xml",
+        "isSource": true,
+        "isDirectory": false
+      },
+      {
+        "name": "fblsModel",
+        "doc": "The full-body lumbar spine model of Raabe and Chaudhari (2016, FBLS):\nthe lumbar vertebrae and the trunk and latissimus muscles (D-011).",
+        "path": "data/raw/fbls/FBLSmodel.osim",
+        "isSource": true,
+        "isDirectory": false
+      },
+      {
+        "name": "holzbaurModel",
+        "doc": "The Stanford VA upper-limb model of Holzbaur (2005), right arm: the arm\nmuscles, mirrored for the left arm.",
+        "path": "data/raw/holzbaur/Stanford_VA_Upper_Limb_original.osim",
+        "isSource": true,
+        "isDirectory": false
+      },
+      {
+        "name": "mortensenModel",
+        "doc": "The HYOID 1.2 head and neck model of Mortensen (2018): the cervical\nvertebrae, the skull, and the neck muscles (D-009).",
+        "path": "data/raw/mortensen/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim",
+        "isSource": true,
+        "isDirectory": false
+      },
+      {
+        "name": "mortensenSkull",
+        "doc": "The skull mesh of `mortensenModel`: its bounding box, laid on that of\nRajagopal's `hat_skull.vtp`, places the neck model on the torso.",
+        "path": "data/raw/mortensen/Geometry/skull.vtp",
         "isSource": true,
         "isDirectory": false
       },
@@ -622,7 +664,7 @@
       },
       {
         "name": "mergeRecipe",
-        "doc": "The merge recipe: the source models, the Rajagopal body each source body\nmaps onto, and the neck assumption (D-008, D-010).",
+        "doc": "The merge recipe: the source models, the Rajagopal body each source body\nmaps onto, the paths of the scale set, static pose, and meshes, and the\nneck assumption (D-008 to D-011). Each file it names is a read of\n`buildModel`.",
         "path": "pipeline/config/model.yaml",
         "isSource": true,
         "isDirectory": false
@@ -1454,14 +1496,14 @@
       "namespace": "BioMech.Pipeline",
       "statement": "∀ (s : Stage), s ∈ Stage.all",
       "doc": "`Stage.all` lists every stage.",
-      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 91, "startLine": 90, "endLine": 91 }
+      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 92, "startLine": 91, "endLine": 92 }
     },
     {
       "name": "BioMech.Pipeline.Stage.nodup_all",
       "namespace": "BioMech.Pipeline",
       "statement": "Stage.all.Nodup",
       "doc": "`Stage.all` lists each stage once.",
-      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 94, "startLine": 93, "endLine": 94 }
+      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 95, "startLine": 94, "endLine": 95 }
     },
     {
       "name": "BioMech.Pipeline.Artefact.mem_all",
@@ -1471,9 +1513,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 244,
-        "startLine": 243,
-        "endLine": 244
+        "line": 267,
+        "startLine": 266,
+        "endLine": 267
       }
     },
     {
@@ -1484,9 +1526,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 247,
-        "startLine": 246,
-        "endLine": 247
+        "line": 270,
+        "startLine": 269,
+        "endLine": 270
       }
     },
     {
@@ -1497,9 +1539,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 297,
-        "startLine": 296,
-        "endLine": 297
+        "line": 327,
+        "startLine": 326,
+        "endLine": 327
       }
     },
     {
@@ -1510,9 +1552,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 359,
-        "startLine": 358,
-        "endLine": 362
+        "line": 393,
+        "startLine": 392,
+        "endLine": 396
       }
     },
     {
@@ -1523,9 +1565,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 365,
-        "startLine": 364,
-        "endLine": 365
+        "line": 399,
+        "startLine": 398,
+        "endLine": 399
       }
     },
     {
@@ -1536,9 +1578,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 368,
-        "startLine": 367,
-        "endLine": 368
+        "line": 402,
+        "startLine": 401,
+        "endLine": 402
       }
     },
     {
@@ -1549,9 +1591,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 373,
-        "startLine": 372,
-        "endLine": 375
+        "line": 407,
+        "startLine": 406,
+        "endLine": 409
       }
     },
     {
@@ -1562,9 +1604,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 379,
-        "startLine": 377,
-        "endLine": 379
+        "line": 413,
+        "startLine": 411,
+        "endLine": 413
       }
     },
     {
@@ -1575,9 +1617,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 382,
-        "startLine": 381,
-        "endLine": 383
+        "line": 416,
+        "startLine": 415,
+        "endLine": 417
       }
     },
     {
@@ -1588,9 +1630,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 386,
-        "startLine": 385,
-        "endLine": 387
+        "line": 420,
+        "startLine": 419,
+        "endLine": 421
       }
     },
     {
@@ -1601,9 +1643,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 391,
-        "startLine": 389,
-        "endLine": 391
+        "line": 425,
+        "startLine": 423,
+        "endLine": 425
       }
     },
     {
@@ -1614,9 +1656,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 396,
-        "startLine": 395,
-        "endLine": 398
+        "line": 430,
+        "startLine": 429,
+        "endLine": 432
       }
     },
     {
@@ -1627,9 +1669,22 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 403,
-        "startLine": 400,
-        "endLine": 405
+        "line": 437,
+        "startLine": 434,
+        "endLine": 439
+      }
+    },
+    {
+      "name": "BioMech.Pipeline.merge_sources_feed_buildModel",
+      "namespace": "BioMech.Pipeline",
+      "statement": "∀ (s : Stage),\n  ∀\n    a ∈\n      [Artefact.mergeRecipe, Artefact.scaleSet, Artefact.staticPose, Artefact.fblsModel,\n        Artefact.holzbaurModel, Artefact.mortensenModel, Artefact.mortensenSkull],\n    a ∈ s.reads ↔ s = Stage.buildModel",
+      "doc": "The merge recipe and the files it names, the meshes of `geometry` aside,\nfeed `buildModel` alone.",
+      "loc": {
+        "module": "BioMech.Pipeline",
+        "file": "spec/BioMech/Pipeline.lean",
+        "line": 443,
+        "startLine": 441,
+        "endLine": 446
       }
     },
     {

@@ -14,7 +14,7 @@ python = $$HOME/.local/share/bm-opensim/bin/python
 rule buildModel
   command = $python -m pipeline.build_model
   description = buildModel: Merge the trunk, arm, and neck muscles of the upper-body models onto the scaled Rajagopal model, give the head its own body behind a neck joint, and add the neck angles that hold the head level in space to the joint angles (D-008, D-009, D-010).
-build data/work/model.osim data/work/ik_full.mot: buildModel data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot pipeline/config/model.yaml | pipeline/build_model.py
+build data/work/model.osim data/work/ik_full.mot: buildModel data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot pipeline/config/model.yaml data/raw/rajagopal/walk_pipeline/Scale/scaleSet_applied_walk.xml data/raw/rajagopal/walk_pipeline/Scale/scale_output_walk.mot data/raw/fbls/FBLSmodel.osim data/raw/holzbaur/Stanford_VA_Upper_Limb_original.osim data/raw/mortensen/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim data/raw/mortensen/Geometry/skull.vtp data/raw/rajagopal/Geometry | pipeline/build_model.py
 build buildModel: phony data/work/model.osim data/work/ik_full.mot
 
 # Load the merged model and the walking trial with the OpenSim API.
