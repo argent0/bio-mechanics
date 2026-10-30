@@ -25,6 +25,20 @@ export interface JointActionInPhase {
   rangeDeg: number;
 }
 
+/** One phase of a movement's cycle, with its span in percent of the cycle. */
+export interface PhaseInCycle {
+  phase: Node;
+  order: number;
+  startPct: number;
+  endPct: number;
+}
+
+/** A movement and its phases in cycle order (`hasPhase` order). */
+export interface PhaseCycle {
+  movement: Node;
+  phases: PhaseInCycle[];
+}
+
 /** The body parts of one joint action. */
 export interface InvolvedParts {
   jointAction: Node;
@@ -82,6 +96,24 @@ export class QueryEngine {
         (n.commonName ?? "").toLowerCase().includes(q) ||
         n.id.toLowerCase().includes(q),
     );
+  }
+
+  /** The cycle a movement or phase belongs to: the movement and its phases in
+   * `hasPhase` order. `undefined` for every other node. */
+  phaseCycle(id: string): PhaseCycle | undefined {
+    const movementId = this.node(id)?.kind === "phase"
+      ? this.edgesOf("hasPhase").find((e) => e.target === id)?.source
+      : id;
+    const movement = movementId === undefined ? undefined : this.node(movementId);
+    if (movement?.kind !== "movement") return undefined;
+    const phases = this.edgesOf("hasPhase")
+      .filter((e) => e.source === movement.id)
+      .flatMap((e) => {
+        const phase = this.node(e.target);
+        return phase ? [{ phase, order: e.order, startPct: e.startPct, endPct: e.endPct }] : [];
+      })
+      .sort((a, b) => a.order - b.order);
+    return { movement, phases };
   }
 
   /** Joint actions the phase involves, with the angle change. */

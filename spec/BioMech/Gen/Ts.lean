@@ -18,7 +18,7 @@ def tsTy : FieldTy → String
   | .array t => match t with
     | .option _ => s!"({tsTy t})[]"
     | _ => s!"{tsTy t}[]"
-  | .enum n => n
+  | .enum n _ => n
 
 def tsDoc (indent : String) : Option String → List String
   | none => []

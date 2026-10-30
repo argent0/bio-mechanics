@@ -1,6 +1,6 @@
 {
  "$comment": "Hand-made fixture (contract C3) around the right knee and hip. Numbers are illustrative; data/out/graph.json from the pipeline replaces them.",
- "schemaVersion": 1,
+ "schemaVersion": 2,
  "nodes": [
   {
    "id": "bone:pelvis",
@@ -599,6 +599,12 @@
    "order": 1,
    "startPct": 12.0,
    "endPct": 31.0
+  },
+  {
+   "source": "phase:loadingResponse",
+   "target": "phase:midStance",
+   "relation": "precedes",
+   "event": "oppositeToeOff"
   },
   {
    "source": "phase:loadingResponse",

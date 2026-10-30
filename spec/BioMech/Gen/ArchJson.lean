@@ -83,7 +83,7 @@ def fieldTyText : FieldTy → String
   | .string => "String" | .float => "Float" | .nat => "Nat" | .int => "Int" | .bool => "Bool"
   | .option t => s!"Option {paren t (fieldTyText t)}"
   | .array t => s!"Array {paren t (fieldTyText t)}"
-  | .enum n => n
+  | .enum n _ => n
 where paren : FieldTy → String → String
   | .option _, s | .array _, s => s!"({s})"
   | _, s => s

@@ -17,6 +17,7 @@ flowchart LR
   n_ligament -->|"stabilises"| n_joint
   n_joint -->|"articulates"| n_bone
   n_movement -->|"hasPhase · HasPhaseAttrs"| n_phase
+  n_phase -->|"precedes · PrecedesAttrs"| n_phase
   n_phase -->|"involves · InvolvesAttrs"| n_jointAction
   n_jointAction -->|"actionAt"| n_joint
   n_jointAction -->|"drivenBy · DrivenByAttrs"| n_muscle

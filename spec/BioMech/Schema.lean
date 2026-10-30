@@ -1,4 +1,5 @@
 import Mathlib.Combinatorics.Quiver.Basic
+import BioMech.GaitFsm
 
 /-!
 # Knowledge-graph schema (contract C1)
@@ -13,8 +14,9 @@ declarations by reflection and emits `generated/ts/types.ts` and
 `graph.json` shape (contract C3).
 
 Field types the emitters understand: `String`, `Float`, `Nat`, `Int`, `Bool`,
-`Option α`, `Array α`, and enumerations from this file (inductives whose
-constructors take no arguments).
+`Option α`, `Array α`, and enumerations from `BioMech` and its namespaces
+(inductives whose constructors take no arguments), e.g. `Role` here and
+`Gait.GaitEvent` from `BioMech.GaitFsm`.
 -/
 
 namespace BioMech
@@ -36,6 +38,7 @@ inductive SchemaArrow : Kind → Kind → Type
   | stabilises   : SchemaArrow .ligament .joint
   | articulates  : SchemaArrow .joint .bone
   | hasPhase     : SchemaArrow .movement .phase
+  | precedes     : SchemaArrow .phase .phase
   | involves     : SchemaArrow .phase .jointAction
   | actionAt     : SchemaArrow .jointAction .joint
   | drivenBy     : SchemaArrow .jointAction .muscle
@@ -47,7 +50,7 @@ instance : Quiver Kind := ⟨SchemaArrow⟩
 def SchemaArrow.all : List (Σ a b : Kind, SchemaArrow a b) :=
   [⟨_, _, .origin⟩, ⟨_, _, .insertion⟩, ⟨_, _, .crosses⟩, ⟨_, _, .partOf⟩,
    ⟨_, _, .innervatedBy⟩, ⟨_, _, .stabilises⟩, ⟨_, _, .articulates⟩,
-   ⟨_, _, .hasPhase⟩, ⟨_, _, .involves⟩, ⟨_, _, .actionAt⟩, ⟨_, _, .drivenBy⟩]
+   ⟨_, _, .hasPhase⟩, ⟨_, _, .precedes⟩, ⟨_, _, .involves⟩, ⟨_, _, .actionAt⟩, ⟨_, _, .drivenBy⟩]
 
 /-- `SchemaArrow.all` lists every arrow. -/
 theorem SchemaArrow.mem_all {a b : Kind} (e : SchemaArrow a b) :
@@ -139,6 +142,13 @@ structure HasPhaseAttrs where
   /-- End of the phase, in percent of the cycle. -/
   endPct : Float
 
+/-- Attributes of `precedes` (phase → phase): the next phase of the cycle, one
+edge per row of `Gait.transitions`. The edges form one loop through the seven
+phases, from terminal swing back to loading response. -/
+structure PrecedesAttrs where
+  /-- The gait event that ends the source phase and opens the target phase. -/
+  event : Gait.GaitEvent
+
 open Lean in
 /-- Which arrows carry an attribute structure. The double-backtick names are
 checked by the compiler, so a renamed constructor or structure breaks the build. -/
@@ -146,10 +156,11 @@ def edgeAttrs : List (Name × Name) :=
   [(``SchemaArrow.crosses, ``CrossesAttrs),
    (``SchemaArrow.drivenBy, ``DrivenByAttrs),
    (``SchemaArrow.involves, ``InvolvesAttrs),
-   (``SchemaArrow.hasPhase, ``HasPhaseAttrs)]
+   (``SchemaArrow.hasPhase, ``HasPhaseAttrs),
+   (``SchemaArrow.precedes, ``PrecedesAttrs)]
 
 /-- Version of the `graph.json` shape. Bump on any change to this file's
 structures. -/
-def schemaVersion : Nat := 1
+def schemaVersion : Nat := 2
 
 end BioMech

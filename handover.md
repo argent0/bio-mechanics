@@ -15,7 +15,7 @@ Repository: https://github.com/argent0/bio-mechanics. Site: https://argent0.gith
 | **Teaching example** | A biomechanics fact the app shows and a pipeline test pins exactly, e.g. the vasti braking knee flexion in loading response. |
 
 **Lean specification (`spec/`)** — 84 theorems in the specification modules, listed with source locations in `generated/architecture.json`; all proofs by `decide`, `rfl`, `simp`, or short tactic proofs, zero `sorry`, zero `native_decide`.
-- `Schema.lean`: the schema quiver (9 kinds, 11 arrows) and attribute structures, read by reflection.
+- `Schema.lean`: the schema quiver (9 kinds, 12 arrows; `precedes` links each phase to the next, labelled by the gait event between them) and attribute structures, read by reflection.
 - `GaitFsm.lean`, `UiFsm.lean`: the gait DFA (seven phases plus `invalid`, D-001) and the UI DFA, with stride, reachability, and scrubbing theorems.
 - `Pipeline.lean`, `Components.lean`, `Acyclic.lean`: the 9-stage pipeline DAG with its artefact contract and topological order, the component import DAG with layering theorems.
 - `CheckGraph.lean`, `Conform.lean`: `lake exe checkGraph` (a passing graph carries a prefunctor into the schema quiver) and `lake exe conform` (trace format C7, soundness lemmas).
@@ -23,7 +23,7 @@ Repository: https://github.com/argent0/bio-mechanics. Site: https://argent0.gith
 
 **Pipeline (`pipeline/`)** — `ninja -f generated/pipeline.ninja` runs all 9 stages in about 25 s with the env from `pipeline/env/setup.sh` (OpenSim 4.6, Python 3.12).
 - Data: the scaled Rajagopal model and one walking trial (`pipeline/env/fetch_data.sh`), Uberon subset (committed) and FMA subset (local, licence) via `data/raw/ontology/fetch.sh`.
-- Output (committed, 2.1 MB): `data/out/graph.json` (108 nodes, 550 edges), `data/out/meshes/` (13 bodies, glTF), `data/out/muscle_paths.json` (80 muscles, 50 Hz, stride bounds).
+- Output (committed, 2.1 MB): `data/out/graph.json` (108 nodes, 557 edges), `data/out/meshes/` (13 bodies, glTF), `data/out/muscle_paths.json` (80 muscles, 50 Hz, stride bounds).
 - Roles follow D-002 (moment share) with the D-006 floor. Teaching examples pinned by tests: vasti eccentric antagonists of knee flexion in loading response; semimembranosus and gluteus maximus driving hip extension; calf eccentric antagonists of ankle dorsiflexion in mid-stance; gluteus medius and minimus stabilising the hip in mid-stance; tibialis anterior active after initial contact.
 - Investigation K12 confirmed stages 1–3 against inverse dynamics (knee extensor peak −0.75 N·m/kg) and the trial's EMG timing; static optimisation gives no co-contraction in early loading response, a property of its minimum-activation cost.
 

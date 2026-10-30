@@ -297,7 +297,7 @@ def tiny_enriched() -> dict[str, object]:
             "ligament": {"acl_r": ent("anterior cruciate ligament")},
             "nerve": {"femoral_r": ent("femoral nerve")},
             "jointAction": {"knee_flexion_r": ent("knee flexion"), "knee_extension_r": ent("knee extension")},
-            "phase": {"loadingResponse": ent("loading response", "midline")},
+            "phase": {ph: ent(ph, "midline") for ph in gait_fsm.PHASES},
             "movement": {"walking": ent("walking", "midline")},
         },
         "muscles": {"vaslat_r": {"origin": "femur_r", "insertion": "patella_r", "groups": ["quadriceps_r"], "nerve": "femoral_r"}},
@@ -315,6 +315,12 @@ def test_build_graph_is_well_typed_and_uses_every_relation() -> None:
     assert driven["source"] == "action:knee_flexion_r" and driven["phase"] == "phase:loadingResponse"
     involves = next(e for e in g["edges"] if e["relation"] == "involves")
     assert involves["rangeDeg"] == pytest.approx(19.9)
+
+
+def test_precedes_edges_follow_the_gait_dfa() -> None:
+    g = export_graph.build_graph(tiny_enriched())
+    precedes = [(e["source"], e["event"], e["target"]) for e in g["edges"] if e["relation"] == "precedes"]
+    assert precedes == [(f"phase:{s}", ev, f"phase:{t}") for s, ev, t in gait_fsm.TRANSITIONS]
 
 
 def test_check_attachment_keeps_curation_on_the_model_path() -> None:

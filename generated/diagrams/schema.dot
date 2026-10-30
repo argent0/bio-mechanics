@@ -20,6 +20,7 @@ digraph schema {
   "ligament" -> "joint" [label="stabilises"];
   "joint" -> "bone" [label="articulates"];
   "movement" -> "phase" [label="hasPhase · HasPhaseAttrs"];
+  "phase" -> "phase" [label="precedes · PrecedesAttrs"];
   "phase" -> "jointAction" [label="involves · InvolvesAttrs"];
   "jointAction" -> "joint" [label="actionAt"];
   "jointAction" -> "muscle" [label="drivenBy · DrivenByAttrs"];

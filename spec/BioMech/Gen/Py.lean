@@ -19,7 +19,7 @@ def pyTy : FieldTy → String
   | .bool => "bool"
   | .option t => s!"{pyTy t} | None"
   | .array t => s!"list[{pyTy t}]"
-  | .enum n => n
+  | .enum n _ => n
 
 /-- The field type as a Python literal for `FIELDS`. -/
 def pySpec : FieldTy → String
@@ -27,7 +27,7 @@ def pySpec : FieldTy → String
   | .bool => "\"bool\""
   | .option t => s!"(\"option\", {pySpec t})"
   | .array t => s!"(\"array\", {pySpec t})"
-  | .enum n => s!"(\"enum\", \"{n}\")"
+  | .enum n _ => s!"(\"enum\", \"{n}\")"
 
 def pyDoc (indent : String) : Option String → List String
   | none => []

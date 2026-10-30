@@ -17,6 +17,8 @@ Edges, by relation (all from `enriched.json`):
   stabilises          ligament → joint
   articulates         joint → bone
   hasPhase            movement → phase: order and bounds in percent of the stride
+  precedes            phase → next phase: one edge per row of the gait DFA's transitions
+                      (`gait_fsm.TRANSITIONS`), with the event between the two phases
   involves            phase → jointAction: the action each coordinate takes in the phase
                       (`label_roles.choose_action`), `rangeDeg` = |change of the coordinate|
   actionAt            jointAction → joint, for every action of anatomy.yaml
@@ -39,7 +41,8 @@ from typing import Any
 from pipeline.load_model import REPO
 from pipeline.segment_phases import GENERATED
 
-import pipeline_paths as paths  # noqa: E402  (generated/py: see `GENERATED`)
+import gait_fsm  # noqa: E402  (generated/py: see `GENERATED`)
+import pipeline_paths as paths  # noqa: E402
 import schema  # noqa: E402
 
 PREFIX: dict[str, str] = {
@@ -98,6 +101,8 @@ def build_graph(e: dict[str, Any]) -> dict[str, Any]:
             edge("articulates", "joint", j, "bone", b)
     for ph in roles["phases"]:
         edge("hasPhase", "movement", MOVEMENT, "phase", ph["phase"], order=ph["order"], startPct=ph["startPct"], endPct=ph["endPct"])
+    for src, event, dst in gait_fsm.TRANSITIONS:
+        edge("precedes", "phase", src, "phase", dst, event=event)
 
     def action_of(coordinate: str, direction: int) -> str:
         c = coords[coordinate]

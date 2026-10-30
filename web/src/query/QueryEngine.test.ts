@@ -9,7 +9,7 @@ const q = new QueryEngine(new GraphStore(fixture as unknown as Graph));
 describe("QueryEngine over the fixture", () => {
   it("indexes the sample graph", () => {
     expect(q.allNodes()).toHaveLength(24);
-    expect(q.allEdges()).toHaveLength(51);
+    expect(q.allEdges()).toHaveLength(52);
     expect(q.nodesOfKind("phase").map((n) => n.id)).toContain("phase:midStance");
   });
 
@@ -18,6 +18,13 @@ describe("QueryEngine over the fixture", () => {
     expect(ids).toContain("bone:femur_r");
     expect(ids).toContain("ligament:acl_r");
     expect(ids).toContain("action:knee_flexion_r");
+  });
+
+  it("phaseCycle orders the phases of the movement, from a movement or a phase", () => {
+    const fromMovement = q.phaseCycle("movement:walking");
+    expect(fromMovement?.phases.map((p) => p.phase.id)).toEqual(["phase:loadingResponse", "phase:midStance"]);
+    expect(q.phaseCycle("phase:midStance")).toEqual(fromMovement);
+    expect(q.phaseCycle("joint:knee_r")).toBeUndefined();
   });
 
   it("involvedParts of knee flexion", () => {

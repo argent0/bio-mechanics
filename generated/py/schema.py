@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Final, Literal, TypedDict, Union
 
-SCHEMA_VERSION: Final = 1
+SCHEMA_VERSION: Final = 2
 
 Kind = Literal["bone", "joint", "muscle", "muscleGroup", "ligament", "nerve", "movement", "phase", "jointAction"]
 """Node kinds: the vertices of the schema quiver."""
@@ -20,10 +20,15 @@ Contraction = Literal["concentric", "eccentric", "isometric"]
 """The kind of work a muscle does: shortening, lengthening under load
 (braking), or holding length."""
 
+GaitEvent = Literal["initialContact", "oppositeToeOff", "heelOff", "oppositeInitialContact", "toeOff", "feetAdjacent", "tibiaVertical"]
+"""Input symbols of the gait DFA: the gait events that bound the phases, named
+from the reference leg."""
+
 KIND: Final[tuple[Kind, ...]] = ("bone", "joint", "muscle", "muscleGroup", "ligament", "nerve", "movement", "phase", "jointAction",)
 SIDE: Final[tuple[Side, ...]] = ("left", "right", "midline",)
 ROLE: Final[tuple[Role, ...]] = ("mainMover", "helper", "stabiliser", "antagonist",)
 CONTRACTION: Final[tuple[Contraction, ...]] = ("concentric", "eccentric", "isometric",)
+GAITEVENT: Final[tuple[GaitEvent, ...]] = ("initialContact", "oppositeToeOff", "heelOff", "oppositeInitialContact", "toeOff", "feetAdjacent", "tibiaVertical",)
 
 
 class NodeAttrs(TypedDict):
@@ -89,6 +94,14 @@ class HasPhaseAttrs(TypedDict):
     """End of the phase, in percent of the cycle."""
 
 
+class PrecedesAttrs(TypedDict):
+    """Attributes of `precedes` (phase → phase): the next phase of the cycle, one
+edge per row of `Gait.transitions`. The edges form one loop through the seven
+phases, from terminal swing back to loading response."""
+    event: GaitEvent
+    """The gait event that ends the source phase and opens the target phase."""
+
+
 class EdgeBase(TypedDict):
     """Fields every edge carries. `source` and `target` are node ids."""
     source: str
@@ -128,6 +141,10 @@ class HasPhaseEdge(EdgeBase, HasPhaseAttrs):
     """Edge of relation `hasPhase`: movement → phase."""
 
 
+class PrecedesEdge(EdgeBase, PrecedesAttrs):
+    """Edge of relation `precedes`: phase → phase."""
+
+
 class InvolvesEdge(EdgeBase, InvolvesAttrs):
     """Edge of relation `involves`: phase → jointAction."""
 
@@ -140,7 +157,7 @@ class DrivenByEdge(EdgeBase, DrivenByAttrs):
     """Edge of relation `drivenBy`: jointAction → muscle."""
 
 
-Edge = Union[OriginEdge, InsertionEdge, CrossesEdge, PartOfEdge, InnervatedByEdge, StabilisesEdge, ArticulatesEdge, HasPhaseEdge, InvolvesEdge, ActionAtEdge, DrivenByEdge]
+Edge = Union[OriginEdge, InsertionEdge, CrossesEdge, PartOfEdge, InnervatedByEdge, StabilisesEdge, ArticulatesEdge, HasPhaseEdge, PrecedesEdge, InvolvesEdge, ActionAtEdge, DrivenByEdge]
 
 
 class Graph(TypedDict):
@@ -160,6 +177,7 @@ RELATIONS: Final[dict[str, tuple[Kind, Kind]]] = {
     "stabilises": ("ligament", "joint"),
     "articulates": ("joint", "bone"),
     "hasPhase": ("movement", "phase"),
+    "precedes": ("phase", "phase"),
     "involves": ("phase", "jointAction"),
     "actionAt": ("jointAction", "joint"),
     "drivenBy": ("jointAction", "muscle"),
@@ -169,6 +187,7 @@ RELATIONS: Final[dict[str, tuple[Kind, Kind]]] = {
 EDGE_ATTRS: Final[dict[str, str]] = {
     "crosses": "CrossesAttrs",
     "hasPhase": "HasPhaseAttrs",
+    "precedes": "PrecedesAttrs",
     "involves": "InvolvesAttrs",
     "drivenBy": "DrivenByAttrs",
 }
@@ -178,6 +197,7 @@ ENUMS: Final[dict[str, tuple[str, ...]]] = {
     "Side": SIDE,
     "Role": ROLE,
     "Contraction": CONTRACTION,
+    "GaitEvent": GAITEVENT,
 }
 
 FieldSpec = Union[str, tuple[str, "FieldSpec"]]
@@ -213,6 +233,9 @@ FIELDS: Final[dict[str, dict[str, FieldSpec]]] = {
         "order": "nat",
         "startPct": "float",
         "endPct": "float",
+    },
+    "PrecedesAttrs": {
+        "event": ("enum", "GaitEvent"),
     },
 }
 

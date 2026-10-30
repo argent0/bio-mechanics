@@ -1,5 +1,5 @@
 import cytoscape from "cytoscape";
-import type { Kind } from "@gen/types";
+import type { Edge, Kind } from "@gen/types";
 import type { QueryEngine } from "../query/QueryEngine";
 import { COLOURS, kindIcon } from "./icons";
 
@@ -9,6 +9,35 @@ const RING_GAP = 70;
 const RING_MIN_RADIUS = 120;
 /** Ring order: neighbours grouped by kind, so each kind sits in one arc. */
 const KIND_ORDER: Kind[] = ["joint", "bone", "ligament", "jointAction", "phase", "movement", "muscleGroup", "muscle", "nerve"];
+/** Smallest radius of the phase cycle, and the distance from the cycle out to
+ * the arc of the selected phase's other neighbours (px). */
+const CYCLE_MIN_RADIUS = 220;
+const ARC_OFFSET = 200;
+
+/** A camel-case identifier in words, e.g. `oppositeToeOff` → "opposite toe off". */
+export function words(camel: string): string {
+  return camel.replace(/([A-Z])/g, " $1").toLowerCase();
+}
+
+/** Edge text: the gait event for `precedes`, the relation for every other edge. */
+function edgeLabel(e: Edge): string {
+  return e.relation === "precedes" ? words(e.event) : e.relation;
+}
+
+/** Positions `n` points on an arc of `radius` around `c`, centred on angle
+ * `mid` and spaced `RING_GAP` apart; a full ring when they need more room. */
+function arc(n: number, c: cytoscape.Position, radius: number, mid: number): cytoscape.Position[] {
+  const step = Math.min(RING_GAP / radius, (2 * Math.PI) / Math.max(n, 1));
+  return Array.from({ length: n }, (_, i) => {
+    const a = mid + (i - (n - 1) / 2) * step;
+    return { x: c.x + radius * Math.cos(a), y: c.y + radius * Math.sin(a) };
+  });
+}
+
+/** Angle of position `i` of `n` on a ring, clockwise from the top. */
+function clock(i: number, n: number): number {
+  return (2 * Math.PI * i) / n - Math.PI / 2;
+}
 
 /** GraphView: Cytoscape view of the graph. Reads through QueryEngine only. */
 export class GraphView {
@@ -23,12 +52,13 @@ export class GraphView {
     this.cy = cytoscape({
       container,
       elements: [
-        ...query.allNodes().map((n) => ({ data: { id: n.id, label: n.commonName ?? n.name, kind: n.kind } })),
-        ...query.allEdges().map((e, i) => ({ data: { id: `e${i}`, source: e.source, target: e.target, label: e.relation } })),
+        ...query.allNodes().map((n) => ({ data: { id: n.id, label: this.nodeLabel(n.id), kind: n.kind } })),
+        ...query.allEdges().map((e, i) => ({ data: { id: `e${i}`, source: e.source, target: e.target, relation: e.relation, label: edgeLabel(e) } })),
       ],
       style: [
-        { selector: "node", style: { label: "data(label)", "font-size": 9, "background-color": (n: cytoscape.NodeSingular) => COLOURS[n.data("kind") as Kind] } },
+        { selector: "node", style: { label: "data(label)", "font-size": 9, "text-wrap": "wrap", "text-halign": "center", "background-color": (n: cytoscape.NodeSingular) => COLOURS[n.data("kind") as Kind] } },
         { selector: "edge", style: { width: 1, "line-color": "#bbb", "target-arrow-shape": "triangle", "target-arrow-color": "#bbb", "curve-style": "bezier" } },
+        { selector: "edge[relation = 'precedes']", style: { width: 2, "line-color": "#666", "target-arrow-color": "#666", label: "data(label)", "font-size": 7, "text-rotation": "autorotate", "text-background-color": "#fff", "text-background-opacity": 1 } },
         { selector: ".faded", style: { opacity: 0.12 } },
         { selector: "node:selected", style: { "border-width": 3, "border-color": "#000" } },
       ],
@@ -39,11 +69,33 @@ export class GraphView {
     this.cy.on("tap", (ev) => { if (ev.target === this.cy) this.clear(); });
   }
 
+  /** Node text: the common name, plus the span in percent of the cycle for a phase. */
+  private nodeLabel(id: string): string {
+    const n = this.query.node(id);
+    if (!n) return id;
+    const name = n.commonName ?? n.name;
+    const p = this.query.phaseCycle(id)?.phases.find((x) => x.phase.id === id);
+    return p ? `${name}\n${Math.round(p.startPct)}–${Math.round(p.endPct)} %` : name;
+  }
+
+  /** The elements a selection shows: the node with its neighbours, plus, for a
+   * movement or phase, the whole phase cycle with its movement. */
+  private neighbourhood(id: string): cytoscape.CollectionReturnValue {
+    let near = this.cy.getElementById(id).closedNeighborhood();
+    const cycle = this.query.phaseCycle(id);
+    if (cycle) {
+      let ring = this.cy.getElementById(cycle.movement.id).union(this.cy.collection());
+      for (const p of cycle.phases) ring = ring.union(this.cy.getElementById(p.phase.id));
+      near = near.union(ring).union(ring.edgesWith(ring));
+    }
+    return near;
+  }
+
   /** Select a node, show it with its neighbours, and fill the details pane. */
   focus(id: string): void {
     const node = this.query.node(id);
     if (!node) return;
-    const near = this.cy.getElementById(id).closedNeighborhood();
+    const near = this.neighbourhood(id);
     this.cy.elements().addClass("faded");
     near.removeClass("faded");
     this.cy.$(":selected").unselect();
@@ -52,23 +104,14 @@ export class GraphView {
     this.showDetails(id);
   }
 
-  /** Re-lays the whole graph around a selection: the neighbours go on a ring
-   * around the selected node (grouped by kind, spaced `RING_GAP` apart) and are
-   * locked there, then cose runs on the whole graph from its current positions
-   * so every other node makes room; then the view fits the neighbourhood. */
+  /** Re-lays the whole graph around a selection: `place` puts the shown nodes
+   * in position and they are locked there, then cose runs on the whole graph
+   * from its current positions so every other node makes room; then the view
+   * fits the shown elements. */
   private spread(id: string, near: cytoscape.CollectionReturnValue): void {
     this.layout?.stop();
     const started = performance.now();
-    const centre = this.cy.getElementById(id);
-    const ring = near.nodes().difference(centre).sort((x, y) =>
-      KIND_ORDER.indexOf(x.data("kind") as Kind) - KIND_ORDER.indexOf(y.data("kind") as Kind)
-      || String(x.data("label")).localeCompare(String(y.data("label"))));
-    const radius = Math.max(RING_MIN_RADIUS, (ring.length * RING_GAP) / (2 * Math.PI));
-    const c = centre.position();
-    ring.forEach((n, i) => {
-      const a = (2 * Math.PI * i) / ring.length - Math.PI / 2;
-      n.position({ x: c.x + radius * Math.cos(a), y: c.y + radius * Math.sin(a) });
-    });
+    this.place(id, near.nodes());
     near.nodes().lock();
     this.layout = this.cy.layout({
       name: "cose",
@@ -83,6 +126,40 @@ export class GraphView {
       this.cy.animate({ fit: { eles: near, padding: 40 }, duration: 300 });
     });
     this.layout.run();
+  }
+
+  /** Positions of the shown nodes. A movement or phase gets the cycle layout:
+   * the phases clockwise from the top in cycle order on a ring around their
+   * movement, and the selected phase's other neighbours on an arc outside it.
+   * Every other node gets a ring of its neighbours, grouped by kind and spaced
+   * `RING_GAP` apart. */
+  private place(id: string, shown: cytoscape.NodeCollection): void {
+    const centre = this.cy.getElementById(id);
+    const cycle = this.query.phaseCycle(id);
+    const byKind = (x: cytoscape.NodeSingular, y: cytoscape.NodeSingular) =>
+      KIND_ORDER.indexOf(x.data("kind") as Kind) - KIND_ORDER.indexOf(y.data("kind") as Kind)
+      || String(x.data("label")).localeCompare(String(y.data("label")));
+    if (!cycle) {
+      const ring = shown.difference(centre).sort(byKind);
+      const radius = Math.max(RING_MIN_RADIUS, (ring.length * RING_GAP) / (2 * Math.PI));
+      const c = centre.position();
+      ring.forEach((n, i) => { n.position({ x: c.x + radius * Math.cos(clock(i, ring.length)), y: c.y + radius * Math.sin(clock(i, ring.length)) }); });
+      return;
+    }
+    const hub = this.cy.getElementById(cycle.movement.id);
+    const c = { ...hub.position() };
+    const n = cycle.phases.length;
+    const radius = Math.max(CYCLE_MIN_RADIUS, (n * 2 * RING_GAP) / (2 * Math.PI));
+    cycle.phases.forEach((p, i) => {
+      this.cy.getElementById(p.phase.id).position({ x: c.x + radius * Math.cos(clock(i, n)), y: c.y + radius * Math.sin(clock(i, n)) });
+    });
+    const inCycle = new Set([hub.id(), ...cycle.phases.map((p) => p.phase.id)]);
+    const rest = shown.filter((x) => !inCycle.has(x.id())).sort(byKind);
+    const i = cycle.phases.findIndex((p) => p.phase.id === id);
+    const spots = i < 0
+      ? rest.map((_, k) => ({ x: c.x + (radius + ARC_OFFSET) * Math.cos(clock(k, rest.length)), y: c.y + (radius + ARC_OFFSET) * Math.sin(clock(k, rest.length)) }))
+      : arc(rest.length, c, radius + ARC_OFFSET, clock(i, n));
+    rest.forEach((x, k) => { const p = spots[k]; if (p) x.position(p); });
   }
 
   private clear(): void {
@@ -115,10 +192,13 @@ export class GraphView {
       const li = el("li", nb.direction === "out" ? `${nb.edge.relation} → ` : `${nb.edge.relation} ← `);
       li.prepend(kindIcon(nb.node.kind));
       li.append(a);
+      if (nb.edge.relation === "precedes") li.append(` at ${words(nb.edge.event)}`);
       list.append(li);
     }
     const heading = el("h3", n.id);
     heading.prepend(kindIcon(n.kind));
-    this.details.replaceChildren(heading, names, el("p", `kind: ${n.kind}, side: ${n.side}`), el("h4", "Neighbours"), list);
+    const span = this.query.phaseCycle(id)?.phases.find((p) => p.phase.id === id);
+    const where = span ? [el("p", `${span.startPct.toFixed(0)}–${span.endPct.toFixed(0)} % of the cycle, phase ${span.order + 1}`)] : [];
+    this.details.replaceChildren(heading, names, el("p", `kind: ${n.kind}, side: ${n.side}`), ...where, el("h4", "Neighbours"), list);
   }
 }

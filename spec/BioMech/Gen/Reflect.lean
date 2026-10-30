@@ -20,8 +20,8 @@ inductive FieldTy
   | string | float | nat | int | bool
   | option (t : FieldTy)
   | array (t : FieldTy)
-  /-- An enumeration declared in `BioMech.Schema`, by short name. -/
-  | enum (name : String)
+  /-- An enumeration, by short name and full declaration name. -/
+  | enum (name : String) (decl : Name)
   deriving Inhabited, Repr
 
 structure FieldSpec where
@@ -63,7 +63,7 @@ def ctorsOf (env : Environment) (n : Name) : Except String (List Name) :=
   | some (.inductInfo v) => .ok v.ctors
   | _ => .error s!"{n} is missing or is no inductive type"
 
-/-- Enumerations: inductives in `BioMech` whose constructors take no arguments. -/
+/-- Enumerations: inductives whose constructors take no arguments. -/
 def isEnum (env : Environment) (n : Name) : Bool :=
   match env.find? n with
   | some (.inductInfo v) => v.numParams == 0 && v.numIndices == 0 &&
@@ -81,13 +81,13 @@ partial def fieldTy (env : Environment) (e : Expr) : Except String FieldTy :=
   | .const ``Bool _, #[] => .ok .bool
   | .const ``Option _, #[t] => return .option (← fieldTy env t)
   | .const ``Array _, #[t] => return .array (← fieldTy env t)
-  | .const n _, #[] => if isEnum env n then .ok (.enum (short n)) else .error s!"unsupported field type {n}"
+  | .const n _, #[] => if isEnum env n then .ok (.enum (short n) n) else .error s!"unsupported field type {n}"
   | _, _ => .error s!"unsupported field type {e}"
 
-/-- Enumerations a field type refers to. -/
-def enumsIn : FieldTy → List String
+/-- Enumerations a field type refers to, by full declaration name. -/
+def enumsIn : FieldTy → List Name
   | .option t | .array t => enumsIn t
-  | .enum n => [n]
+  | .enum _ d => [d]
   | _ => []
 
 def structSpec (env : Environment) (n : Name) : IO StructSpec := do
@@ -116,8 +116,8 @@ def arrowSpec (env : Environment) (c : Name) : IO ArrowSpec := do
 def loadSchema (env : Environment) : IO SchemaSpec := do
   let structs ← ([``NodeAttrs] ++ edgeAttrs.map (·.2)).mapM (structSpec env)
   let used := structs.flatMap fun s => s.fields.flatMap (enumsIn ·.ty)
-  let enumNames := used.foldl (fun acc n => if acc.contains n then acc else acc ++ [n]) ["Kind"]
-  let enums ← enumNames.mapM fun n => enumSpec env (`BioMech ++ n.toName)
+  let enumNames := used.foldl (fun acc n => if acc.contains n then acc else acc ++ [n]) [``Kind]
+  let enums ← enumNames.mapM (enumSpec env)
   let arrows ← (← IO.ofExcept (ctorsOf env ``SchemaArrow)).mapM (arrowSpec env)
   return { version := schemaVersion, enums, structs, arrows }
 
