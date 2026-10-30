@@ -3,6 +3,7 @@ digraph pipeline {
   rankdir=TB;
   node [shape=box, fontname="Helvetica"];
   edge [fontname="Helvetica", fontsize=10];
+  "buildModel" [label="buildModel"];
   "loadModel" [label="loadModel"];
   "runStaticOpt" [label="runStaticOpt"];
   "computeMomentArms" [label="computeMomentArms"];
@@ -13,6 +14,7 @@ digraph pipeline {
   "exportMeshes" [label="exportMeshes"];
   "exportMusclePaths" [label="exportMusclePaths"];
   "exportDynamics" [label="exportDynamics"];
+  "buildModel" -> "loadModel" [label="mergedModel, ikFull"];
   "loadModel" -> "runStaticOpt" [label="kinematics"];
   "runStaticOpt" -> "computeMomentArms";
   "computeMomentArms" -> "segmentPhases";

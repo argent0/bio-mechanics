@@ -3,6 +3,13 @@ import BioMech.Acyclic
 /-!
 # Front-end components
 
+## Terms
+
+* *Region*: the body region of an anatomy node, `Region` in
+  `BioMech.Schema` (lower limb, pelvis, trunk, upper limb, head).
+* *Side*: left, right, or midline, the node's `side` attribute (`Side` in
+  `BioMech.Schema`).
+
 The web app's modules form a digraph of allowed imports: an edge `a → b` means
 code in `a` may import code in `b`. Workstream C emits
 `generated/eslint-boundaries.json` from `edges` and `Component.paths`, so an
@@ -13,14 +20,18 @@ Every component may also import the generated types and FSM tables under
 
 Layers, from the bottom: `GraphStore` holds `graph.json`; `QueryEngine` answers
 questions over it; the UI components (`ui`) read through `QueryEngine`;
-`Viewer3D` and `PhasePanel` follow `Timeline` for the current time and phase,
-and `PhasePanel` borrows `Viewer3D`'s muscle colour scale;
-`ArchitectureView` reads generated files only; `TraceRecorder` records FSM
-events from every UI component; `App` wires everything together.
+`RegionFilter` holds the selected body regions and sides and narrows the nodes
+a view passes it, so the views that show muscles take their nodes from
+`QueryEngine` and filter them through `RegionFilter`; `Viewer3D` and
+`PhasePanel` follow `Timeline` for the current time and phase, and
+`PhasePanel` borrows `Viewer3D`'s muscle colour scale; `ArchitectureView`
+reads generated files only; `TraceRecorder` records FSM events from every UI
+component; `App` wires everything together.
 
 Theorems: the import graph is acyclic; the UI components that use the
 knowledge graph reach `GraphStore` only through `QueryEngine`;
-`ArchitectureView` reaches exactly one component, `TraceRecorder`.
+`RegionFilter` and `ArchitectureView` each reach exactly one component,
+`TraceRecorder`.
 -/
 
 namespace BioMech.Components
@@ -40,6 +51,10 @@ inductive Component
   | Viewer3D
   /-- Joint actions and muscle roles for the current phase, in plain language. -/
   | PhasePanel
+  /-- The selected body regions and sides, with the checkbox control that
+  picks them; narrows the nodes a view passes it to those regions and sides,
+  reading each node's `region` and `side` attributes. -/
+  | RegionFilter
   /-- Cytoscape.js view of a node and its neighbours. -/
   | GraphView
   /-- The `/architecture` page, drawn from `generated/architecture.json`. -/
@@ -53,8 +68,8 @@ inductive Component
 
 /-- Every component, in declaration order. -/
 def Component.all : List Component :=
-  [.GraphStore, .QueryEngine, .Timeline, .Viewer3D, .PhasePanel, .GraphView,
-   .ArchitectureView, .TraceRecorder, .App]
+  [.GraphStore, .QueryEngine, .Timeline, .Viewer3D, .PhasePanel, .RegionFilter,
+   .GraphView, .ArchitectureView, .TraceRecorder, .App]
 
 /-- `Component.all` lists every component. -/
 theorem Component.mem_all (c : Component) : c ∈ Component.all := by cases c <;> decide
@@ -72,6 +87,7 @@ def Component.name : Component → String
   | .Timeline => "Timeline"
   | .Viewer3D => "Viewer3D"
   | .PhasePanel => "PhasePanel"
+  | .RegionFilter => "RegionFilter"
   | .GraphView => "GraphView"
   | .ArchitectureView => "ArchitectureView"
   | .TraceRecorder => "TraceRecorder"
@@ -86,6 +102,7 @@ def Component.paths : Component → List String
   | .Timeline => ["web/src/timeline/"]
   | .Viewer3D => ["web/src/viewer/"]
   | .PhasePanel => ["web/src/phase/"]
+  | .RegionFilter => ["web/src/region/"]
   | .GraphView => ["web/src/graphview/"]
   | .ArchitectureView => ["web/src/architecture/"]
   | .TraceRecorder => ["web/src/trace/"]
@@ -100,7 +117,7 @@ def sharedImports : List String := ["generated/ts/"]
 
 /-- The UI components: everything the app mounts on screen. -/
 def ui : List Component :=
-  [.Timeline, .Viewer3D, .PhasePanel, .GraphView, .ArchitectureView]
+  [.Timeline, .Viewer3D, .PhasePanel, .RegionFilter, .GraphView, .ArchitectureView]
 
 /-- Allowed imports: `a → b` means `a` may import `b`. -/
 def edges : List (Component × Component) :=
@@ -109,18 +126,21 @@ def edges : List (Component × Component) :=
     -- views that use the knowledge graph read through the query layer
     (.Timeline, .QueryEngine), (.Viewer3D, .QueryEngine),
     (.PhasePanel, .QueryEngine), (.GraphView, .QueryEngine),
+    -- views that show muscles narrow them to the selected regions and sides
+    (.Viewer3D, .RegionFilter), (.PhasePanel, .RegionFilter),
+    (.GraphView, .RegionFilter),
     -- views that follow the current time and phase
     (.Viewer3D, .Timeline), (.PhasePanel, .Timeline),
     -- the dynamics panel colours muscles with the viewer's colour scale
     (.PhasePanel, .Viewer3D),
     -- every UI component records its FSM events
     (.Timeline, .TraceRecorder), (.Viewer3D, .TraceRecorder),
-    (.PhasePanel, .TraceRecorder), (.GraphView, .TraceRecorder),
-    (.ArchitectureView, .TraceRecorder),
+    (.PhasePanel, .TraceRecorder), (.RegionFilter, .TraceRecorder),
+    (.GraphView, .TraceRecorder), (.ArchitectureView, .TraceRecorder),
     -- the entry point wires everything
     (.App, .GraphStore), (.App, .QueryEngine), (.App, .TraceRecorder),
     (.App, .Timeline), (.App, .Viewer3D), (.App, .PhasePanel),
-    (.App, .GraphView), (.App, .ArchitectureView)]
+    (.App, .RegionFilter), (.App, .GraphView), (.App, .ArchitectureView)]
 
 /-- The import digraph: adjacency is membership in `edges`. -/
 abbrev graph : Digraph Component := ofEdges edges
@@ -172,6 +192,18 @@ theorem graphStore_importers : ∀ c, graph.Adj c .GraphStore ↔ c = .QueryEngi
 store and the query layer. -/
 theorem architectureView_reach :
     ∀ c, Relation.TransGen graph.Adj .ArchitectureView c ↔ c = .TraceRecorder := by
+  decide
+
+/-- The views that show muscles (`Viewer3D`, `PhasePanel`, `GraphView`) and
+`App` are the direct importers of `RegionFilter`. -/
+theorem regionFilter_importers : ∀ c, graph.Adj c .RegionFilter ↔
+    c = .Viewer3D ∨ c = .PhasePanel ∨ c = .GraphView ∨ c = .App := by
+  decide
+
+/-- `RegionFilter` reaches exactly `TraceRecorder`: it works on the nodes its
+importers pass it and stays clear of the store and the query layer. -/
+theorem regionFilter_reach :
+    ∀ c, Relation.TransGen graph.Adj .RegionFilter c ↔ c = .TraceRecorder := by
   decide
 
 /-- Every UI component may import `TraceRecorder`. -/

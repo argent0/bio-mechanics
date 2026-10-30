@@ -3,6 +3,13 @@ import BioMech.Acyclic
 /-!
 # Build pipeline
 
+## Terms
+
+* *Merged model*: the scaled Rajagopal model with the trunk, arm, and neck
+  muscles of the upper-body models attached to its bodies (D-008).
+* *Merge recipe*: the source models, the Rajagopal body each source body maps
+  onto, and the neck assumption (D-010), in `pipeline/config/model.yaml`.
+
 The offline data pipeline is a digraph of stages: an edge `a → b` means stage
 `b` runs after stage `a`. Each stage is one Python script under `pipeline/`
 that reads and writes the files listed here. Workstream C emits
@@ -14,28 +21,40 @@ Files fall into three groups, by directory (`Dir`):
 * sources, maintained outside the pipeline: `data/raw/` (downloads and the
   subject-specific model and trial that `pipeline/env/make_trial.py` derives
   from them), `data/curated/` (hand-written anatomy), `pipeline/config/`
-  (thresholds);
+  (role thresholds and the model merge recipe);
 * intermediate results in `data/work/`;
 * outputs the web app loads, in `data/out/`.
 
-The pipeline consumes one model: the Rajagopal model scaled to the walking
-subject (`Artefact.scaledModel`). The joint angles come from inverse kinematics
-on that same scaled model, so activations, moment arms, muscle paths, and bone
-meshes all share the subject's segment lengths. The generic model
-`data/raw/rajagopal/Rajagopal2016.osim` stays the input of the scaling step in
-`pipeline/env/`.
+The pipeline consumes one model, the merged model (`Artefact.mergedModel`),
+built in two steps. First, `pipeline/env/` scales the generic model
+`data/raw/rajagopal/Rajagopal2016.osim` to the walking subject
+(`Artefact.scaledModel`) and runs inverse kinematics on the scaled model
+(`Artefact.ikMotion`). Then stage `buildModel`, the first stage, attaches the
+trunk, arm, and neck muscles that the merge recipe (`Artefact.mergeRecipe`)
+names to the matching bodies of the scaled model, gives the head its own body
+behind a neck joint, and writes the joint angles with the neck angles that
+hold the head level in space (`Artefact.ikFull`) (D-008, D-009, D-010). Every
+later stage loads the merged model and those joint angles, so activations,
+moment arms, muscle paths, and bone meshes all share the subject's segment
+lengths and one set of coordinates.
 
 Theorems: the stage graph is acyclic and `topoOrder` is a topological order of
 it; every input of a stage is a source or an output of a stage upstream of it;
-each derived file has exactly one writer.
+each derived file has exactly one writer; `buildModel` runs upstream of every
+other stage and is the one stage that reads the scaled model and the
+inverse-kinematics motion.
 -/
 
 namespace BioMech.Pipeline
 
-/-- Pipeline stages, in handover order. -/
+/-- Pipeline stages, in handover order, with the model merge first. -/
 inductive Stage
-  /-- Load the scaled Rajagopal model and the walking trial with the OpenSim
-  API. -/
+  /-- Merge the trunk, arm, and neck muscles of the upper-body models onto the
+  scaled Rajagopal model, give the head its own body behind a neck joint, and
+  add the neck angles that hold the head level in space to the joint angles
+  (D-008, D-009, D-010). -/
+  | buildModel
+  /-- Load the merged model and the walking trial with the OpenSim API. -/
   | loadModel
   /-- Static optimisation: muscle activations per frame. -/
   | runStaticOpt
@@ -53,7 +72,7 @@ inductive Stage
   /-- Write the knowledge graph `data/out/graph.json` (contract C3). -/
   | exportGraph
   /-- Convert the model's bone geometry to glTF, each mesh multiplied by its
-  scale factors from the scaled model. -/
+  scale factors from the merged model. -/
   | exportMeshes
   /-- Write muscle path points per frame for the tube renderer, with the
   bounds of the stride the knowledge graph describes. -/
@@ -65,7 +84,7 @@ inductive Stage
 
 /-- Every stage, in declaration order. -/
 def Stage.all : List Stage :=
-  [.loadModel, .runStaticOpt, .computeMomentArms, .segmentPhases, .labelRoles,
+  [.buildModel, .loadModel, .runStaticOpt, .computeMomentArms, .segmentPhases, .labelRoles,
    .enrichAnatomy, .exportGraph, .exportMeshes, .exportMusclePaths, .exportDynamics]
 
 /-- `Stage.all` lists every stage. -/
@@ -78,6 +97,7 @@ instance : Fintype Stage := ⟨⟨Stage.all, Multiset.coe_nodup.mpr Stage.nodup_
 
 /-- Stage name as written in Lean, e.g. `loadModel`. -/
 def Stage.name : Stage → String
+  | .buildModel => "buildModel"
   | .loadModel => "loadModel"
   | .runStaticOpt => "runStaticOpt"
   | .computeMomentArms => "computeMomentArms"
@@ -91,6 +111,7 @@ def Stage.name : Stage → String
 
 /-- The Python script that runs the stage, relative to the repository root. -/
 def Stage.script : Stage → String
+  | .buildModel => "pipeline/build_model.py"
   | .loadModel => "pipeline/load_model.py"
   | .runStaticOpt => "pipeline/static_opt.py"
   | .computeMomentArms => "pipeline/moment_arms.py"
@@ -104,7 +125,7 @@ def Stage.script : Stage → String
 
 /-- Stage order: `a → b` means `b` runs after `a`. -/
 def edges : List (Stage × Stage) :=
-  [(.loadModel, .runStaticOpt), (.runStaticOpt, .computeMomentArms),
+  [(.buildModel, .loadModel), (.loadModel, .runStaticOpt), (.runStaticOpt, .computeMomentArms),
    (.computeMomentArms, .segmentPhases), (.segmentPhases, .labelRoles),
    (.labelRoles, .enrichAnatomy), (.enrichAnatomy, .exportGraph),
    (.loadModel, .exportMeshes),
@@ -146,13 +167,13 @@ def Dir.isSource : Dir → Bool
 
 /-- Every file the pipeline reads or writes. -/
 inductive Artefact
-  /-- The Rajagopal full-body model scaled to the walking subject: the one
-  model every stage loads. -/
+  /-- The Rajagopal full-body model scaled to the walking subject: the base
+  model `buildModel` merges the upper-body muscles onto. -/
   | scaledModel
   /-- The bone surface meshes (`.vtp`) the model refers to, at generic size. -/
   | geometry
   /-- Joint coordinates per frame of the walking trial, from inverse kinematics
-  on `scaledModel`. -/
+  on `scaledModel`; `buildModel` adds the neck angles to them. -/
   | ikMotion
   /-- Ground reaction forces and centres of pressure per frame of the trial. -/
   | grfMotion
@@ -167,6 +188,17 @@ inductive Artefact
   | curatedAnatomy
   /-- Role-classification thresholds. -/
   | roleThresholds
+  /-- The merge recipe: the source models, the Rajagopal body each source body
+  maps onto, and the neck assumption (D-008, D-010). -/
+  | mergeRecipe
+  /-- The scaled Rajagopal model with the trunk, arm, and neck muscles merged
+  in and the head on its own body behind a neck joint: the one model every
+  stage after `buildModel` loads. -/
+  | mergedModel
+  /-- `ikMotion`'s joint coordinates plus, per frame, the neck angles that
+  cancel the torso's rotation in the ground frame, so the head keeps its
+  static-pose orientation (D-010). -/
+  | ikFull
   /-- Bodies (with their mesh files), joints, coordinates, and muscles (with
   maximum isometric forces) of the model, under their OpenSim names. -/
   | model
@@ -203,8 +235,8 @@ inductive Artefact
 /-- Every artefact, in declaration order. -/
 def Artefact.all : List Artefact :=
   [.scaledModel, .geometry, .ikMotion, .grfMotion, .externalLoads, .uberon, .fma,
-   .curatedAnatomy, .roleThresholds,
-   .model, .kinematics, .grf, .activations, .momentArms, .mtLengths, .phases,
+   .curatedAnatomy, .roleThresholds, .mergeRecipe,
+   .mergedModel, .ikFull, .model, .kinematics, .grf, .activations, .momentArms, .mtLengths, .phases,
    .roles, .enriched,
    .knowledgeGraph, .meshes, .musclePaths, .dynamics]
 
@@ -222,8 +254,8 @@ def Artefact.dir : Artefact → Dir
   | .scaledModel | .geometry | .ikMotion | .grfMotion | .externalLoads
   | .uberon | .fma => .raw
   | .curatedAnatomy => .curated
-  | .roleThresholds => .config
-  | .model | .kinematics | .grf | .activations | .momentArms | .mtLengths
+  | .roleThresholds | .mergeRecipe => .config
+  | .mergedModel | .ikFull | .model | .kinematics | .grf | .activations | .momentArms | .mtLengths
   | .phases | .roles | .enriched => .work
   | .knowledgeGraph | .meshes | .musclePaths | .dynamics => .out
 
@@ -238,6 +270,9 @@ def Artefact.file : Artefact → String
   | .fma => "ontology/fma.owl"
   | .curatedAnatomy => "anatomy.yaml"
   | .roleThresholds => "roles.yaml"
+  | .mergeRecipe => "model.yaml"
+  | .mergedModel => "model.osim"
+  | .ikFull => "ik_full.mot"
   | .model => "model.json"
   | .kinematics => "kinematics.csv"
   | .grf => "grf.csv"
@@ -264,12 +299,15 @@ theorem Artefact.nodup_paths : (Artefact.all.map Artefact.path).Nodup := by deci
 /-- The files a stage reads. Every file a stage's script opens appears here,
 so ninja reruns the stage whenever one of them changes. Reads whose reason is
 less evident from the stage's purpose:
-* `segmentPhases` reads `scaledModel`: OpenSim poses the model at each frame
+* `buildModel` reads `ikMotion`: OpenSim poses the scaled model at each frame
+  of it to find the torso's rotation in the ground frame, which the neck
+  angles cancel (D-010).
+* `segmentPhases` reads `mergedModel`: OpenSim poses the model at each frame
   of `kinematics` and reports the foot and leg marker positions that locate
   the gait events.
 * `labelRoles` reads `model`: each muscle's maximum isometric force scales its
   activation into a force, and so into a joint moment.
-* `exportMeshes` reads `scaledModel`: each mesh's scale factors live there,
+* `exportMeshes` reads `mergedModel`: each mesh's scale factors live there,
   and `model` lists the mesh files only.
 * `exportMusclePaths` reads `phases`: the gait events there give the stride
   bounds, the opening and closing right initial contacts of the stride whose
@@ -278,21 +316,23 @@ less evident from the stage's purpose:
   direction of a coordinate is, and `mtLengths` only because `labelRoles`'s
   trial reader loads it alongside the moment arms. -/
 def Stage.reads : Stage → List Artefact
-  | .loadModel => [.scaledModel, .ikMotion, .grfMotion]
-  | .runStaticOpt => [.scaledModel, .externalLoads, .grfMotion, .kinematics]
-  | .computeMomentArms => [.scaledModel, .kinematics]
-  | .segmentPhases => [.scaledModel, .kinematics, .grf]
+  | .buildModel => [.scaledModel, .ikMotion, .mergeRecipe]
+  | .loadModel => [.mergedModel, .ikFull, .grfMotion]
+  | .runStaticOpt => [.mergedModel, .externalLoads, .grfMotion, .kinematics]
+  | .computeMomentArms => [.mergedModel, .kinematics]
+  | .segmentPhases => [.mergedModel, .kinematics, .grf]
   | .labelRoles => [.model, .activations, .momentArms, .mtLengths, .phases, .kinematics,
       .roleThresholds]
   | .enrichAnatomy => [.roles, .model, .uberon, .fma, .curatedAnatomy]
   | .exportGraph => [.enriched]
-  | .exportMeshes => [.scaledModel, .model, .geometry]
-  | .exportMusclePaths => [.scaledModel, .kinematics, .activations, .mtLengths, .phases]
+  | .exportMeshes => [.mergedModel, .model, .geometry]
+  | .exportMusclePaths => [.mergedModel, .kinematics, .activations, .mtLengths, .phases]
   | .exportDynamics => [.model, .kinematics, .activations, .momentArms, .mtLengths, .phases,
       .roleThresholds, .curatedAnatomy]
 
 /-- The files a stage writes. -/
 def Stage.writes : Stage → List Artefact
+  | .buildModel => [.mergedModel, .ikFull]
   | .loadModel => [.model, .kinematics, .grf]
   | .runStaticOpt => [.activations]
   | .computeMomentArms => [.momentArms, .mtLengths]
@@ -317,7 +357,7 @@ def topoOrder : List Stage := topoSort Stage.all edges
 
 /-- The computed order, spelled out. -/
 theorem topoOrder_eq : topoOrder =
-    [.loadModel, .runStaticOpt, .computeMomentArms, .segmentPhases, .labelRoles,
+    [.buildModel, .loadModel, .runStaticOpt, .computeMomentArms, .segmentPhases, .labelRoles,
      .enrichAnatomy, .exportGraph, .exportMeshes, .exportMusclePaths, .exportDynamics] := by
   decide
 
@@ -349,5 +389,19 @@ theorem derived_written : ∀ a : Artefact, a.isSource = false → ∃ s : Stage
 /-- Each source and each intermediate file feeds some stage; only the files in
 `data/out/` leave the pipeline. -/
 theorem read_unless_out : ∀ a : Artefact, a.dir ≠ .out → ∃ s : Stage, a ∈ s.reads := by decide
+
+/-! ## The model merge -/
+
+/-- `buildModel` runs upstream of every other stage. -/
+theorem buildModel_upstream : ∀ s : Stage, s ≠ .buildModel →
+    Relation.TransGen graph.Adj .buildModel s := by
+  decide
+
+/-- `buildModel` is the one stage that reads the scaled model or the
+inverse-kinematics motion; every other stage loads the merged model and the
+joint angles that carry the neck angles (D-008, D-010). -/
+theorem buildModel_sole_reader_of_scaled : ∀ s : Stage,
+    (.scaledModel ∈ s.reads ∨ .ikMotion ∈ s.reads) ↔ s = .buildModel := by
+  decide
 
 end BioMech.Pipeline

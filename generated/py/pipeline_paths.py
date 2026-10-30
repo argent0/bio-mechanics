@@ -26,8 +26,8 @@ class Stage(NamedTuple):
 
 
 SCALED_MODEL: Final = "data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim"
-"""The Rajagopal full-body model scaled to the walking subject: the one
-model every stage loads.
+"""The Rajagopal full-body model scaled to the walking subject: the base
+model `buildModel` merges the upper-body muscles onto.
 """
 
 GEOMETRY: Final = "data/raw/rajagopal/Geometry/"
@@ -35,7 +35,7 @@ GEOMETRY: Final = "data/raw/rajagopal/Geometry/"
 
 IK_MOTION: Final = "data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot"
 """Joint coordinates per frame of the walking trial, from inverse kinematics
-on `scaledModel`.
+on `scaledModel`; `buildModel` adds the neck angles to them.
 """
 
 GRF_MOTION: Final = "data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot"
@@ -57,6 +57,23 @@ CURATED_ANATOMY: Final = "data/curated/anatomy.yaml"
 
 ROLE_THRESHOLDS: Final = "pipeline/config/roles.yaml"
 """Role-classification thresholds."""
+
+MERGE_RECIPE: Final = "pipeline/config/model.yaml"
+"""The merge recipe: the source models, the Rajagopal body each source body
+maps onto, and the neck assumption (D-008, D-010).
+"""
+
+MERGED_MODEL: Final = "data/work/model.osim"
+"""The scaled Rajagopal model with the trunk, arm, and neck muscles merged
+in and the head on its own body behind a neck joint: the one model every
+stage after `buildModel` loads.
+"""
+
+IK_FULL: Final = "data/work/ik_full.mot"
+"""`ikMotion`'s joint coordinates plus, per frame, the neck angles that
+cancel the torso's rotation in the ground frame, so the head keeps its
+static-pose orientation (D-010).
+"""
 
 MODEL: Final = "data/work/model.json"
 """Bodies (with their mesh files), joints, coordinates, and muscles (with
@@ -108,22 +125,33 @@ and the coordinate's angle.
 """
 
 
+BUILD_MODEL: Final = Stage(
+    name="buildModel",
+    script="pipeline/build_model.py",
+    module="pipeline.build_model",
+    inputs=(SCALED_MODEL, IK_MOTION, MERGE_RECIPE),
+    outputs=(MERGED_MODEL, IK_FULL),
+)
+"""Merge the trunk, arm, and neck muscles of the upper-body models onto the
+scaled Rajagopal model, give the head its own body behind a neck joint, and
+add the neck angles that hold the head level in space to the joint angles
+(D-008, D-009, D-010).
+"""
+
 LOAD_MODEL: Final = Stage(
     name="loadModel",
     script="pipeline/load_model.py",
     module="pipeline.load_model",
-    inputs=(SCALED_MODEL, IK_MOTION, GRF_MOTION),
+    inputs=(MERGED_MODEL, IK_FULL, GRF_MOTION),
     outputs=(MODEL, KINEMATICS, GRF),
 )
-"""Load the scaled Rajagopal model and the walking trial with the OpenSim
-API.
-"""
+"""Load the merged model and the walking trial with the OpenSim API."""
 
 RUN_STATIC_OPT: Final = Stage(
     name="runStaticOpt",
     script="pipeline/static_opt.py",
     module="pipeline.static_opt",
-    inputs=(SCALED_MODEL, EXTERNAL_LOADS, GRF_MOTION, KINEMATICS),
+    inputs=(MERGED_MODEL, EXTERNAL_LOADS, GRF_MOTION, KINEMATICS),
     outputs=(ACTIVATIONS,),
 )
 """Static optimisation: muscle activations per frame."""
@@ -132,7 +160,7 @@ COMPUTE_MOMENT_ARMS: Final = Stage(
     name="computeMomentArms",
     script="pipeline/moment_arms.py",
     module="pipeline.moment_arms",
-    inputs=(SCALED_MODEL, KINEMATICS),
+    inputs=(MERGED_MODEL, KINEMATICS),
     outputs=(MOMENT_ARMS, MT_LENGTHS),
 )
 """Moment arm and muscle-tendon length per muscle, coordinate, and frame;
@@ -143,7 +171,7 @@ SEGMENT_PHASES: Final = Stage(
     name="segmentPhases",
     script="pipeline/segment_phases.py",
     module="pipeline.segment_phases",
-    inputs=(SCALED_MODEL, KINEMATICS, GRF),
+    inputs=(MERGED_MODEL, KINEMATICS, GRF),
     outputs=(PHASES,),
 )
 """Detect gait events and drive the generated gait FSM to label each frame
@@ -183,18 +211,18 @@ EXPORT_MESHES: Final = Stage(
     name="exportMeshes",
     script="pipeline/export_meshes.py",
     module="pipeline.export_meshes",
-    inputs=(SCALED_MODEL, MODEL, GEOMETRY),
+    inputs=(MERGED_MODEL, MODEL, GEOMETRY),
     outputs=(MESHES,),
 )
 """Convert the model's bone geometry to glTF, each mesh multiplied by its
-scale factors from the scaled model.
+scale factors from the merged model.
 """
 
 EXPORT_MUSCLE_PATHS: Final = Stage(
     name="exportMusclePaths",
     script="pipeline/export_muscle_paths.py",
     module="pipeline.export_muscle_paths",
-    inputs=(SCALED_MODEL, KINEMATICS, ACTIVATIONS, MT_LENGTHS, PHASES),
+    inputs=(MERGED_MODEL, KINEMATICS, ACTIVATIONS, MT_LENGTHS, PHASES),
     outputs=(MUSCLE_PATHS,),
 )
 """Write muscle path points per frame for the tube renderer, with the
@@ -223,6 +251,9 @@ ARTEFACTS: Final[dict[str, str]] = {
     "fma": FMA,
     "curatedAnatomy": CURATED_ANATOMY,
     "roleThresholds": ROLE_THRESHOLDS,
+    "mergeRecipe": MERGE_RECIPE,
+    "mergedModel": MERGED_MODEL,
+    "ikFull": IK_FULL,
     "model": MODEL,
     "kinematics": KINEMATICS,
     "grf": GRF,
@@ -239,16 +270,17 @@ ARTEFACTS: Final[dict[str, str]] = {
 }
 """Every artefact by its Lean name."""
 
-SOURCES: Final[tuple[str, ...]] = (SCALED_MODEL, GEOMETRY, IK_MOTION, GRF_MOTION, EXTERNAL_LOADS, UBERON, FMA, CURATED_ANATOMY, ROLE_THRESHOLDS)
+SOURCES: Final[tuple[str, ...]] = (SCALED_MODEL, GEOMETRY, IK_MOTION, GRF_MOTION, EXTERNAL_LOADS, UBERON, FMA, CURATED_ANATOMY, ROLE_THRESHOLDS, MERGE_RECIPE)
 """Paths maintained outside the pipeline."""
 
-STAGES: Final[tuple[Stage, ...]] = (LOAD_MODEL, RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS, SEGMENT_PHASES, LABEL_ROLES, ENRICH_ANATOMY, EXPORT_GRAPH, EXPORT_MESHES, EXPORT_MUSCLE_PATHS, EXPORT_DYNAMICS)
+STAGES: Final[tuple[Stage, ...]] = (BUILD_MODEL, LOAD_MODEL, RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS, SEGMENT_PHASES, LABEL_ROLES, ENRICH_ANATOMY, EXPORT_GRAPH, EXPORT_MESHES, EXPORT_MUSCLE_PATHS, EXPORT_DYNAMICS)
 """Every stage, in declaration order."""
 
-TOPO_ORDER: Final[tuple[Stage, ...]] = (LOAD_MODEL, RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS, SEGMENT_PHASES, LABEL_ROLES, ENRICH_ANATOMY, EXPORT_GRAPH, EXPORT_MESHES, EXPORT_MUSCLE_PATHS, EXPORT_DYNAMICS)
+TOPO_ORDER: Final[tuple[Stage, ...]] = (BUILD_MODEL, LOAD_MODEL, RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS, SEGMENT_PHASES, LABEL_ROLES, ENRICH_ANATOMY, EXPORT_GRAPH, EXPORT_MESHES, EXPORT_MUSCLE_PATHS, EXPORT_DYNAMICS)
 """The order the stages run in (`topoOrder`)."""
 
 EDGES: Final[tuple[tuple[Stage, Stage], ...]] = (
+    (BUILD_MODEL, LOAD_MODEL),
     (LOAD_MODEL, RUN_STATIC_OPT),
     (RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS),
     (COMPUTE_MOMENT_ARMS, SEGMENT_PHASES),

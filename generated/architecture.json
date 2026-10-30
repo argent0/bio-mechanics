@@ -377,19 +377,29 @@
     "loc": {
       "module": "BioMech.Pipeline",
       "file": "spec/BioMech/Pipeline.lean",
-      "line": 106,
-      "startLine": 105,
-      "endLine": 112
+      "line": 127,
+      "startLine": 126,
+      "endLine": 133
     },
     "stages": [
       {
+        "name": "buildModel",
+        "doc": "Merge the trunk, arm, and neck muscles of the upper-body models onto the\nscaled Rajagopal model, give the head its own body behind a neck joint, and\nadd the neck angles that hold the head level in space to the joint angles\n(D-008, D-009, D-010).",
+        "script": "pipeline/build_model.py",
+        "module": "pipeline.build_model",
+        "reads": ["scaledModel", "ikMotion", "mergeRecipe"],
+        "writes": ["mergedModel", "ikFull"],
+        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot", "pipeline/config/model.yaml"],
+        "outputs": ["data/work/model.osim", "data/work/ik_full.mot"]
+      },
+      {
         "name": "loadModel",
-        "doc": "Load the scaled Rajagopal model and the walking trial with the OpenSim\nAPI.",
+        "doc": "Load the merged model and the walking trial with the OpenSim API.",
         "script": "pipeline/load_model.py",
         "module": "pipeline.load_model",
-        "reads": ["scaledModel", "ikMotion", "grfMotion"],
+        "reads": ["mergedModel", "ikFull", "grfMotion"],
         "writes": ["model", "kinematics", "grf"],
-        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot", "data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot"],
+        "inputs": ["data/work/model.osim", "data/work/ik_full.mot", "data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot"],
         "outputs": ["data/work/model.json", "data/work/kinematics.csv", "data/work/grf.csv"]
       },
       {
@@ -397,9 +407,9 @@
         "doc": "Static optimisation: muscle activations per frame.",
         "script": "pipeline/static_opt.py",
         "module": "pipeline.static_opt",
-        "reads": ["scaledModel", "externalLoads", "grfMotion", "kinematics"],
+        "reads": ["mergedModel", "externalLoads", "grfMotion", "kinematics"],
         "writes": ["activations"],
-        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/raw/rajagopal/walk_pipeline/ID/grf_walk.xml", "data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot", "data/work/kinematics.csv"],
+        "inputs": ["data/work/model.osim", "data/raw/rajagopal/walk_pipeline/ID/grf_walk.xml", "data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot", "data/work/kinematics.csv"],
         "outputs": ["data/work/activations.csv"]
       },
       {
@@ -407,9 +417,9 @@
         "doc": "Moment arm and muscle-tendon length per muscle, coordinate, and frame;\nlength velocity gives concentric or eccentric work.",
         "script": "pipeline/moment_arms.py",
         "module": "pipeline.moment_arms",
-        "reads": ["scaledModel", "kinematics"],
+        "reads": ["mergedModel", "kinematics"],
         "writes": ["momentArms", "mtLengths"],
-        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/work/kinematics.csv"],
+        "inputs": ["data/work/model.osim", "data/work/kinematics.csv"],
         "outputs": ["data/work/moment_arms.csv", "data/work/mt_lengths.csv"]
       },
       {
@@ -417,9 +427,9 @@
         "doc": "Detect gait events and drive the generated gait FSM to label each frame\nwith its phase.",
         "script": "pipeline/segment_phases.py",
         "module": "pipeline.segment_phases",
-        "reads": ["scaledModel", "kinematics", "grf"],
+        "reads": ["mergedModel", "kinematics", "grf"],
         "writes": ["phases"],
-        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/work/kinematics.csv", "data/work/grf.csv"],
+        "inputs": ["data/work/model.osim", "data/work/kinematics.csv", "data/work/grf.csv"],
         "outputs": ["data/work/phases.csv"]
       },
       {
@@ -454,12 +464,12 @@
       },
       {
         "name": "exportMeshes",
-        "doc": "Convert the model's bone geometry to glTF, each mesh multiplied by its\nscale factors from the scaled model.",
+        "doc": "Convert the model's bone geometry to glTF, each mesh multiplied by its\nscale factors from the merged model.",
         "script": "pipeline/export_meshes.py",
         "module": "pipeline.export_meshes",
-        "reads": ["scaledModel", "model", "geometry"],
+        "reads": ["mergedModel", "model", "geometry"],
         "writes": ["meshes"],
-        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/work/model.json", "data/raw/rajagopal/Geometry/"],
+        "inputs": ["data/work/model.osim", "data/work/model.json", "data/raw/rajagopal/Geometry/"],
         "outputs": ["data/out/meshes/index.json"]
       },
       {
@@ -467,9 +477,9 @@
         "doc": "Write muscle path points per frame for the tube renderer, with the\nbounds of the stride the knowledge graph describes.",
         "script": "pipeline/export_muscle_paths.py",
         "module": "pipeline.export_muscle_paths",
-        "reads": ["scaledModel", "kinematics", "activations", "mtLengths", "phases"],
+        "reads": ["mergedModel", "kinematics", "activations", "mtLengths", "phases"],
         "writes": ["musclePaths"],
-        "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/work/kinematics.csv", "data/work/activations.csv", "data/work/mt_lengths.csv", "data/work/phases.csv"],
+        "inputs": ["data/work/model.osim", "data/work/kinematics.csv", "data/work/activations.csv", "data/work/mt_lengths.csv", "data/work/phases.csv"],
         "outputs": ["data/out/muscle_paths.json"]
       },
       {
@@ -484,6 +494,11 @@
       }
     ],
     "edges": [
+      {
+        "source": "buildModel",
+        "target": "loadModel",
+        "artefacts": ["mergedModel", "ikFull"]
+      },
       {
         "source": "loadModel",
         "target": "runStaticOpt",
@@ -540,11 +555,11 @@
         "artefacts": ["phases"]
       }
     ],
-    "topoOrder": ["loadModel", "runStaticOpt", "computeMomentArms", "segmentPhases", "labelRoles", "enrichAnatomy", "exportGraph", "exportMeshes", "exportMusclePaths", "exportDynamics"],
+    "topoOrder": ["buildModel", "loadModel", "runStaticOpt", "computeMomentArms", "segmentPhases", "labelRoles", "enrichAnatomy", "exportGraph", "exportMeshes", "exportMusclePaths", "exportDynamics"],
     "artefacts": [
       {
         "name": "scaledModel",
-        "doc": "The Rajagopal full-body model scaled to the walking subject: the one\nmodel every stage loads.",
+        "doc": "The Rajagopal full-body model scaled to the walking subject: the base\nmodel `buildModel` merges the upper-body muscles onto.",
         "path": "data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim",
         "isSource": true,
         "isDirectory": false
@@ -558,7 +573,7 @@
       },
       {
         "name": "ikMotion",
-        "doc": "Joint coordinates per frame of the walking trial, from inverse kinematics\non `scaledModel`.",
+        "doc": "Joint coordinates per frame of the walking trial, from inverse kinematics\non `scaledModel`; `buildModel` adds the neck angles to them.",
         "path": "data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot",
         "isSource": true,
         "isDirectory": false
@@ -603,6 +618,27 @@
         "doc": "Role-classification thresholds.",
         "path": "pipeline/config/roles.yaml",
         "isSource": true,
+        "isDirectory": false
+      },
+      {
+        "name": "mergeRecipe",
+        "doc": "The merge recipe: the source models, the Rajagopal body each source body\nmaps onto, and the neck assumption (D-008, D-010).",
+        "path": "pipeline/config/model.yaml",
+        "isSource": true,
+        "isDirectory": false
+      },
+      {
+        "name": "mergedModel",
+        "doc": "The scaled Rajagopal model with the trunk, arm, and neck muscles merged\nin and the head on its own body behind a neck joint: the one model every\nstage after `buildModel` loads.",
+        "path": "data/work/model.osim",
+        "isSource": false,
+        "isDirectory": false
+      },
+      {
+        "name": "ikFull",
+        "doc": "`ikMotion`'s joint coordinates plus, per frame, the neck angles that\ncancel the torso's rotation in the ground frame, so the head keeps its\nstatic-pose orientation (D-010).",
+        "path": "data/work/ik_full.mot",
+        "isSource": false,
         "isDirectory": false
       },
       {
@@ -702,9 +738,9 @@
     "loc": {
       "module": "BioMech.Components",
       "file": "spec/BioMech/Components.lean",
-      "line": 106,
-      "startLine": 105,
-      "endLine": 123
+      "line": 123,
+      "startLine": 122,
+      "endLine": 143
     },
     "components": [
       {
@@ -733,6 +769,11 @@
         "paths": ["web/src/phase/"]
       },
       {
+        "name": "RegionFilter",
+        "doc": "The selected body regions and sides, with the checkbox control that\npicks them; narrows the nodes a view passes it to those regions and sides,\nreading each node's `region` and `side` attributes.",
+        "paths": ["web/src/region/"]
+      },
+      {
         "name": "GraphView",
         "doc": "Cytoscape.js view of a node and its neighbours.",
         "paths": ["web/src/graphview/"]
@@ -759,12 +800,16 @@
       { "source": "Viewer3D", "target": "QueryEngine" },
       { "source": "PhasePanel", "target": "QueryEngine" },
       { "source": "GraphView", "target": "QueryEngine" },
+      { "source": "Viewer3D", "target": "RegionFilter" },
+      { "source": "PhasePanel", "target": "RegionFilter" },
+      { "source": "GraphView", "target": "RegionFilter" },
       { "source": "Viewer3D", "target": "Timeline" },
       { "source": "PhasePanel", "target": "Timeline" },
       { "source": "PhasePanel", "target": "Viewer3D" },
       { "source": "Timeline", "target": "TraceRecorder" },
       { "source": "Viewer3D", "target": "TraceRecorder" },
       { "source": "PhasePanel", "target": "TraceRecorder" },
+      { "source": "RegionFilter", "target": "TraceRecorder" },
       { "source": "GraphView", "target": "TraceRecorder" },
       { "source": "ArchitectureView", "target": "TraceRecorder" },
       { "source": "App", "target": "GraphStore" },
@@ -773,10 +818,11 @@
       { "source": "App", "target": "Timeline" },
       { "source": "App", "target": "Viewer3D" },
       { "source": "App", "target": "PhasePanel" },
+      { "source": "App", "target": "RegionFilter" },
       { "source": "App", "target": "GraphView" },
       { "source": "App", "target": "ArchitectureView" }
     ],
-    "topoOrder": ["App", "PhasePanel", "Viewer3D", "Timeline", "GraphView", "QueryEngine", "GraphStore", "ArchitectureView", "TraceRecorder"],
+    "topoOrder": ["App", "PhasePanel", "Viewer3D", "Timeline", "GraphView", "QueryEngine", "GraphStore", "RegionFilter", "ArchitectureView", "TraceRecorder"],
     "sharedImports": ["generated/ts/"]
   },
   "theorems": [
@@ -1408,14 +1454,14 @@
       "namespace": "BioMech.Pipeline",
       "statement": "∀ (s : Stage), s ∈ Stage.all",
       "doc": "`Stage.all` lists every stage.",
-      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 72, "startLine": 71, "endLine": 72 }
+      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 91, "startLine": 90, "endLine": 91 }
     },
     {
       "name": "BioMech.Pipeline.Stage.nodup_all",
       "namespace": "BioMech.Pipeline",
       "statement": "Stage.all.Nodup",
       "doc": "`Stage.all` lists each stage once.",
-      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 75, "startLine": 74, "endLine": 75 }
+      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 94, "startLine": 93, "endLine": 94 }
     },
     {
       "name": "BioMech.Pipeline.Artefact.mem_all",
@@ -1425,9 +1471,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 212,
-        "startLine": 211,
-        "endLine": 212
+        "line": 244,
+        "startLine": 243,
+        "endLine": 244
       }
     },
     {
@@ -1438,9 +1484,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 215,
-        "startLine": 214,
-        "endLine": 215
+        "line": 247,
+        "startLine": 246,
+        "endLine": 247
       }
     },
     {
@@ -1451,22 +1497,22 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 262,
-        "startLine": 261,
-        "endLine": 262
+        "line": 297,
+        "startLine": 296,
+        "endLine": 297
       }
     },
     {
       "name": "BioMech.Pipeline.topoOrder_eq",
       "namespace": "BioMech.Pipeline",
-      "statement": "topoOrder =\n  [Stage.loadModel, Stage.runStaticOpt, Stage.computeMomentArms, Stage.segmentPhases,\n    Stage.labelRoles, Stage.enrichAnatomy, Stage.exportGraph, Stage.exportMeshes,\n    Stage.exportMusclePaths, Stage.exportDynamics]",
+      "statement": "topoOrder =\n  [Stage.buildModel, Stage.loadModel, Stage.runStaticOpt, Stage.computeMomentArms,\n    Stage.segmentPhases, Stage.labelRoles, Stage.enrichAnatomy, Stage.exportGraph,\n    Stage.exportMeshes, Stage.exportMusclePaths, Stage.exportDynamics]",
       "doc": "The computed order, spelled out.",
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 319,
-        "startLine": 318,
-        "endLine": 322
+        "line": 359,
+        "startLine": 358,
+        "endLine": 362
       }
     },
     {
@@ -1477,9 +1523,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 325,
-        "startLine": 324,
-        "endLine": 325
+        "line": 365,
+        "startLine": 364,
+        "endLine": 365
       }
     },
     {
@@ -1490,9 +1536,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 328,
-        "startLine": 327,
-        "endLine": 328
+        "line": 368,
+        "startLine": 367,
+        "endLine": 368
       }
     },
     {
@@ -1503,9 +1549,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 333,
-        "startLine": 332,
-        "endLine": 335
+        "line": 373,
+        "startLine": 372,
+        "endLine": 375
       }
     },
     {
@@ -1516,9 +1562,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 339,
-        "startLine": 337,
-        "endLine": 339
+        "line": 379,
+        "startLine": 377,
+        "endLine": 379
       }
     },
     {
@@ -1529,9 +1575,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 342,
-        "startLine": 341,
-        "endLine": 343
+        "line": 382,
+        "startLine": 381,
+        "endLine": 383
       }
     },
     {
@@ -1542,9 +1588,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 346,
-        "startLine": 345,
-        "endLine": 347
+        "line": 386,
+        "startLine": 385,
+        "endLine": 387
       }
     },
     {
@@ -1555,9 +1601,35 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 351,
-        "startLine": 349,
-        "endLine": 351
+        "line": 391,
+        "startLine": 389,
+        "endLine": 391
+      }
+    },
+    {
+      "name": "BioMech.Pipeline.buildModel_upstream",
+      "namespace": "BioMech.Pipeline",
+      "statement": "∀ (s : Stage), s ≠ Stage.buildModel → Relation.TransGen graph.Adj Stage.buildModel s",
+      "doc": "`buildModel` runs upstream of every other stage.",
+      "loc": {
+        "module": "BioMech.Pipeline",
+        "file": "spec/BioMech/Pipeline.lean",
+        "line": 396,
+        "startLine": 395,
+        "endLine": 398
+      }
+    },
+    {
+      "name": "BioMech.Pipeline.buildModel_sole_reader_of_scaled",
+      "namespace": "BioMech.Pipeline",
+      "statement": "∀ (s : Stage), Artefact.scaledModel ∈ s.reads ∨ Artefact.ikMotion ∈ s.reads ↔ s = Stage.buildModel",
+      "doc": "`buildModel` is the one stage that reads the scaled model or the\ninverse-kinematics motion; every other stage loads the merged model and the\njoint angles that carry the neck angles (D-008, D-010).",
+      "loc": {
+        "module": "BioMech.Pipeline",
+        "file": "spec/BioMech/Pipeline.lean",
+        "line": 403,
+        "startLine": 400,
+        "endLine": 405
       }
     },
     {
@@ -1568,9 +1640,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 60,
-        "startLine": 59,
-        "endLine": 60
+        "line": 75,
+        "startLine": 74,
+        "endLine": 75
       }
     },
     {
@@ -1581,9 +1653,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 63,
-        "startLine": 62,
-        "endLine": 63
+        "line": 78,
+        "startLine": 77,
+        "endLine": 78
       }
     },
     {
@@ -1594,9 +1666,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 95,
-        "startLine": 94,
-        "endLine": 95
+        "line": 112,
+        "startLine": 111,
+        "endLine": 112
       }
     },
     {
@@ -1607,9 +1679,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 137,
-        "startLine": 135,
-        "endLine": 137
+        "line": 157,
+        "startLine": 155,
+        "endLine": 157
       }
     },
     {
@@ -1620,9 +1692,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 140,
-        "startLine": 139,
-        "endLine": 140
+        "line": 160,
+        "startLine": 159,
+        "endLine": 160
       }
     },
     {
@@ -1633,9 +1705,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 145,
-        "startLine": 144,
-        "endLine": 146
+        "line": 165,
+        "startLine": 164,
+        "endLine": 166
       }
     },
     {
@@ -1646,9 +1718,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 149,
-        "startLine": 148,
-        "endLine": 151
+        "line": 169,
+        "startLine": 168,
+        "endLine": 171
       }
     },
     {
@@ -1659,9 +1731,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 154,
-        "startLine": 153,
-        "endLine": 155
+        "line": 174,
+        "startLine": 173,
+        "endLine": 175
       }
     },
     {
@@ -1672,9 +1744,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 158,
-        "startLine": 157,
-        "endLine": 159
+        "line": 178,
+        "startLine": 177,
+        "endLine": 179
       }
     },
     {
@@ -1685,9 +1757,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 163,
-        "startLine": 161,
-        "endLine": 165
+        "line": 183,
+        "startLine": 181,
+        "endLine": 185
       }
     },
     {
@@ -1698,9 +1770,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 168,
-        "startLine": 167,
-        "endLine": 169
+        "line": 188,
+        "startLine": 187,
+        "endLine": 189
       }
     },
     {
@@ -1711,9 +1783,35 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 173,
-        "startLine": 171,
-        "endLine": 175
+        "line": 193,
+        "startLine": 191,
+        "endLine": 195
+      }
+    },
+    {
+      "name": "BioMech.Components.regionFilter_importers",
+      "namespace": "BioMech.Components",
+      "statement": "∀ (c : Component),\n  graph.Adj c Component.RegionFilter ↔\n    c = Component.Viewer3D ∨ c = Component.PhasePanel ∨ c = Component.GraphView ∨ c = Component.App",
+      "doc": "The views that show muscles (`Viewer3D`, `PhasePanel`, `GraphView`) and\n`App` are the direct importers of `RegionFilter`.",
+      "loc": {
+        "module": "BioMech.Components",
+        "file": "spec/BioMech/Components.lean",
+        "line": 199,
+        "startLine": 197,
+        "endLine": 201
+      }
+    },
+    {
+      "name": "BioMech.Components.regionFilter_reach",
+      "namespace": "BioMech.Components",
+      "statement": "∀ (c : Component),\n  Relation.TransGen graph.Adj Component.RegionFilter c ↔ c = Component.TraceRecorder",
+      "doc": "`RegionFilter` reaches exactly `TraceRecorder`: it works on the nodes its\nimporters pass it and stays clear of the store and the query layer.",
+      "loc": {
+        "module": "BioMech.Components",
+        "file": "spec/BioMech/Components.lean",
+        "line": 205,
+        "startLine": 203,
+        "endLine": 207
       }
     },
     {
@@ -1724,9 +1822,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 178,
-        "startLine": 177,
-        "endLine": 178
+        "line": 210,
+        "startLine": 209,
+        "endLine": 210
       }
     },
     {
@@ -1737,9 +1835,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 182,
-        "startLine": 180,
-        "endLine": 182
+        "line": 214,
+        "startLine": 212,
+        "endLine": 214
       }
     },
     {
@@ -1750,9 +1848,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 186,
-        "startLine": 184,
-        "endLine": 188
+        "line": 218,
+        "startLine": 216,
+        "endLine": 220
       }
     }
   ]

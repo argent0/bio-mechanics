@@ -10,6 +10,7 @@ digraph components {
   "GraphView" [label="GraphView"];
   "QueryEngine" [label="QueryEngine"];
   "GraphStore" [label="GraphStore"];
+  "RegionFilter" [label="RegionFilter"];
   "ArchitectureView" [label="ArchitectureView"];
   "TraceRecorder" [label="TraceRecorder"];
   "QueryEngine" -> "GraphStore";
@@ -17,12 +18,16 @@ digraph components {
   "Viewer3D" -> "QueryEngine";
   "PhasePanel" -> "QueryEngine";
   "GraphView" -> "QueryEngine";
+  "Viewer3D" -> "RegionFilter";
+  "PhasePanel" -> "RegionFilter";
+  "GraphView" -> "RegionFilter";
   "Viewer3D" -> "Timeline";
   "PhasePanel" -> "Timeline";
   "PhasePanel" -> "Viewer3D";
   "Timeline" -> "TraceRecorder";
   "Viewer3D" -> "TraceRecorder";
   "PhasePanel" -> "TraceRecorder";
+  "RegionFilter" -> "TraceRecorder";
   "GraphView" -> "TraceRecorder";
   "ArchitectureView" -> "TraceRecorder";
   "App" -> "GraphStore";
@@ -31,6 +36,7 @@ digraph components {
   "App" -> "Timeline";
   "App" -> "Viewer3D";
   "App" -> "PhasePanel";
+  "App" -> "RegionFilter";
   "App" -> "GraphView";
   "App" -> "ArchitectureView";
 }

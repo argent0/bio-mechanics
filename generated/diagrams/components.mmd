@@ -7,6 +7,7 @@ flowchart TB
   n_GraphView["GraphView"]
   n_QueryEngine["QueryEngine"]
   n_GraphStore["GraphStore"]
+  n_RegionFilter["RegionFilter"]
   n_ArchitectureView["ArchitectureView"]
   n_TraceRecorder["TraceRecorder"]
   n_QueryEngine --> n_GraphStore
@@ -14,12 +15,16 @@ flowchart TB
   n_Viewer3D --> n_QueryEngine
   n_PhasePanel --> n_QueryEngine
   n_GraphView --> n_QueryEngine
+  n_Viewer3D --> n_RegionFilter
+  n_PhasePanel --> n_RegionFilter
+  n_GraphView --> n_RegionFilter
   n_Viewer3D --> n_Timeline
   n_PhasePanel --> n_Timeline
   n_PhasePanel --> n_Viewer3D
   n_Timeline --> n_TraceRecorder
   n_Viewer3D --> n_TraceRecorder
   n_PhasePanel --> n_TraceRecorder
+  n_RegionFilter --> n_TraceRecorder
   n_GraphView --> n_TraceRecorder
   n_ArchitectureView --> n_TraceRecorder
   n_App --> n_GraphStore
@@ -28,5 +33,6 @@ flowchart TB
   n_App --> n_Timeline
   n_App --> n_Viewer3D
   n_App --> n_PhasePanel
+  n_App --> n_RegionFilter
   n_App --> n_GraphView
   n_App --> n_ArchitectureView

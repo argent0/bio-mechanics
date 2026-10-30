@@ -8,6 +8,7 @@
       { "type": "Timeline", "pattern": "web/src/timeline/**", "mode": "full" },
       { "type": "Viewer3D", "pattern": "web/src/viewer/**", "mode": "full" },
       { "type": "PhasePanel", "pattern": "web/src/phase/**", "mode": "full" },
+      { "type": "RegionFilter", "pattern": "web/src/region/**", "mode": "full" },
       { "type": "GraphView", "pattern": "web/src/graphview/**", "mode": "full" },
       { "type": "ArchitectureView", "pattern": "web/src/architecture/**", "mode": "full" },
       { "type": "TraceRecorder", "pattern": "web/src/trace/**", "mode": "full" },
@@ -37,15 +38,19 @@
           },
           {
             "from": ["Viewer3D"],
-            "allow": ["Viewer3D", "QueryEngine", "Timeline", "TraceRecorder", "generated"]
+            "allow": ["Viewer3D", "QueryEngine", "RegionFilter", "Timeline", "TraceRecorder", "generated"]
           },
           {
             "from": ["PhasePanel"],
-            "allow": ["PhasePanel", "QueryEngine", "Timeline", "Viewer3D", "TraceRecorder", "generated"]
+            "allow": ["PhasePanel", "QueryEngine", "RegionFilter", "Timeline", "Viewer3D", "TraceRecorder", "generated"]
+          },
+          {
+            "from": ["RegionFilter"],
+            "allow": ["RegionFilter", "TraceRecorder", "generated"]
           },
           {
             "from": ["GraphView"],
-            "allow": ["GraphView", "QueryEngine", "TraceRecorder", "generated"]
+            "allow": ["GraphView", "QueryEngine", "RegionFilter", "TraceRecorder", "generated"]
           },
           {
             "from": ["ArchitectureView"],
@@ -57,7 +62,7 @@
           },
           {
             "from": ["App"],
-            "allow": ["App", "GraphStore", "QueryEngine", "TraceRecorder", "Timeline", "Viewer3D", "PhasePanel", "GraphView", "ArchitectureView", "generated"]
+            "allow": ["App", "GraphStore", "QueryEngine", "TraceRecorder", "Timeline", "Viewer3D", "PhasePanel", "RegionFilter", "GraphView", "ArchitectureView", "generated"]
           }
         ]
       }
