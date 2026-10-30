@@ -286,7 +286,7 @@
    ["ninja -f generated/pipeline.ninja",
     "cd spec && lake exe checkGraph ../data/out/graph.json",
     "~/.local/share/bm-opensim/bin/python -m pytest pipeline/tests -k p4"]},
-  {"state": "running",
+  {"state": "merged",
    "produces": [],
    "paths":
    ["web/src/viewer/",

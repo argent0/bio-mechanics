@@ -158,7 +158,7 @@ L findings: left vasti brake left knee flexion in reference pre-swing (left load
 |---|---|---|---|---|---|---|---|---|---|
 | M | Model merge | opus / xhigh | `ac5f4d49260d0cc4a` | 0 | merged | `ws/M` | D2, S, D-008–D-010 | merged model, head split, neck angles holding the head level, reserves | static optimisation over the stride; reserves RMS < 10 N·m lumbar, < 2 N·m arm, < 1 N·m neck; leg activations within 0.02 RMS of today |
 | P4 | Trunk and arm stages | opus / high | `a749e226a23d368b2` | 0 | merged | `ws/P4` | M, L, D-009 | roles for neck, lumbar, shoulder, elbow, forearm, wrist; curated anatomy; meshes | erector spinae two bursts per stride; posterior deltoid in backward swing; neck extensors stabilising; D-006 floor test; `checkGraph` |
-| W2 | Web, real output | sonnet / medium | `a53564cc78711c6e0` | 0 | running (owns W1's paths and `web/src/timeline/`) | `ws/W2` | P4, S | real graph wired in; tubes for every muscle | ≥ 30 fps with every muscle; `data/out/` < 8 MB; recorded trace conforms |
+| W2 | Web, real output | sonnet / medium | `a53564cc78711c6e0` | 0 | merged (10 muscle draw calls, 93 bone; 13 fps headless software GL; 30 fps check on the director's machine) | `ws/W2` | P4, S | real graph wired in; tubes for every muscle | ≥ 30 fps with every muscle; `data/out/` < 8 MB; recorded trace conforms |
 
 ## Wave 3 — Integration (coordinator)
 

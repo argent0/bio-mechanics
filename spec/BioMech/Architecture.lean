@@ -131,7 +131,7 @@ def modules : List Module := [
       "pipeline/config/roles.yaml", "data/curated/anatomy.yaml", "data/out/", "pipeline/tests/test_p4_*.py"],
     acceptance := ["ninja -f generated/pipeline.ninja", "cd spec && lake exe checkGraph ../data/out/graph.json",
       "~/.local/share/bm-opensim/bin/python -m pytest pipeline/tests -k p4"] },
-  { id := .W2, name := "Web, real output", lang := "TypeScript", model := "sonnet", state := .running,
+  { id := .W2, name := "Web, real output", lang := "TypeScript", model := "sonnet", state := .merged,
     paths := ["web/src/viewer/", "web/src/phase/", "web/src/graphview/", "web/src/region/", "web/src/timeline/"],
     acceptance := ["cd web && npx tsc --noEmit", "cd web && npm test", "viewer at 30 fps or more, every muscle drawn"] }
 ]
