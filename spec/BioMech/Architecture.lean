@@ -25,7 +25,7 @@ inductive ModuleId
 
 /-- API identifiers: the contracts between modules. -/
 inductive ApiId
-  | C1 | C2 | C3 | C4
+  | C1 | C2 | C3 | C4 | C5 | C6
   deriving DecidableEq, Repr, Inhabited
 
 /-- Where a module stands. `planned` modules appear on the map before their code exists. -/
@@ -62,7 +62,7 @@ def modules : List Module := [
       "spec/BioMech/Schema.lean", "spec/BioMech/Architecture.lean", "spec/BioMech/Arch/",
       "spec/BioMech/ArchMain.lean"],
     acceptance := ["scripts/gate.sh"] },
-  { id := .A, name := "Lean FSMs", lang := "Lean", model := "opus", state := .running,
+  { id := .A, name := "Lean FSMs", lang := "Lean", model := "opus", state := .merged,
     paths := ["spec/BioMech/GaitFsm.lean", "spec/BioMech/UiFsm.lean"],
     acceptance := ["cd spec && lake build", "! grep -n sorry spec/BioMech/GaitFsm.lean spec/BioMech/UiFsm.lean"] },
   { id := .B, name := "Lean graphs", lang := "Lean", model := "opus", state := .running,
@@ -111,7 +111,12 @@ def apis : List Api := [
   { id := .C3, name := "graph.json", files := ["data/fixtures/graph.sample.json", "data/out/graph.json"],
     producer := .P2, consumers := [.E, .F, .E3] },
   { id := .C4, name := "Module map", files := ["spec/BioMech/Architecture.lean", "generated/modules.json"],
-    producer := .coordinator, consumers := [.H] }
+    producer := .coordinator, consumers := [.H] },
+  { id := .C5, name := "FSMs", files := ["spec/BioMech/GaitFsm.lean", "spec/BioMech/UiFsm.lean"],
+    producer := .A, consumers := [.C, .F] },
+  { id := .C6, name := "Pipeline and component graphs",
+    files := ["spec/BioMech/Pipeline.lean", "spec/BioMech/Components.lean"],
+    producer := .B, consumers := [.C] }
 ]
 
 def ModuleId.all : List ModuleId :=
@@ -141,7 +146,7 @@ theorem ModuleId.mem_all (m : ModuleId) : m ∈ ModuleId.all := by cases m <;> d
 theorem modules_ids : modules.map (·.id) = ModuleId.all := by decide
 
 /-- Each API appears exactly once in `apis`. -/
-theorem apis_ids : apis.map (·.id) = [.C1, .C2, .C3, .C4] := by decide
+theorem apis_ids : apis.map (·.id) = [.C1, .C2, .C3, .C4, .C5, .C6] := by decide
 
 def lookup (m : ModuleId) : Option Module := modules.find? (·.id == m)
 
