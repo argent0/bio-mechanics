@@ -133,8 +133,8 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 | K20 Pass-through `pipeline/build_model.py`, empty `pipeline/config/model.yaml` (M's paths, before M starts) | merged | ninja needs both; pipeline output byte-identical |
 | K21 App wires `RegionFilter` (`web/src/main.ts`, `web/index.html`) | merged | search, GraphView, PhasePanel, DynamicsPanel, Viewer3D share one filter |
 | K22 Stage scripts default to `paths.MERGED_MODEL`, `paths.IK_FULL` (the reads ninja declares) | merged (M half); P4: export scripts | M: `load_model.py`, `static_opt.py`, `moment_arms.py`, `segment_phases.py` |
-| K23 `buildModel` reads the upper-body model files once D2 fixes their paths | todo | S follow-up |
-| K26 Static optimisation under 15 min in CI (462 muscles: 24 min locally); CI timeout 60 min meanwhile | todo | M: custom convex QP in `static_opt.py` |
+| K23 `buildModel` reads the upper-body model files once D2 fixes their paths | running | S worker resumed |
+| K26 Static optimisation under 15 min in CI (462 muscles: 24 min locally); CI timeout 60 min meanwhile | running | M: custom convex QP in `static_opt.py` |
 | K27 Accept M's commit `c6a1ade` outside its paths: fixtures in `test_p1/p2/l_stages.py`, regions of 15 new bodies in `anatomy.yaml`, `label_roles.py` labels muscles that cross a labelled coordinate | merged | owners L, P2 finished; leg graph unchanged |
 | K25 D2: fetch FBLS from its pinned mirror, git-ignored, checksummed (D-011) | merged | 324 muscles load; mirror holds no meshes (vertebra meshes absent); full licence text unobtained (simtk.org down) |
 | K24 L's web-test line (ten coordinates in `dynamics.json`); left-aware FMA subset on main | merged | graph 207 nodes, 1096 edges; reproduces on main |
@@ -148,7 +148,7 @@ L findings: left vasti brake left knee flexion in reference pre-swing (left load
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Branch | Inputs | Outputs | Acceptance |
 |---|---|---|---|---|---|---|---|---|---|
 | M | Model merge | opus / xhigh | `ac5f4d49260d0cc4a` | 0 | merged | `ws/M` | D2, S, D-008–D-010 | merged model, head split, neck angles holding the head level, reserves | static optimisation over the stride; reserves RMS < 10 N·m lumbar, < 2 N·m arm, < 1 N·m neck; leg activations within 0.02 RMS of today |
-| P4 | Trunk and arm stages | opus / high | — | 0 | todo | `ws/P4` | M, L, D-009 | roles for neck, lumbar, shoulder, elbow, forearm, wrist; curated anatomy; meshes | erector spinae two bursts per stride; posterior deltoid in backward swing; neck extensors stabilising; D-006 floor test; `checkGraph` |
+| P4 | Trunk and arm stages | opus / high | `a749e226a23d368b2` | 0 | running | `ws/P4` | M, L, D-009 | roles for neck, lumbar, shoulder, elbow, forearm, wrist; curated anatomy; meshes | erector spinae two bursts per stride; posterior deltoid in backward swing; neck extensors stabilising; D-006 floor test; `checkGraph` |
 | W2 | Web, real output | sonnet / medium | — | 0 | todo | `ws/W2` | P4, S | real graph wired in; tubes for every muscle | ≥ 30 fps with every muscle; `data/out/` < 8 MB; recorded trace conforms |
 
 ## Wave 3 — Integration (coordinator)
