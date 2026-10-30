@@ -8,8 +8,11 @@ on:
   pull_request:
 
 env:
-  # One variable: the ninja targets of the pipeline smoke test, the final outputs of the full graph.
-  PIPELINE_TARGET: exportGraph exportMeshes exportMusclePaths exportDynamics
+  # One variable: the ninja targets of the pipeline job, every stage of generated/pipeline.ninja
+  # (buildModel first, the four exports last).
+  PIPELINE_TARGET: >-
+    buildModel loadModel runStaticOpt computeMomentArms segmentPhases labelRoles
+    enrichAnatomy exportGraph exportMeshes exportMusclePaths exportDynamics
 
 jobs:
   lean:
@@ -114,8 +117,10 @@ jobs:
       - run: .venv/bin/python -m mypy generated/py tests pipeline tools
       - run: .venv/bin/python -m pytest -q
 
-  pipeline-smoke:
+  pipeline:
     runs-on: ubuntu-latest
+    # Target: under 15 minutes. Wall time of the stages is written to the job summary.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -127,6 +132,15 @@ jobs:
           key: bm-opensim-${{ runner.os }}-${{ hashFiles('pipeline/env/environment.yml') }}
       - name: Create the OpenSim env (same path as local runs)
         run: bash pipeline/env/setup.sh
+      # Raw model data (Rajagopal, Holzbaur, Mortensen). fetch_data.sh verifies the checksums
+      # and downloads only what is missing, so a restored cache of any age is safe.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            data/raw/rajagopal
+            data/raw/holzbaur
+            data/raw/mortensen
+          key: raw-data-${{ runner.os }}-${{ hashFiles('data/raw/SHA256SUMS', 'pipeline/env/fetch_data.sh') }}
       - run: bash pipeline/env/fetch_data.sh
       - uses: actions/cache@v4
         with:
@@ -136,11 +150,13 @@ jobs:
           key: ontology-${{ hashFiles('data/raw/ontology/fetch.sh') }}
       - name: Fetch ontologies and cut the subsets
         run: bash data/raw/ontology/fetch.sh
-      - name: ninja target ${{ env.PIPELINE_TARGET }}
+      - name: ninja stages ${{ env.PIPELINE_TARGET }}
         run: |
+          start=$SECONDS
           export PATH="$HOME/.local/share/bm-opensim/bin:$PATH"
           command -v ninja >/dev/null || sudo apt-get install -y ninja-build
           ninja -f generated/pipeline.ninja $PIPELINE_TARGET
+          echo "pipeline stages wall time: $((SECONDS - start)) s" | tee -a "$GITHUB_STEP_SUMMARY"
       # Static optimisation drifts in floating point across machines, so the
       # regenerated graph matches the committed one in structure and roles
       # exactly, and in numbers within a tolerance (scripts/compare_graph.py).
