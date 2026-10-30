@@ -116,7 +116,7 @@ def run(model_path: Path, kin_path: Path, out_arms: Path, out_lengths: Path) -> 
 
 def main(argv: Sequence[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m pipeline.moment_arms", description=__doc__.split("\n")[0])
-    p.add_argument("--model", type=Path, default=DEFAULT_MODEL, help="scaled OpenSim model (.osim)")
+    p.add_argument("--model", type=Path, default=DEFAULT_MODEL, help="merged OpenSim model (.osim), `pipeline_paths.MERGED_MODEL`")
     p.add_argument("--kinematics", type=Path, default=WORK / "kinematics.csv", help="output of loadModel")
     p.add_argument("--out-moment-arms", type=Path, default=WORK / "moment_arms.csv")
     p.add_argument("--out-lengths", type=Path, default=WORK / "mt_lengths.csv")

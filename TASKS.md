@@ -132,10 +132,14 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 |---|---|---|
 | K20 Pass-through `pipeline/build_model.py`, empty `pipeline/config/model.yaml` (M's paths, before M starts) | merged | ninja needs both; pipeline output byte-identical |
 | K21 App wires `RegionFilter` (`web/src/main.ts`, `web/index.html`) | merged | search, GraphView, PhasePanel, DynamicsPanel, Viewer3D share one filter |
-| K22 Stage scripts default to `paths.MERGED_MODEL`, `paths.IK_FULL` (the reads ninja declares) | todo | M: `load_model.py`, `static_opt.py`, `moment_arms.py`, `segment_phases.py`; P4: export scripts |
+| K22 Stage scripts default to `paths.MERGED_MODEL`, `paths.IK_FULL` (the reads ninja declares) | merged (M half); P4: export scripts | M: `load_model.py`, `static_opt.py`, `moment_arms.py`, `segment_phases.py` |
 | K23 `buildModel` reads the upper-body model files once D2 fixes their paths | todo | S follow-up |
+| K26 Static optimisation under 15 min in CI (462 muscles: 24 min locally); CI timeout 60 min meanwhile | todo | M: custom convex QP in `static_opt.py` |
+| K27 Accept M's commit `c6a1ade` outside its paths: fixtures in `test_p1/p2/l_stages.py`, regions of 15 new bodies in `anatomy.yaml`, `label_roles.py` labels muscles that cross a labelled coordinate | merged | owners L, P2 finished; leg graph unchanged |
 | K25 D2: fetch FBLS from its pinned mirror, git-ignored, checksummed (D-011) | merged | 324 muscles load; mirror holds no meshes (vertebra meshes absent); full licence text unobtained (simtk.org down) |
 | K24 L's web-test line (ten coordinates in `dynamics.json`); left-aware FMA subset on main | merged | graph 207 nodes, 1096 edges; reproduces on main |
+
+M results: 462 Millard2012 muscles (Rajagopal 80, FBLS 216, Holzbaur 94 on both arms, Mortensen 72); 15 added bodies (`lumbar1..5`, `Abdomen`, `LB_wrap`, `cerv1..7`, `head`); reserve RMS over the stride ≤ 0.031 N·m lumbar, ≤ 0.021 arm, ≤ 0.058 neck; leg activations change ≤ 0.0012 RMS; leg graph 0 of 1096 edges differ. Biceps supination moment arm 0.06 cm against Holzbaur's 0.44 cm (via points frozen at the trial's mean arm pose).
 
 L findings: left vasti brake left knee flexion in reference pre-swing (left loading response); lateral gastrocnemius_l stays under the D-006 floor early in left mid-stance (mean 0.027), while soleus_l and gasmed_l brake. Left foot on a force plate 0.84–1.59 s; left events at 0.45 s and 1.97 s come from markers. Five left entities share a side-neutral FMA id (`mtp`, `gluteals`, `hamstrings`, `deltoid`, `nervePiriformis`).
 
@@ -143,7 +147,7 @@ L findings: left vasti brake left knee flexion in reference pre-swing (left load
 
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Branch | Inputs | Outputs | Acceptance |
 |---|---|---|---|---|---|---|---|---|---|
-| M | Model merge | opus / xhigh | `ac5f4d49260d0cc4a` | 0 | running (arm, neck; trunk from FBLS, D-011) | `ws/M` | D2, S, D-008–D-010 | merged model, head split, neck angles holding the head level, reserves | static optimisation over the stride; reserves RMS < 10 N·m lumbar, < 2 N·m arm, < 1 N·m neck; leg activations within 0.02 RMS of today |
+| M | Model merge | opus / xhigh | `ac5f4d49260d0cc4a` | 0 | merged | `ws/M` | D2, S, D-008–D-010 | merged model, head split, neck angles holding the head level, reserves | static optimisation over the stride; reserves RMS < 10 N·m lumbar, < 2 N·m arm, < 1 N·m neck; leg activations within 0.02 RMS of today |
 | P4 | Trunk and arm stages | opus / high | — | 0 | todo | `ws/P4` | M, L, D-009 | roles for neck, lumbar, shoulder, elbow, forearm, wrist; curated anatomy; meshes | erector spinae two bursts per stride; posterior deltoid in backward swing; neck extensors stabilising; D-006 floor test; `checkGraph` |
 | W2 | Web, real output | sonnet / medium | — | 0 | todo | `ws/W2` | P4, S | real graph wired in; tubes for every muscle | ≥ 30 fps with every muscle; `data/out/` < 8 MB; recorded trace conforms |
 

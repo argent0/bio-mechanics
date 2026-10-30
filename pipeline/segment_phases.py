@@ -5,7 +5,7 @@ seven phases of the generated gait DFA (`generated/py/gait_fsm.py`, from
 `spec/BioMech/GaitFsm.lean`). Every event is detected at a frame of `kinematics.csv` (100 Hz);
 the frame of an event is the first frame of the phase it opens.
 
-Signals. The scaled model (`pipeline_paths.SCALED_MODEL`) is posed at every frame of the filtered
+Signals. The merged model (`pipeline_paths.MERGED_MODEL`) is posed at every frame of the filtered
 coordinates (`kinematics.csv`), and OpenSim reports in ground the positions of the model's foot
 and leg markers (`MARKERS`: heel, toe, ankle, knee) and of the pelvis origin. Positions are
 projected on the walking direction: the horizontal unit vector of the pelvis displacement from
@@ -429,7 +429,7 @@ def run(model_path: Path, kin_path: Path, grf_path: Path, out: Path) -> Phases:
 def main(argv: Sequence[str] | None = None) -> int:
     doc = __doc__ or ""
     ap = argparse.ArgumentParser(prog="python -m pipeline.segment_phases", description=doc.split("\n")[0])
-    ap.add_argument("--model", type=Path, default=REPO / paths.SCALED_MODEL, help="scaled OpenSim model (.osim)")
+    ap.add_argument("--model", type=Path, default=REPO / paths.MERGED_MODEL, help="merged OpenSim model (.osim)")
     ap.add_argument("--kinematics", type=Path, default=REPO / paths.KINEMATICS)
     ap.add_argument("--grf", type=Path, default=REPO / paths.GRF)
     ap.add_argument("--out", type=Path, default=REPO / paths.PHASES)

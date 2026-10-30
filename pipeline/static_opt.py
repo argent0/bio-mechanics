@@ -8,25 +8,27 @@ actuator controls that reproduce the model's generalised forces for the measured
 loads, minimising the sum over actuators of control squared (`ACTIVATION_EXPONENT` = 2), with
 muscle force bounded by the force-length-velocity properties (`use_muscle_physiology`).
 
-Actuators besides the 80 muscles (`extra_actuators`), each a `CoordinateActuator` with controls
+Actuators besides the muscles (`extra_actuators`), each a `CoordinateActuator` with controls
 unbounded; its generalised force equals control times optimal force, so its cost per unit of
 force or torque falls as its optimal force rises:
   - residuals on the 6 pelvis coordinates, optimal force `RESIDUAL_OPTIMAL_FORCE` (N, N·m).
     Muscles act between body segments and therefore exert zero generalised force on the pelvis
     coordinates; the residuals alone balance the pelvis, so their strength leaves the muscle
     solution unchanged. A large value keeps their controls near 1 and their cost small.
-  - joint actuators on the lumbar and arm coordinates, which carry no muscles in this model:
-    the model's own actuators (optimal force 10 N·m) are replaced by ones of optimal force
-    `NONMUSCLE_OPTIMAL_FORCE` for the same reason.
-  - reserves on every unlocked lower-limb coordinate the muscles cross (hip ×3, knee, ankle per
-    side), optimal force `RESERVE_OPTIMAL_FORCE` = 1 N·m: one N·m of reserve torque costs as
-    much as one fully active muscle, so the reserves fill in only what the muscles cannot supply.
-  Locked (subtalar, mtp, wrist) and coupled (knee beta) coordinates get no actuator.
+  - reserves on every free coordinate a muscle crosses, optimal force `RESERVE_OPTIMAL_FORCE` =
+    1 N·m: one N·m of reserve torque costs as much as one fully active muscle, so the reserves
+    fill in only what the muscles cannot supply. In the merged model (stage `buildModel`) the
+    muscles cross every free coordinate: legs, lumbar, shoulders, elbows, forearms, wrists, neck.
+  - joint actuators of optimal force `NONMUSCLE_OPTIMAL_FORCE` on any free coordinate crossed by
+    no muscle (the Rajagopal model's arm and lumbar coordinates before the merge); the model's
+    own torque actuators are removed.
+  Locked and coupled coordinates (subtalar, mtp, knee beta, the vertebral and wrapping-body
+  couplers) get no actuator.
 
 Trial note. The left foot stands outside the force plates before ≈0.40 s and after ≈1.98 s (its
 heel and toes sit at ground height while its measured force is 0 N). Over those frames the pelvis
 residuals carry the missing load; the right-leg muscles see the measured right GRF throughout.
-`static_opt.json` reports the peak residual and reserve per coordinate.
+`static_opt.json` reports the peak and RMS residual and reserve per coordinate over the run.
 
 Inputs: --model (.osim), --external-loads (.xml), --grf (.mot, the data file the external loads
 read), --kinematics (kinematics.csv). The AnalyzeTool reads coordinates from a `.mot`; this stage
@@ -37,7 +39,8 @@ Outputs (defaults under `data/work/`):
   --out-forces       forces.csv          `time`, then one column per actuator: muscle tendon
                                          force (N), then the extra actuators' generalised force
                                          (N or N·m), named `reserve_<coordinate>`
-  --out-settings     static_opt.json     solver settings, actuators, peak residuals and reserves
+  --out-settings     static_opt.json     solver settings, actuators, peak and RMS residuals and
+                                         reserves
   --scratch          static_opt/         OpenSim setup, model, loads, coordinates and raw .sto
 Run with the OpenSim environment's Python: `python -m pipeline.static_opt`.
 """
@@ -45,6 +48,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 import time
@@ -184,6 +188,11 @@ def peak_abs(table: Table, label: str) -> float:
     return max(abs(v) for v in table.columns[label])
 
 
+def rms(table: Table, label: str) -> float:
+    v = table.columns[label]
+    return math.sqrt(sum(x * x for x in v) / len(v))
+
+
 def run(model_path: Path, loads_path: Path, grf_path: Path, kin_path: Path, out_act: Path, out_forces: Path, out_settings: Path, scratch: Path) -> dict[str, Any]:
     osim = opensim_module()
     # The model written to --scratch names its meshes relative to the source model's folder.
@@ -227,7 +236,7 @@ def run(model_path: Path, loads_path: Path, grf_path: Path, kin_path: Path, out_
         "coordinateLowpassHz": None,
         "runtimeSeconds": round(seconds, 1),
         "actuators": [
-            {"name": RESERVE_PREFIX + c, "coordinate": c, "kind": kind, "optimalForce": f, "peakAbsForce": peak_abs(frc, RESERVE_PREFIX + c)}
+            {"name": RESERVE_PREFIX + c, "coordinate": c, "kind": kind, "optimalForce": f, "peakAbsForce": peak_abs(frc, RESERVE_PREFIX + c), "rmsForce": rms(frc, RESERVE_PREFIX + c)}
             for c, f, kind in extras
         ],
     }
@@ -238,7 +247,7 @@ def run(model_path: Path, loads_path: Path, grf_path: Path, kin_path: Path, out_
 
 def main(argv: Sequence[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m pipeline.static_opt", description=__doc__.split("\n")[0])
-    p.add_argument("--model", type=Path, default=DEFAULT_MODEL, help="scaled OpenSim model (.osim)")
+    p.add_argument("--model", type=Path, default=DEFAULT_MODEL, help="merged OpenSim model (.osim)")
     p.add_argument("--external-loads", type=Path, default=DEFAULT_EXTERNAL_LOADS, help="OpenSim ExternalLoads (.xml)")
     p.add_argument("--grf", type=Path, default=DEFAULT_GRF, help="ground reaction forces (.mot) for the external loads")
     p.add_argument("--kinematics", type=Path, default=WORK / "kinematics.csv", help="output of loadModel")

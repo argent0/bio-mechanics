@@ -22,6 +22,11 @@ import pytest
 import gait_fsm
 import schema
 from pipeline.load_model import REPO, read_csv
+import pipeline_paths as paths
+
+LEG_MODEL = ["--model", str(REPO / paths.SCALED_MODEL)]
+"""These stages run on the scaled Rajagopal model (legs only, 80 muscles) and its raw inverse
+kinematics: the fixtures pin the leg results the merged model must keep (workstream M)."""
 
 LOADING_RESPONSE_END = (8.0, 18.0)
 STANCE_END = (55.0, 68.0)
@@ -53,10 +58,10 @@ def out(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Out]:
 
     d = tmp_path_factory.mktemp("p2")
     w = {k: str(d / k) for k in ("model.json", "kinematics.csv", "grf.csv", "activations.csv", "moment_arms.csv", "mt_lengths.csv", "phases.csv", "roles.json", "enriched.json", "graph.json", "muscle_paths.json", "dynamics.json")}
-    assert load_model.main(["--out-model", w["model.json"], "--out-kinematics", w["kinematics.csv"], "--out-grf", w["grf.csv"]]) == 0
-    assert static_opt.main(["--kinematics", w["kinematics.csv"], "--out-activations", w["activations.csv"], "--out-forces", str(d / "forces.csv"), "--out-settings", str(d / "static_opt.json"), "--scratch", str(d / "so")]) == 0
-    assert moment_arms.main(["--kinematics", w["kinematics.csv"], "--out-moment-arms", w["moment_arms.csv"], "--out-lengths", w["mt_lengths.csv"]]) == 0
-    assert segment_phases.main(["--kinematics", w["kinematics.csv"], "--grf", w["grf.csv"], "--out", w["phases.csv"]]) == 0
+    assert load_model.main([*LEG_MODEL, "--ik", str(REPO / paths.IK_MOTION), "--out-model", w["model.json"], "--out-kinematics", w["kinematics.csv"], "--out-grf", w["grf.csv"]]) == 0
+    assert static_opt.main([*LEG_MODEL, "--kinematics", w["kinematics.csv"], "--out-activations", w["activations.csv"], "--out-forces", str(d / "forces.csv"), "--out-settings", str(d / "static_opt.json"), "--scratch", str(d / "so")]) == 0
+    assert moment_arms.main([*LEG_MODEL, "--kinematics", w["kinematics.csv"], "--out-moment-arms", w["moment_arms.csv"], "--out-lengths", w["mt_lengths.csv"]]) == 0
+    assert segment_phases.main([*LEG_MODEL, "--kinematics", w["kinematics.csv"], "--grf", w["grf.csv"], "--out", w["phases.csv"]]) == 0
     common = ["--activations", w["activations.csv"], "--mt-lengths", w["mt_lengths.csv"]]
     assert label_roles.main([*common, "--moment-arms", w["moment_arms.csv"], "--phases", w["phases.csv"], "--kinematics", w["kinematics.csv"], "--model", w["model.json"], "--out", w["roles.json"]]) == 0
     onto = REPO / "data" / "raw" / "ontology"

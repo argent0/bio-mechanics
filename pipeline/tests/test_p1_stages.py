@@ -39,7 +39,12 @@ from pathlib import Path
 
 import pytest
 
-from pipeline.load_model import CONTACT_THRESHOLD_N, SPEED_SUFFIX, Table, contact_intervals, read_csv
+import pipeline_paths as paths
+from pipeline.load_model import CONTACT_THRESHOLD_N, REPO, SPEED_SUFFIX, Table, contact_intervals, read_csv
+
+LEG_MODEL = ["--model", str(REPO / paths.SCALED_MODEL)]
+"""These stages run on the scaled Rajagopal model (legs only, 80 muscles) and its raw inverse
+kinematics: the fixtures pin the leg results the merged model must keep (workstream M)."""
 
 Interval = tuple[float, float]
 
@@ -151,9 +156,10 @@ def out(tmp_path_factory: pytest.TempPathFactory) -> Outputs:
     from pipeline import load_model, moment_arms, static_opt
 
     d = tmp_path_factory.mktemp("p1")
-    assert load_model.main(["--out-model", str(d / "model.json"), "--out-kinematics", str(d / "kinematics.csv"), "--out-grf", str(d / "grf.csv")]) == 0
+    assert load_model.main([*LEG_MODEL, "--ik", str(REPO / paths.IK_MOTION), "--out-model", str(d / "model.json"), "--out-kinematics", str(d / "kinematics.csv"), "--out-grf", str(d / "grf.csv")]) == 0
     assert static_opt.main(
         [
+            *LEG_MODEL,
             "--kinematics", str(d / "kinematics.csv"),
             "--out-activations", str(d / "activations.csv"),
             "--out-forces", str(d / "forces.csv"),
@@ -162,7 +168,7 @@ def out(tmp_path_factory: pytest.TempPathFactory) -> Outputs:
         ]
     ) == 0
     assert moment_arms.main(
-        ["--kinematics", str(d / "kinematics.csv"), "--out-moment-arms", str(d / "moment_arms.csv"), "--out-lengths", str(d / "mt_lengths.csv")]
+        [*LEG_MODEL, "--kinematics", str(d / "kinematics.csv"), "--out-moment-arms", str(d / "moment_arms.csv"), "--out-lengths", str(d / "mt_lengths.csv")]
     ) == 0
     return Outputs(d)
 

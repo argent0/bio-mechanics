@@ -1,4 +1,181 @@
-# Merge recipe of stage buildModel (pipeline/build_model.py, decision D-008 in DECISIONS.md).
-# `sources` lists the muscle-driven models merged onto the scaled Rajagopal model; the empty
-# list makes the stage a pass-through. Workstream M fills it (plan.md, Wave 2).
-sources: []
+# Merge recipe of stage buildModel (pipeline/build_model.py; decisions D-008 to D-011 in
+# DECISIONS.md). The stage reads this file and writes data/work/model.osim and
+# data/work/ik_full.mot. The rules that turn these entries into the model live in the code
+# (pipeline/build_model.py, module docstring); this file names the sources and the body maps.
+#
+# Terms used below.
+#   source body   a body of a source model, named as in that file.
+#   target body   a body of the merged model: a Rajagopal body, or a body the merge adds.
+#   reference     the pose where source and target frames meet: every Rajagopal coordinate at 0
+#   pose          (standing, arms hanging, forearm fully supinated), and each source's own
+#                 coordinates at 0 except those `referencePose` sets.
+#   placement     how a source's points land in a target body's frame. `origin: X` puts the
+#                 origin of source body X (in the source's reference pose) on the target body's
+#                 origin, or on the centre of Rajagopal joint `at` when given; axes stay parallel.
+#                 `distal` adds a second such pair: the segment between the pairs maps onto
+#                 Rajagopal's by a uniform scale and the smallest turn. `turn` instead turns the
+#                 source by the smallest rotation that lays a source joint's axis along a
+#                 Rajagopal joint's axis. `register` puts the source
+#                 in place by the bounding boxes of one bone mesh drawn in both models: a uniform
+#                 scale and a shift.
+
+# Files besides the scaled Rajagopal model and the inverse kinematics (paths from the repository
+# root): the subject's scale factors per body (ScaleTool output), the standing calibration pose
+# (D-010), and the Rajagopal meshes (for `register`).
+scaleSet: data/raw/rajagopal/walk_pipeline/Scale/scaleSet_applied_walk.xml
+staticPose: data/raw/rajagopal/walk_pipeline/Scale/scale_output_walk.mot
+geometry: data/raw/rajagopal/Geometry
+
+# Every merged muscle takes the settings of this Rajagopal muscle (Millard2012EquilibriumMuscle,
+# rigid tendon, curves, damping) with the source muscle's own maximum isometric force, optimal
+# fibre length, tendon slack length and pennation angle.
+muscleTemplate: glmax1_r
+
+# The head split (D-009): the head body comes from Mortensen's skull; these meshes move to it.
+head:
+  body: head
+  meshes: [hat_skull.vtp, hat_jaw.vtp]
+
+# Coordinates Rajagopal locks that the merged muscles drive: the wrist muscles balance the hand.
+unlock: [wrist_flex_r, wrist_dev_r, wrist_flex_l, wrist_dev_l]
+
+sources:
+  # Trunk: Raabe & Chaudhari 2016 full-body lumbar spine model (D-011). Its five lumbar vertebrae
+  # replace Rajagopal's `back` joint between pelvis and torso; the three lumbar coordinates keep
+  # Rajagopal's names and meaning (each axis's shares along the chain sum to one).
+  - name: fbls
+    region: trunk
+    file: data/raw/fbls/FBLSmodel.osim
+    # Muscles whose every path point lies on a body below (trunk muscles and latissimus dorsi);
+    # muscles reaching a leg bone (psoas fascicles included) stay out: Rajagopal's legs keep theirs.
+    muscles: onMappedBodies
+    bodies:
+      pelvis: pelvis
+      sacrum: pelvis
+      lumbar5: lumbar5
+      lumbar4: lumbar4
+      lumbar3: lumbar3
+      lumbar2: lumbar2
+      lumbar1: lumbar1
+      Abdomen: Abdomen
+      LB_wrap: LB_wrap
+      torso: torso
+      humerus_r: humerus_r
+      humerus_l: humerus_l
+    # Added bodies, each with its frame on the named Rajagopal body's frame in the reference pose.
+    newBodies: {lumbar5: pelvis, lumbar4: pelvis, lumbar3: pelvis, lumbar2: pelvis,
+                lumbar1: pelvis, Abdomen: pelvis, LB_wrap: pelvis}
+    placement:
+      pelvis: {origin: pelvis}
+      torso: {origin: torso}
+      humerus_r: {origin: humerus_r}
+      humerus_l: {origin: humerus_l}
+    joints: [L5_S1_IVDjnt, L4_L5_IVDjnt, L3_L4_IVDjnt, L2_L3_IVD_jnt, L1_L2_IVD_jnt, Torsojnt,
+             Abdjnt, LB_wrapjnt]
+    replacesJoint: back
+    coordinates: {flex_extension: lumbar_extension, lat_bending: lumbar_bending,
+                  axial_rotation: lumbar_rotation}
+
+  # Arms: Holzbaur 2005 Stanford-VA upper limb, right side; the left side mirrors it (z -> -z).
+  - name: holzbaur
+    region: arm
+    file: data/raw/holzbaur/Stanford_VA_Upper_Limb_original.osim
+    mirror: true          # muscle and wrap names gain _r, and their mirror images _l
+    # Latissimus dorsi comes from FBLS: its 28 fascicles reach the lumbar vertebrae and pelvis.
+    exclude: [LAT1, LAT2, LAT3]
+    # Holzbaur's forearm at 0 is in neutral rotation; -pi/2 is full supination, Rajagopal's 0.
+    referencePose: {pro_sup: -1.5707963267948966}
+    # Via-body and conditional points freeze at the right arm's mean posture over the trial:
+    # each Holzbaur coordinate takes the mean of a Rajagopal coordinate plus an offset.
+    viaPose:
+      elbow_flexion: {from: elbow_flex_r, offset: 0.0}
+      pro_sup: {from: pro_sup_r, offset: -1.5707963267948966}
+    bodies:
+      thorax: torso
+      clavicle: torso
+      clavphant: torso
+      scapula: torso
+      scapphant: torso
+      humphant: torso
+      humphant1: torso
+      humerus: humerus_r
+      ulna: ulna_r
+      radius: radius_r
+      lunate: hand_r
+      scaphoid: hand_r
+      pisiform: hand_r
+      triquetrum: hand_r
+      capitate: hand_r
+      trapezium: hand_r
+      trapezoid: hand_r
+      hamate: hand_r
+      firstmc1: hand_r
+      firstmc: hand_r
+      secondmc: hand_r
+      thirdmc: hand_r
+      fourthmc: hand_r
+      fifthmc: hand_r
+      proximal_thumb: hand_r
+      distal_thumb: hand_r
+      2proxph: hand_r
+      2midph: hand_r
+      2distph: hand_r
+      3proxph: hand_r
+      3midph: hand_r
+      3distph: hand_r
+      4proxph: hand_r
+      4midph: hand_r
+      4distph: hand_r
+      5proxph: hand_r
+      5midph: hand_r
+      5distph: hand_r
+    # The humerus keeps its points relative to both shoulder and elbow (`distal`). The forearm
+    # bones turn so Holzbaur's pronation axis runs along Rajagopal's (`turn`): ulna about the
+    # elbow centre, radius about its radioulnar centre.
+    placement:
+      torso: {origin: humerus, at: acromial_r}   # glenohumeral centre on Rajagopal's shoulder
+      humerus_r: {origin: humerus, distal: {origin: ulna, at: elbow_r}}
+      ulna_r: {origin: ulna, turn: {source: radioulnar, target: radioulnar_r}}
+      radius_r: {origin: radius, turn: {source: radioulnar, target: radioulnar_r}}
+      hand_r: {origin: lunate}                   # radiocarpal centre on Rajagopal's wrist
+
+  # Neck: Mortensen 2018 HYOID 1.2 (D-009). Its seven cervical vertebrae and the skull become
+  # bodies behind the torso; thorax, ribcage, scapulae and clavicles map onto the torso.
+  - name: mortensen
+    region: neck
+    file: data/raw/mortensen/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim
+    suffixes: {"_L": "_l", "": "_r"}   # left muscles end in _L, right ones carry no suffix
+    bodies:
+      spine: torso
+      ribcage: torso
+      rscapula: torso
+      rclavicle: torso
+      lscapula: torso
+      lclavicle: torso
+      cerv7: cerv7
+      cerv6: cerv6
+      cerv5: cerv5
+      cerv4: cerv4
+      cerv3: cerv3
+      cerv2: cerv2
+      cerv1: cerv1
+      skull: head
+      jaw: head
+    newBodies: {cerv7: torso, cerv6: torso, cerv5: torso, cerv4: torso, cerv3: torso,
+                cerv2: torso, cerv1: torso, head: torso}
+    placement:
+      torso:
+        register: {body: skull, mesh: data/raw/mortensen/Geometry/skull.vtp, target: hat_skull.vtp}
+    joints: [auxt1jnt, aux7jnt, aux6jnt, aux5jnt, aux4jnt, aux3jnt, aux2jnt, aux1jnt]
+    coordinates: {pitch2: neck_lower_extension, roll2: neck_lower_bending, yaw2: neck_lower_rotation,
+                  pitch1: neck_upper_extension, roll1: neck_upper_bending, yaw1: neck_upper_rotation}
+
+# Neck angles (D-010). The trial's markers stop at the shoulders and clavicles, so the neck
+# angles rest on an assumption: at every frame the head holds its static-pose orientation in the
+# ground frame (level gaze). The static pose gives the head's pitch and roll (the head rides the
+# torso there, every neck angle 0); the head's heading is the torso's mean heading over the
+# trial, since the static recording faces another direction. At each frame the lower and upper
+# neck groups share the rotation per axis in proportion to their ranges of motion (Mortensen).
+neck:
+  lower: [neck_lower_extension, neck_lower_bending, neck_lower_rotation]
+  upper: [neck_upper_extension, neck_upper_bending, neck_upper_rotation]

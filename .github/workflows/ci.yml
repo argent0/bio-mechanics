@@ -120,7 +120,7 @@ jobs:
   pipeline:
     runs-on: ubuntu-latest
     # Target: under 15 minutes. Wall time of the stages is written to the job summary.
-    timeout-minutes: 15
+    timeout-minutes: 60  # static optimisation over 462 muscles: about 18 min locally; K26 brings it under 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4

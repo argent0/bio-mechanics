@@ -24,3 +24,4 @@ data/raw/ontology/*.json.gz
 # Ninja build state
 .ninja_log
 .ninja_deps
+.ninja_lock
