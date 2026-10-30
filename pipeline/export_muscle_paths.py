@@ -10,6 +10,7 @@ filtered coordinates (P1's `moment_arms.pose`) and OpenSim reports, in ground:
     point's frame) is inserted ahead of the arc's end point; consecutive points closer than
     `MIN_SPACING_M` merge into one;
   - each body's pose of `export_meshes.BODIES`: frame origin and orientation.
+The stride bounds come from the gait events of `phases.csv` (`stride_bounds`).
 Activation (`activations.csv`) and lengthening velocity (`mt_lengths.csv`, v > 0 lengthening:
 eccentric when active; v < 0 shortening: concentric) are read at the same frames.
 
@@ -18,6 +19,9 @@ Output `data/out/muscle_paths.json` (the format the viewer reads):
   frame      "ground": metres, y up, the trial's walking direction along +x
   rateHz     frames per second of the output
   time       [s] per frame
+  stride     {start, end} in s: the opening and closing right initial contact of stride 0
+             (`phases.csv`, stage `segmentPhases`), the stride whose phase percentages
+             `graph.json` gives; the frames cover more of the trial than this stride
   bodies     {body: [[px, py, pz, qx, qy, qz, qw] per frame]}: the body frame's origin (m) and
              orientation (unit quaternion, glTF order) in ground; the meshes of
              `meshes/index.json` sit in these frames
@@ -45,7 +49,7 @@ from typing import Any
 from pipeline.export_meshes import BODIES
 from pipeline.label_roles import read_long
 from pipeline.load_model import REPO, opensim_module, read_csv, sample_rate
-from pipeline.segment_phases import GENERATED
+from pipeline.segment_phases import GENERATED, Phases, read_phases
 
 import pipeline_paths as paths  # noqa: E402  (generated/py: see `GENERATED`)
 
@@ -97,6 +101,14 @@ def quaternion(r: Sequence[Sequence[float]]) -> tuple[float, float, float, float
     return (-x, -y, -z, -w) if w < 0 else (x, y, z, w)
 
 
+def stride_bounds(p: Phases, stride: int = 0) -> dict[str, float]:
+    """Times of the right initial contacts that open and close `stride`."""
+    ics = [p.event_time(e) for e in sorted(p.events, key=lambda e: e.frame) if e.event == "initialContact"]
+    if len(ics) < stride + 2:
+        raise ValueError(f"stride {stride} is incomplete: {len(ics)} initial contacts")
+    return {"start": ics[stride], "end": ics[stride + 1]}
+
+
 def _vec(v: Any) -> Vec3:
     return (float(v.get(0)), float(v.get(1)), float(v.get(2)))
 
@@ -115,7 +127,7 @@ def current_path(osim: Any, muscle: Any, state: Any) -> list[Vec3]:
     return merge_close(pts)
 
 
-def run(model_path: Path, kin_path: Path, act_path: Path, len_path: Path, out: Path) -> dict[str, Any]:
+def run(model_path: Path, kin_path: Path, act_path: Path, len_path: Path, phases_path: Path, out: Path) -> dict[str, Any]:
     from pipeline.moment_arms import pose
 
     osim = opensim_module()
@@ -148,6 +160,7 @@ def run(model_path: Path, kin_path: Path, act_path: Path, len_path: Path, out: P
         "frame": "ground",
         "rateHz": round(sample_rate(kin.time) / step, 6),
         "time": [kin.time[f] for f in frames],
+        "stride": stride_bounds(read_phases(phases_path)),
         "bodies": bodies,
         "muscles": {
             m: {
@@ -170,9 +183,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap.add_argument("--kinematics", type=Path, default=REPO / paths.KINEMATICS)
     ap.add_argument("--activations", type=Path, default=REPO / paths.ACTIVATIONS)
     ap.add_argument("--mt-lengths", type=Path, default=REPO / paths.MT_LENGTHS)
+    ap.add_argument("--phases", type=Path, default=REPO / paths.PHASES, help="phases.csv (stride bounds)")
     ap.add_argument("--out", type=Path, default=REPO / paths.MUSCLE_PATHS)
     a = ap.parse_args(argv)
-    out = run(a.model, a.kinematics, a.activations, a.mt_lengths, a.out)
+    out = run(a.model, a.kinematics, a.activations, a.mt_lengths, a.phases, a.out)
     size = a.out.stat().st_size / 1e6
     print(f"export_muscle_paths: {len(out['time'])} frames at {out['rateHz']:g} Hz, {len(out['muscles'])} muscles, {size:.1f} MB; wrote {a.out}")
     return 0

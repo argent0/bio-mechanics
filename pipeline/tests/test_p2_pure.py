@@ -104,6 +104,14 @@ def test_phases_csv_round_trip(tmp_path: Path) -> None:
     assert bounds[0][1:] == (5, 15) and bounds[-1][2] == 75
 
 
+def test_stride_bounds_from_initial_contacts() -> None:
+    t = [0.01 * i for i in range(90)]
+    p = sp.Phases(t, [], [], [], stride_events())
+    assert export_muscle_paths.stride_bounds(p) == {"start": 0.05, "end": 0.75}
+    with pytest.raises(ValueError, match="incomplete"):
+        export_muscle_paths.stride_bounds(p, 1)
+
+
 # ---------------------------------------------------------------------------------------------
 # D-002 roles.
 
