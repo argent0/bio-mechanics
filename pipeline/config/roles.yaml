@@ -11,9 +11,12 @@ mainMoverMinShare: 0.25
 helperMinShare: 0.05
 # Share of the total opposing moment over the phase: antagonist from this share up.
 antagonistMinShare: 0.05
-# Main mover, helper, antagonist: mean activation over the phase from this fraction of the
-# muscle's own peak activation over the stride up (decision D-005, which replaces D-004);
-# below it the muscle is inactive for the action in the phase.
+# Main mover, helper, antagonist (decision D-006, which replaces D-004 and D-005): the mean
+# activation over the phase reaches roleMinActivation, and either reaches roleClearActivation
+# or reaches roleMinPeakFraction of the muscle's own peak activation over the stride; otherwise
+# the muscle is inactive for the action in the phase.
+roleMinActivation: 0.015
+roleClearActivation: 0.05
 roleMinPeakFraction: 0.25
 # Stabiliser: mean activation over the phase from this value up ...
 stabiliserMinActivation: 0.10

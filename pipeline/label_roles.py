@@ -1,4 +1,4 @@
-"""Stage `labelRoles`: each muscle's role per gait phase and joint action (decisions D-002, D-005).
+"""Stage `labelRoles`: each muscle's role per gait phase and joint action (decisions D-002, D-006).
 
 Scope. One complete stride of the right leg (stride 0 of `phases.csv`), its seven phases, the
 right-leg muscles (`Config.muscle_suffix`), and the joint coordinates of `Config.coordinates`.
@@ -29,11 +29,15 @@ Roles (`classify`), the first rule that holds:
   2. main mover: A_i ≥ O_i and A_i / A ≥ `main_mover_min_share`;
   3. helper: A_i ≥ O_i and A_i / A ≥ `helper_min_share`;
   4. antagonist: O_i > A_i and O_i / O ≥ `antagonist_min_share`;
-rules 2–4 also need a mean activation over the phase ≥ `role_min_peak_fraction` × the muscle's
-own peak activation over the stride (decision D-005, which replaces D-004's absolute floor); the
-stride peak is the largest activation between the stride's two right initial contacts, both
-included. Below that floor the muscle is inactive for the action in the phase. Otherwise the
-muscle has no
+rules 2–4 also need the muscle to be active in the phase (`active`, decision D-006, which
+replaces D-004 and D-005): its mean activation over the phase ā satisfies
+  ā ≥ `role_min_activation` and (ā ≥ `role_clear_activation` or ā ≥ `role_min_peak_fraction` × P),
+P being the muscle's own peak activation over the stride: the largest activation between the
+stride's two right initial contacts, both included. The first clause drops near-silent muscles
+whose small peak would let them pass the relative clause; the relative clause keeps muscles that
+work hard for their own size (e.g. the vasti braking in loading response); the clear clause
+keeps muscles with a large push-off peak active in earlier phases (e.g. the calf in mid-stance).
+An inactive muscle has no role in the action during the phase. Otherwise the muscle has no
 role in the action during the phase and roles.json omits it (and the graph has no `drivenBy`
 edge for it). The totals A and O sum over every muscle crossing the coordinate, inactive ones
 included: the floor decides who earns a role, and the shares stay the D-002 moment shares.
@@ -97,6 +101,8 @@ class Config:
     main_mover_min_share: float
     helper_min_share: float
     antagonist_min_share: float
+    role_min_activation: float
+    role_clear_activation: float
     role_min_peak_fraction: float
     stabiliser_min_activation: float
     stabiliser_max_change_deg: float
@@ -189,6 +195,14 @@ def choose_action(change_deg: float, net: float, cfg: Config) -> tuple[int, bool
     return (-1 if net < 0 else 1), True
 
 
+def active(mean_act: float, stride_peak: float, cfg: Config) -> bool:
+    """D-006: a muscle with phase-mean activation `mean_act` and stride peak `stride_peak` is
+    active enough to move or oppose an action."""
+    return mean_act >= cfg.role_min_activation and (
+        mean_act >= cfg.role_clear_activation or mean_act >= cfg.role_min_peak_fraction * stride_peak
+    )
+
+
 def classify(t: Sequence[float], m: MuscleInPhase, s: Shares, total: Shares, stabilised: bool, cfg: Config) -> tuple[Role, float] | None:
     """The muscle's role and share, or `None` (rules of the module docstring)."""
     ag = s.agonist / total.agonist if total.agonist > 0 else 0.0
@@ -196,7 +210,7 @@ def classify(t: Sequence[float], m: MuscleInPhase, s: Shares, total: Shares, sta
     mean_act = trapezoid(t, m.activation) / (t[-1] - t[0])
     if stabilised and mean_act >= cfg.stabiliser_min_activation and max(abs(r) for r in m.moment_arm) >= cfg.moment_arm_min_m:
         return "stabiliser", max(ag, op)
-    if mean_act < cfg.role_min_peak_fraction * m.stride_peak:
+    if not active(mean_act, m.stride_peak, cfg):
         return None
     if s.agonist >= s.opposing and s.agonist > 0:
         if ag >= cfg.main_mover_min_share:
