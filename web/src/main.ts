@@ -5,7 +5,7 @@ import { GraphView } from "./graphview/GraphView";
 import { highlightState, mountArchitectureView } from "./architecture";
 import { recorder } from "./trace";
 
-/** App: wires store, query, and view; the search box focuses a node. */
+/** App: wires store, query, and view; the search box focuses a node on Enter or on a picked suggestion. */
 const query = new QueryEngine(new GraphStore(GRAPH));
 const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const view = new GraphView(byId("graph"), query, byId("details"));
@@ -17,9 +17,16 @@ for (const n of query.allNodes()) {
     if (label) hits.append(Object.assign(document.createElement("option"), { value: label }));
   }
 }
-search.addEventListener("input", () => {
+const select = () => {
   const found = query.search(search.value)[0];
   if (found) view.focus(found.id);
+};
+/** Enter selects the first match. Picking a suggestion selects it too: browsers
+ * report that pick as an input event of type `insertReplacementText`, or as a
+ * plain `Event`, while typed keys arrive as other `InputEvent` types. */
+search.addEventListener("keydown", (ev) => { if (ev.key === "Enter") select(); });
+search.addEventListener("input", (ev) => {
+  if (!(ev instanceof InputEvent) || ev.inputType === "insertReplacementText") select();
 });
 
 /** Movement view (`#/walking`): Timeline, Viewer3D and PhasePanel over the pipeline's
