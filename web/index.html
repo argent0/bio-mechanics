@@ -9,6 +9,8 @@
   header { padding: 8px 12px; border-bottom: 1px solid #ccc; display: flex; gap: 12px; align-items: center; }
   #search { width: 20em; padding: 4px 8px; }
   main { flex: 1; display: flex; min-height: 0; }
+  #arch { flex: 1; min-height: 0; overflow: auto; }
+  [hidden] { display: none !important; }
   #graph { flex: 1; }
   #details { width: 22em; padding: 12px; overflow: auto; border-left: 1px solid #ccc; }
   #details dt { font-weight: 600; margin-top: 8px; }
@@ -18,8 +20,10 @@
 </head>
 <body>
 <header><strong>Bio-Mechanics Explorer</strong>
-  <input id="search" type="search" placeholder="Search: walking, gluteus medius ..." list="hits"><datalist id="hits"></datalist></header>
-<main><div id="graph"></div><aside id="details">Click a node.</aside></main>
+  <input id="search" type="search" placeholder="Search: walking, gluteus medius ..." list="hits"><datalist id="hits"></datalist>
+  <nav><a href="#/">Explore</a> · <a href="#/architecture">Architecture</a></nav></header>
+<div id="arch" hidden></div>
+<main id="explore"><div id="graph"></div><aside id="details">Click a node.</aside></main>
 <script type="module" src="./src/main.ts"></script>
 </body>
 </html>

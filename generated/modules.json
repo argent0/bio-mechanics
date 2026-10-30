@@ -92,7 +92,7 @@
    ["cd web && npx tsc --noEmit",
     "cd web && npm test",
     "cd web && npm run build"]},
-  {"state": "running",
+  {"state": "merged",
    "produces": [],
    "paths": ["web/src/architecture/"],
    "name": "ArchitectureView",

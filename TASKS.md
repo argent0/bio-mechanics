@@ -33,7 +33,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | C | Emitters | opus / high | `a0d7098928e70d129` | 0 | merged | A, B | regenerate gives an empty diff; `ninja -n` |
 | P1 | Pipeline stages 1–3 | opus / high | `aa1666b96d68aaa97` | 0 | merged | D, C2 | `mypy`; tibialis anterior and gluteus medius plausibility |
 | F | Lean checkers | opus / high | `a4950df23482a4305` | 0 | merged | C1, A, C3 | fixture passes; bad edge and bad trace fail by name |
-| E2 | ArchitectureView | sonnet / medium | `ab4fb0d019ad1eadf` | 0 | running | C (`architecture.json`) | `tsc`; four diagrams render |
+| E2 | ArchitectureView | sonnet / medium | `ab4fb0d019ad1eadf` | 0 | merged | C (`architecture.json`) | `tsc`; four diagrams render |
 
 ## Coordinator tasks
 
@@ -42,6 +42,8 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K1 Add `data/work/forces.csv`, `data/work/static_opt.json` to `runStaticOpt` writes in `Pipeline.lean` | dropped | side outputs with no reader; `read_unless_out` requires a reader for every non-final artefact |
 | K2 `supportInterpreter := true` on `lean_exe gen`, then C deletes `runInterpreted` | todo | optional speed-up |
 | K3 `data/raw/ontology/` moves from D to P2 | merged | P2 fetches Uberon/FMA subsets |
+| K5 Wire ArchitectureView into App at `#/architecture` | merged | `web/src/main.ts`, `web/index.html` |
+| K6 App calls `highlightState` from `recorder.onStep` in dev mode | todo | with E3 |
 | K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | todo | after P2 merges |
 
 ## Wave 3
