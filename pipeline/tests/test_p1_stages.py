@@ -15,6 +15,19 @@ Plausibility floors (activation, 0–1):
     the foot to the ground after heel strike (eccentric dorsiflexor).
   - `GLMED_FLOOR` = 0.10: gluteus medius (mean of its 3 parts) over right single-leg stance; it
     holds the pelvis level over the stance leg (hip abductor).
+  - `VASLAT_FLOOR` = 0.05: vastus lateralis mean over the knee-extensor frames of loading
+    response (see `test_vasti_brake_knee_flexion_in_loading_response`).
+
+Knee braking in loading response (K12). Inverse dynamics of this trial gives a knee flexor
+moment from right initial contact to ≈8 % of the cycle (≈ +0.4 N·m/kg at 0.30 s, the hamstrings
+finishing the swing deceleration), then a knee extensor moment peaking at −0.75 N·m/kg at 0.48 s
+(≈18 % of the cycle), with the knee flexing from 2° to 22°. The moment curve stays the same with
+the GRF filtered at 6 Hz and with kinematics cutoffs of 6–40 Hz. Static optimisation reproduces
+it exactly (reserves ≈ 0). The vasti supply most of that extensor moment while lengthening, i.e.
+they brake knee flexion eccentrically; their activation stays near 0.1 because the model's vasti
+are strong (5149 + 2748 + 1697 N at fibre lengths 0.93–0.99 of optimal), and the minimum-
+activation cost of static optimisation gives no co-contraction in the flexor-moment frames
+(recorded EMG shows vasti and hamstrings together there).
 """
 from __future__ import annotations
 
@@ -37,6 +50,15 @@ EARLY_STANCE = (0.0, 0.1)
 MID_STANCE = (0.2, 0.5)
 """Fractions of stance: mid-stance, from about opposite toe-off to before heel-off."""
 GLMED = ("glmed1_r", "glmed2_r", "glmed3_r")
+VASTI = ("vaslat_r", "vasmed_r", "vasint_r")
+VASLAT_FLOOR = 0.05
+LOADING_RESPONSE = (0.0, 0.3)
+"""Fractions of stance searched for knee-extensor frames: loading response and the start of
+mid-stance (opposite toe-off falls at ≈24 % of stance in this trial)."""
+EXTENSOR_DEMAND = -0.2
+"""Knee-extensor frames: net muscle moment about `knee_angle_r` below −0.2 N·m/kg."""
+VASTI_SHARE_FLOOR = 0.6
+"""Vasti part of the net muscle knee moment, mean over the knee-extensor frames."""
 KNEE_EXTENSORS = ("vasint_r", "vaslat_r", "vasmed_r", "recfem_r")
 
 
@@ -235,3 +257,37 @@ def test_gluteus_medius_active_in_right_single_leg_stance(out: Outputs) -> None:
         assert stance_mean > swing_mean, m
         parts.append(stance_mean)
     assert sum(parts) / len(parts) > GLMED_FLOOR
+
+
+def test_vasti_brake_knee_flexion_in_loading_response(out: Outputs) -> None:
+    """Over the knee-extensor frames of each right loading response the vasti supply most of the
+    net muscle knee moment (forces.csv × moment_arms.csv), lengthen (velocity > 0: eccentric),
+    and vastus lateralis activation exceeds `VASLAT_FLOOR`."""
+    t = out.act.time
+    mass = out.model["totalMass"]
+    knee = {m: r for (m, c), r in out.arms.items() if c == "knee_angle_r"}
+    stances = complete(out.contacts("r"), t[0], t[-1])
+    assert len(stances) == 2
+    for stance in stances:
+        a, b = fraction(stance, *LOADING_RESPONSE)
+        frames = []
+        for i, ti in enumerate(t):
+            net = sum(out.forces.columns[m][i] * r[i] for m, r in knee.items())
+            if a <= ti <= b and net / mass < EXTENSOR_DEMAND:
+                vasti = sum(out.forces.columns[m][i] * knee[m][i] for m in VASTI)
+                frames.append((i, net, vasti / net))
+        assert frames, stance
+        peak = min(net for _, net, _ in frames) / mass
+        share = sum(sh for _, _, sh in frames) / len(frames)
+        velocity = sum(out.velocity[m][i] for i, _, _ in frames for m in VASTI) / (3 * len(frames))
+        vaslat = sum(out.act.columns["vaslat_r"][i] for i, _, _ in frames) / len(frames)
+        vasti_act = sum(out.act.columns[m][i] for i, _, _ in frames for m in VASTI) / (3 * len(frames))
+        print(
+            f"stance {stance}: {len(frames)} knee-extensor frames {t[frames[0][0]]:.2f}-{t[frames[-1][0]]:.2f} s, "
+            f"peak {peak:.3f} N m/kg, vasti share {share:.2f}, vasti velocity {velocity:+.3f} m/s, "
+            f"vaslat {vaslat:.3f}, vasti mean {vasti_act:.3f}"
+        )
+        assert peak < -0.4
+        assert share > VASTI_SHARE_FLOOR
+        assert velocity > 0.0
+        assert vaslat > VASLAT_FLOOR
