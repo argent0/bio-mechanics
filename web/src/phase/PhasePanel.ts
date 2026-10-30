@@ -4,10 +4,11 @@
  * (inline SVG); a click on the row selects the muscle through the Timeline, which the viewer
  * highlights. Actions sit under one heading per region and side ("Lower limb, right"), regions
  * in `REGION` order, sides right, left, midline; an optional `RegionFilter` narrows the groups.
+ * Neck rows (region `head`) carry the head-level label of decision D-010 (`region/assumption.ts`).
  */
 import type { QueryEngine } from "../query/QueryEngine";
 import type { Timeline } from "../timeline/Timeline";
-import type { RegionFilter } from "../region";
+import { NECK_ASSUMPTION_LABEL, neckAssumption, type RegionFilter } from "../region";
 import { phasePanelModel, ROLE_HINT, type ActionRow, type MuscleRow, type PhaseModel } from "./model";
 
 const CSS = `
@@ -32,6 +33,7 @@ const CSS = `
 .bm-pp .names span { display: block; }
 .bm-pp .names small { display: block; color: #666; }
 .bm-pp button.curve { font: inherit; font-size: 12px; padding: 0 6px; }
+.bm-pp .assumed { display: inline-block; margin-left: 6px; padding: 0 5px; border-radius: 3px; background: #fff1d6; color: #7a4a00; font-size: 11px; font-weight: 600; }
 .bm-pp .spark { padding: 2px 8px 6px 5.6em; color: #444; }
 .bm-pp .spark svg { display: block; width: 100%; max-width: 280px; height: 56px; background: #f6f8fa; border-radius: 3px; }
 `;
@@ -50,6 +52,11 @@ export function sparkline(values: readonly number[]): string {
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string);
+
+/** The marker beside a neck row; its tooltip holds the full note (decision D-010). */
+export function assumedBadge(note: string | null): string {
+  return note ? `<span class="assumed" data-assumption="head-level" title="${esc(note)}">${esc(NECK_ASSUMPTION_LABEL)}</span>` : "";
+}
 
 export class PhasePanel {
   private readonly open = new Set<string>();
@@ -89,7 +96,8 @@ export class PhasePanel {
   }
 
   private actionHtml(a: ActionRow): string {
-    return `<h4>${esc(a.commonName ?? a.name)} <small>(${esc(a.name)}, ${a.rangeDeg.toFixed(0)}&deg;)</small></h4>
+    const note = neckAssumption({ kind: "jointAction", region: a.region });
+    return `<h4>${esc(a.commonName ?? a.name)} <small>(${esc(a.name)}, ${a.rangeDeg.toFixed(0)}&deg;)</small>${assumedBadge(note)}</h4>
       <ul>${a.muscles.map((r) => this.muscleLi(a.id, r)).join("") || "<li><em>no muscle labelled in this phase</em></li>"}</ul>`;
   }
 
@@ -97,10 +105,12 @@ export class PhasePanel {
     const key = `${actionId}|${r.id}`;
     const open = this.open.has(key);
     const selected = this.opts.timeline.selectedId === r.id;
+    const node = this.opts.query.node(r.id);
+    const note = node ? neckAssumption(node) : null;
     return `<li data-muscle="${esc(r.id)}" data-selected="${selected}">
       <div class="row" title="${esc(ROLE_HINT[r.role])}">
         <span class="role" data-role="${r.role}">${r.roleLabel}</span>
-        <span class="names"><span>${esc(r.commonName ?? r.name)}</span><small>${esc(r.name)}</small></span>
+        <span class="names"><span>${esc(r.commonName ?? r.name)}${assumedBadge(note)}</span><small>${esc(r.name)}</small></span>
         <span class="work" data-work="${r.contraction}">${r.workLabel}</span>
         <button class="curve" data-curve="${esc(key)}" aria-expanded="${open}">${open ? "hide curve" : "curve"}</button>
       </div>
