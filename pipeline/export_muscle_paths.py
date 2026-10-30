@@ -1,0 +1,182 @@
+"""Stage `exportMusclePaths`: muscle path points, activation, lengthening velocity and body poses
+per frame, for the web viewer's tube muscles and animated bones.
+
+Frames: every `step`-th frame of `kinematics.csv`, `step` = ceil(rate / `MAX_RATE_HZ`), so the
+output runs at 50 Hz for the 100 Hz trial. At each frame the scaled model is posed at the
+filtered coordinates (P1's `moment_arms.pose`) and OpenSim reports, in ground:
+  - each muscle's current path (`GeometryPath.getCurrentPath`): its path points in order,
+    conditional points included only while active; where the path wraps over a surface the arc
+    OpenSim computes over the surface (`PathWrapPoint.getWrapPath`, expressed in the wrap
+    point's frame) is inserted ahead of the arc's end point; consecutive points closer than
+    `MIN_SPACING_M` merge into one;
+  - each body's pose of `export_meshes.BODIES`: frame origin and orientation.
+Activation (`activations.csv`) and lengthening velocity (`mt_lengths.csv`, v > 0 lengthening:
+eccentric when active; v < 0 shortening: concentric) are read at the same frames.
+
+Output `data/out/muscle_paths.json` (the format the viewer reads):
+  format     "bm-muscle-paths/1"
+  frame      "ground": metres, y up, the trial's walking direction along +x
+  rateHz     frames per second of the output
+  time       [s] per frame
+  bodies     {body: [[px, py, pz, qx, qy, qz, qw] per frame]}: the body frame's origin (m) and
+             orientation (unit quaternion, glTF order) in ground; the meshes of
+             `meshes/index.json` sit in these frames
+  muscles    {muscle: {points, activation, velocity}} for every muscle of the model:
+             points      per frame, the path as a flat list [x0, y0, z0, x1, y1, z1, ...] (m)
+                         from origin to insertion; the count may change between frames
+             activation  per frame, 0–1
+             velocity    per frame, muscle-tendon lengthening velocity (m/s)
+Rounding: positions to `POSITION_DIGITS` decimals (0.1 mm), quaternions to 5, activation to 3,
+velocity to 4.
+
+Run with the OpenSim environment's Python from the repository root:
+`python -m pipeline.export_muscle_paths`.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import sys
+from collections.abc import Sequence
+from pathlib import Path
+from typing import Any
+
+from pipeline.export_meshes import BODIES
+from pipeline.label_roles import read_long
+from pipeline.load_model import REPO, opensim_module, read_csv, sample_rate
+from pipeline.segment_phases import GENERATED
+
+import pipeline_paths as paths  # noqa: E402  (generated/py: see `GENERATED`)
+
+FORMAT = "bm-muscle-paths/1"
+MAX_RATE_HZ = 60.0
+"""Upper bound of the output frame rate (Hz)."""
+MIN_SPACING_M = 0.001
+"""Consecutive path points closer than this (m) merge into one."""
+POSITION_DIGITS = 4
+
+Vec3 = tuple[float, float, float]
+
+
+def frame_step(rate_hz: float, max_rate_hz: float = MAX_RATE_HZ) -> int:
+    """Every how many input frames one output frame falls."""
+    return max(1, math.ceil(rate_hz / max_rate_hz - 1e-9))
+
+
+def merge_close(points: Sequence[Vec3], spacing: float = MIN_SPACING_M) -> list[Vec3]:
+    """`points` without each point closer than `spacing` to the point kept before it; the last
+    point (the insertion) always stays."""
+    out: list[Vec3] = []
+    for i, p in enumerate(points):
+        if out and math.dist(out[-1], p) < spacing:
+            if i == len(points) - 1:
+                out[-1] = p
+            continue
+        out.append(p)
+    return out
+
+
+def quaternion(r: Sequence[Sequence[float]]) -> tuple[float, float, float, float]:
+    """Unit quaternion (x, y, z, w) of a rotation matrix (rows), w ≥ 0."""
+    t = r[0][0] + r[1][1] + r[2][2]
+    if t > 0:
+        s = 2.0 * math.sqrt(1.0 + t)
+        q = ((r[2][1] - r[1][2]) / s, (r[0][2] - r[2][0]) / s, (r[1][0] - r[0][1]) / s, 0.25 * s)
+    elif r[0][0] > r[1][1] and r[0][0] > r[2][2]:
+        s = 2.0 * math.sqrt(1.0 + r[0][0] - r[1][1] - r[2][2])
+        q = (0.25 * s, (r[0][1] + r[1][0]) / s, (r[0][2] + r[2][0]) / s, (r[2][1] - r[1][2]) / s)
+    elif r[1][1] > r[2][2]:
+        s = 2.0 * math.sqrt(1.0 + r[1][1] - r[0][0] - r[2][2])
+        q = ((r[0][1] + r[1][0]) / s, 0.25 * s, (r[1][2] + r[2][1]) / s, (r[0][2] - r[2][0]) / s)
+    else:
+        s = 2.0 * math.sqrt(1.0 + r[2][2] - r[0][0] - r[1][1])
+        q = ((r[0][2] + r[2][0]) / s, (r[1][2] + r[2][1]) / s, 0.25 * s, (r[1][0] - r[0][1]) / s)
+    n = math.sqrt(sum(c * c for c in q))
+    x, y, z, w = (c / n for c in q)
+    return (-x, -y, -z, -w) if w < 0 else (x, y, z, w)
+
+
+def _vec(v: Any) -> Vec3:
+    return (float(v.get(0)), float(v.get(1)), float(v.get(2)))
+
+
+def current_path(osim: Any, muscle: Any, state: Any) -> list[Vec3]:
+    """The muscle's path in ground, with wrap arcs (module docstring)."""
+    cp = muscle.getGeometryPath().getCurrentPath(state)
+    pts: list[Vec3] = []
+    for i in range(cp.getSize()):
+        pp = cp.get(i)
+        if pp.getConcreteClassName() == "PathWrapPoint":
+            arc = osim.PathWrapPoint.safeDownCast(pp).getWrapPath(state)
+            frame = pp.getParentFrame()
+            pts += [_vec(frame.findStationLocationInGround(state, arc.get(k))) for k in range(arc.getSize())]
+        pts.append(_vec(pp.getLocationInGround(state)))
+    return merge_close(pts)
+
+
+def run(model_path: Path, kin_path: Path, act_path: Path, len_path: Path, out: Path) -> dict[str, Any]:
+    from pipeline.moment_arms import pose
+
+    osim = opensim_module()
+    model = osim.Model(str(model_path))
+    state = model.initSystem()
+    kin = read_csv(kin_path)
+    act = read_csv(act_path)
+    vel = read_long(len_path, ("muscle",), "velocity", kin.time)
+    step = frame_step(sample_rate(kin.time))
+    frames = list(range(0, len(kin.time), step))
+    ms = model.getMuscles()
+    names = [ms.get(k).getName() for k in range(ms.getSize())]
+    bodyset = model.getBodySet()
+    bodies: dict[str, list[list[float]]] = {b: [] for b in BODIES}
+    points: dict[str, list[list[float]]] = {m: [] for m in names}
+    d = POSITION_DIGITS
+    for f in frames:
+        pose(model, state, kin, f)
+        for b in BODIES:
+            tr = bodyset.get(b).getTransformInGround(state)
+            p = _vec(tr.p())
+            rot = tr.R()
+            q = quaternion([[float(rot.get(i, j)) for j in range(3)] for i in range(3)])
+            bodies[b].append([round(c, d) for c in p] + [round(c, 5) for c in q])
+        for k, m in enumerate(names):
+            pts = current_path(osim, ms.get(k), state)
+            points[m].append([round(c, d) for p in pts for c in p])
+    doc = {
+        "format": FORMAT,
+        "frame": "ground",
+        "rateHz": round(sample_rate(kin.time) / step, 6),
+        "time": [kin.time[f] for f in frames],
+        "bodies": bodies,
+        "muscles": {
+            m: {
+                "points": points[m],
+                "activation": [round(act.columns[m][f], 3) for f in frames],
+                "velocity": [round(vel[(m,)][f], 4) for f in frames],
+            }
+            for m in names
+        },
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(doc, separators=(",", ":")) + "\n")
+    return doc
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    doc = __doc__ or ""
+    ap = argparse.ArgumentParser(prog="python -m pipeline.export_muscle_paths", description=doc.split("\n")[0])
+    ap.add_argument("--model", type=Path, default=REPO / paths.SCALED_MODEL, help="scaled OpenSim model (.osim)")
+    ap.add_argument("--kinematics", type=Path, default=REPO / paths.KINEMATICS)
+    ap.add_argument("--activations", type=Path, default=REPO / paths.ACTIVATIONS)
+    ap.add_argument("--mt-lengths", type=Path, default=REPO / paths.MT_LENGTHS)
+    ap.add_argument("--out", type=Path, default=REPO / paths.MUSCLE_PATHS)
+    a = ap.parse_args(argv)
+    out = run(a.model, a.kinematics, a.activations, a.mt_lengths, a.out)
+    size = a.out.stat().st_size / 1e6
+    print(f"export_muscle_paths: {len(out['time'])} frames at {out['rateHz']:g} Hz, {len(out['muscles'])} muscles, {size:.1f} MB; wrote {a.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

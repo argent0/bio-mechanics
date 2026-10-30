@@ -1,0 +1,166 @@
+# Hand-curated anatomy of the right lower limb and pelvis, read by stage enrichAnatomy
+# (pipeline/enrich_anatomy.py, whose docstring defines every field and the checks it runs).
+#
+# Keys are node keys: the graph id is `<kind>:<key>`, e.g. `muscle:glmed1_r`. A key ending in
+# `_r` is a right-side node; every other key is a midline node.
+# `name` is the anatomical name, `commonName` the everyday name.
+# `ontologyName` (optional) is the term looked up in Uberon and FMA when it differs from
+# `name`; `fmaName` (optional) overrides it for FMA alone, and may name the side itself where
+# FMA puts it mid-label (e.g. "long head of right biceps femoris"). A muscle modelled as several lines of
+# action (e.g. gluteus medius 1-3) carries the ontology ids of the whole muscle.
+# Sources for attachments and innervation: standard anatomy texts (Gray's Anatomy, 42nd ed.;
+# Moore, Clinically Oriented Anatomy, 8th ed.); the OpenSim bodies of each muscle path come
+# from the model (model.json), and an `origin` / `insertion` here refines the bone within the
+# model's body.
+
+movement:
+  walking: {name: walking, commonName: walking}
+
+phases:
+  loadingResponse: {name: loading response, commonName: weight acceptance}
+  midStance: {name: mid-stance, commonName: single-leg support}
+  terminalStance: {name: terminal stance, commonName: heel rise}
+  preSwing: {name: pre-swing, commonName: push-off}
+  initialSwing: {name: initial swing, commonName: foot lift}
+  midSwing: {name: mid-swing, commonName: leg swing}
+  terminalSwing: {name: terminal swing, commonName: reaching for the next step}
+
+# Bones, each with the OpenSim body it belongs to.
+bones:
+  pelvis: {name: pelvis, commonName: hip bones, body: pelvis, ontologyName: bony pelvis}
+  femur_r: {name: femur, commonName: thigh bone, body: femur_r}
+  patella_r: {name: patella, commonName: kneecap, body: patella_r}
+  tibia_r: {name: tibia, commonName: shin bone, body: tibia_r}
+  fibula_r: {name: fibula, commonName: calf bone, body: tibia_r}
+  talus_r: {name: talus, commonName: ankle bone, body: talus_r}
+  calcaneus_r: {name: calcaneus, commonName: heel bone, body: calcn_r}
+  navicular_r: {name: navicular bone, commonName: midfoot bone, body: calcn_r, ontologyName: navicular bone of pes, fmaName: navicular bone of right foot}
+  medial_cuneiform_r: {name: medial cuneiform bone, commonName: inner midfoot bone, body: calcn_r, ontologyName: medial cuneiform bone, fmaName: medial cuneiform bone}
+  metatarsal1_r: {name: first metatarsal bone, commonName: big-toe foot bone, body: calcn_r, ontologyName: metatarsal bone of digit 1, fmaName: first metatarsal bone}
+  metatarsal5_r: {name: fifth metatarsal bone, commonName: little-toe foot bone, body: calcn_r, ontologyName: metatarsal bone of digit 5, fmaName: fifth metatarsal bone}
+  phalanges_r: {name: phalanges of the foot, commonName: toe bones, body: toes_r, ontologyName: phalanx of pes, fmaName: set of phalanges of right foot}
+
+# OpenSim body -> the bone a muscle attaches to when its path ends on that body and the muscle
+# names no `origin` / `insertion` of its own.
+bodies:
+  pelvis: pelvis
+  femur_r: femur_r
+  patella_r: patella_r
+  tibia_r: tibia_r
+  talus_r: talus_r
+  calcn_r: calcaneus_r
+  toes_r: phalanges_r
+
+# Joints: `opensim` lists the model joints (the first names the node); `articulates` lists
+# bones, each of which belongs to a parent or child body of those model joints.
+joints:
+  hip_r: {name: hip joint, commonName: hip, opensim: [hip_r], articulates: [pelvis, femur_r]}
+  knee_r: {name: knee joint, commonName: knee, opensim: [walker_knee_r, patellofemoral_r], articulates: [femur_r, tibia_r, patella_r]}
+  ankle_r: {name: ankle joint, commonName: ankle, opensim: [ankle_r], articulates: [tibia_r, fibula_r, talus_r]}
+  subtalar_r: {name: subtalar joint, commonName: heel joint, opensim: [subtalar_r], articulates: [talus_r, calcaneus_r]}
+  mtp_r: {name: metatarsophalangeal joints, commonName: ball of the foot, opensim: [mtp_r], articulates: [metatarsal1_r, metatarsal5_r, phalanges_r], ontologyName: metatarsophalangeal joint}
+
+# Model coordinate -> its joint and the joint action of each direction (OpenSim signs).
+coordinates:
+  hip_flexion_r: {joint: hip_r, positive: hip_flexion_r, negative: hip_extension_r}
+  hip_adduction_r: {joint: hip_r, positive: hip_adduction_r, negative: hip_abduction_r}
+  hip_rotation_r: {joint: hip_r, positive: hip_internal_rotation_r, negative: hip_external_rotation_r}
+  knee_angle_r: {joint: knee_r, positive: knee_flexion_r, negative: knee_extension_r}
+  ankle_angle_r: {joint: ankle_r, positive: ankle_dorsiflexion_r, negative: ankle_plantarflexion_r}
+
+actions:
+  hip_flexion_r: {name: hip flexion, commonName: lifting the thigh forward}
+  hip_extension_r: {name: hip extension, commonName: driving the thigh back}
+  hip_adduction_r: {name: hip adduction, commonName: drawing the thigh inward}
+  hip_abduction_r: {name: hip abduction, commonName: moving the thigh out to the side}
+  hip_internal_rotation_r: {name: hip internal rotation, commonName: turning the thigh inward}
+  hip_external_rotation_r: {name: hip external rotation, commonName: turning the thigh outward}
+  knee_flexion_r: {name: knee flexion, commonName: bending the knee}
+  knee_extension_r: {name: knee extension, commonName: straightening the knee}
+  ankle_dorsiflexion_r: {name: ankle dorsiflexion, commonName: lifting the toes toward the shin}
+  ankle_plantarflexion_r: {name: ankle plantarflexion, commonName: pointing the foot}
+
+groups:
+  gluteals_r: {name: gluteal muscles, commonName: glutes, ontologyName: gluteal muscle}
+  iliopsoas_r: {name: iliopsoas, commonName: deep hip flexors}
+  adductors_r: {name: adductor muscles of the hip, commonName: inner-thigh muscles, ontologyName: adductor muscle of hip}
+  quadriceps_r: {name: quadriceps femoris, commonName: quads}
+  hamstrings_r: {name: hamstrings, commonName: hamstrings, ontologyName: hamstring muscle, fmaName: set of hamstring muscles}
+  deepHipRotators_r: {name: deep lateral rotators of the hip, commonName: deep hip rotators, ontologyName: lateral rotator muscles of hip}
+  anteriorThigh_r: {name: anterior compartment of the thigh, commonName: front of the thigh, ontologyName: muscle of anterior compartment of hindlimb stylopod, fmaName: anterior compartment of right thigh}
+  tricepsSurae_r: {name: triceps surae, commonName: calf}
+  anteriorLeg_r: {name: anterior compartment of the leg, commonName: shin muscles, ontologyName: anterior compartment of leg, fmaName: anterior compartment of right leg}
+  lateralLeg_r: {name: lateral compartment of the leg, commonName: outer-shin muscles, ontologyName: lateral compartment of leg, fmaName: set of muscles of lateral compartment of right leg}
+  deepPosteriorLeg_r: {name: deep posterior compartment of the leg, commonName: deep calf muscles, ontologyName: deep posterior compartment of leg, fmaName: deep part of posterior compartment of right leg}
+
+nerves:
+  femoral_r: {name: femoral nerve}
+  obturator_r: {name: obturator nerve}
+  sciatic_r: {name: sciatic nerve}
+  tibial_r: {name: tibial nerve}
+  commonFibular_r: {name: common fibular nerve, commonName: common peroneal nerve}
+  deepFibular_r: {name: deep fibular nerve, commonName: deep peroneal nerve}
+  superficialFibular_r: {name: superficial fibular nerve, commonName: superficial peroneal nerve}
+  supgluteal_r: {name: superior gluteal nerve}
+  infgluteal_r: {name: inferior gluteal nerve}
+  nervePiriformis_r: {name: nerve to piriformis}
+  lumbarPlexus_r: {name: lumbar plexus, commonName: lower-back nerve network, ontologyName: lumbar nerve plexus}
+
+# Ligaments and the joints they stabilise.
+ligaments:
+  acl_r: {name: anterior cruciate ligament, commonName: ACL, stabilises: [knee_r], ontologyName: anterior cruciate ligament of knee joint, fmaName: anterior cruciate ligament}
+  pcl_r: {name: posterior cruciate ligament, commonName: PCL, stabilises: [knee_r], ontologyName: posterior cruciate ligament of knee joint, fmaName: posterior cruciate ligament}
+  mcl_r: {name: tibial collateral ligament, commonName: MCL, stabilises: [knee_r], ontologyName: medial collateral ligament of knee joint, fmaName: tibial collateral ligament}
+  lcl_r: {name: fibular collateral ligament, commonName: LCL, stabilises: [knee_r], ontologyName: lateral collateral ligament of knee joint, fmaName: fibular collateral ligament}
+  patellarLigament_r: {name: patellar ligament, commonName: patellar tendon, stabilises: [knee_r]}
+  iliofemoral_r: {name: iliofemoral ligament, commonName: Y ligament of the hip, stabilises: [hip_r]}
+  ischiofemoral_r: {name: ischiofemoral ligament, commonName: back hip ligament, stabilises: [hip_r]}
+  pubofemoral_r: {name: pubofemoral ligament, commonName: inner hip ligament, stabilises: [hip_r]}
+  atfl_r: {name: anterior talofibular ligament, commonName: ATFL, stabilises: [ankle_r]}
+  calcaneofibular_r: {name: calcaneofibular ligament, commonName: CFL, stabilises: [ankle_r, subtalar_r]}
+  deltoid_r: {name: deltoid ligament, commonName: inner ankle ligament, stabilises: [ankle_r, subtalar_r], ontologyName: medial ligament of ankle joint, fmaName: medial ligament of ankle joint}
+
+# Muscles of the right leg by OpenSim name: anatomical name, groups, nerve; optional `origin` /
+# `insertion` bone, which belongs to a body on the muscle's model path (e.g. the quadriceps
+# path runs over the patella to the tibia; the quadriceps tendon inserts on the patella).
+muscles:
+  addbrev_r: {name: adductor brevis, commonName: short inner-thigh muscle, groups: [adductors_r], nerve: obturator_r}
+  addlong_r: {name: adductor longus, commonName: long inner-thigh muscle, groups: [adductors_r], nerve: obturator_r}
+  addmagDist_r: {name: adductor magnus (distal part), commonName: big inner-thigh muscle, groups: [adductors_r], nerve: obturator_r, ontologyName: adductor magnus}
+  addmagIsch_r: {name: adductor magnus (ischiocondylar part), commonName: hamstring part of the big inner-thigh muscle, groups: [adductors_r], nerve: sciatic_r, ontologyName: adductor magnus}
+  addmagMid_r: {name: adductor magnus (middle part), commonName: big inner-thigh muscle, groups: [adductors_r], nerve: obturator_r, ontologyName: adductor magnus}
+  addmagProx_r: {name: adductor magnus (proximal part), commonName: big inner-thigh muscle, groups: [adductors_r], nerve: obturator_r, ontologyName: adductor magnus}
+  bflh_r: {name: biceps femoris long head, commonName: outer hamstring, groups: [hamstrings_r], nerve: sciatic_r, ontologyName: biceps femoris, fmaName: long head of right biceps femoris}
+  bfsh_r: {name: biceps femoris short head, commonName: short outer hamstring, groups: [hamstrings_r], nerve: commonFibular_r, ontologyName: biceps femoris, fmaName: short head of right biceps femoris}
+  edl_r: {name: extensor digitorum longus, commonName: toe lifter, groups: [anteriorLeg_r], nerve: deepFibular_r, origin: fibula_r}
+  ehl_r: {name: extensor hallucis longus, commonName: big-toe lifter, groups: [anteriorLeg_r], nerve: deepFibular_r, origin: fibula_r, ontologyName: extensor hallucis longus muscle}
+  fdl_r: {name: flexor digitorum longus, commonName: toe curler, groups: [deepPosteriorLeg_r], nerve: tibial_r}
+  fhl_r: {name: flexor hallucis longus, commonName: big-toe curler, groups: [deepPosteriorLeg_r], nerve: tibial_r, origin: fibula_r}
+  gaslat_r: {name: gastrocnemius lateral head, commonName: outer calf, groups: [tricepsSurae_r], nerve: tibial_r, ontologyName: gastrocnemius lateralis, fmaName: lateral head of right gastrocnemius}
+  gasmed_r: {name: gastrocnemius medial head, commonName: inner calf, groups: [tricepsSurae_r], nerve: tibial_r, ontologyName: gastrocnemius medialis, fmaName: medial head of right gastrocnemius}
+  glmax1_r: {name: gluteus maximus (upper part), commonName: glute, groups: [gluteals_r], nerve: infgluteal_r, ontologyName: gluteus maximus}
+  glmax2_r: {name: gluteus maximus (middle part), commonName: glute, groups: [gluteals_r], nerve: infgluteal_r, ontologyName: gluteus maximus}
+  glmax3_r: {name: gluteus maximus (lower part), commonName: glute, groups: [gluteals_r], nerve: infgluteal_r, ontologyName: gluteus maximus}
+  glmed1_r: {name: gluteus medius (anterior part), commonName: side glute, groups: [gluteals_r], nerve: supgluteal_r, ontologyName: gluteus medius}
+  glmed2_r: {name: gluteus medius (middle part), commonName: side glute, groups: [gluteals_r], nerve: supgluteal_r, ontologyName: gluteus medius}
+  glmed3_r: {name: gluteus medius (posterior part), commonName: side glute, groups: [gluteals_r], nerve: supgluteal_r, ontologyName: gluteus medius}
+  glmin1_r: {name: gluteus minimus (anterior part), commonName: deep side glute, groups: [gluteals_r], nerve: supgluteal_r, ontologyName: gluteus minimus}
+  glmin2_r: {name: gluteus minimus (middle part), commonName: deep side glute, groups: [gluteals_r], nerve: supgluteal_r, ontologyName: gluteus minimus}
+  glmin3_r: {name: gluteus minimus (posterior part), commonName: deep side glute, groups: [gluteals_r], nerve: supgluteal_r, ontologyName: gluteus minimus}
+  grac_r: {name: gracilis, commonName: inner-thigh strap muscle, groups: [adductors_r], nerve: obturator_r}
+  iliacus_r: {name: iliacus, commonName: hip flexor, groups: [iliopsoas_r], nerve: femoral_r}
+  perbrev_r: {name: fibularis brevis, commonName: short outer-ankle muscle, groups: [lateralLeg_r], nerve: superficialFibular_r, origin: fibula_r, insertion: metatarsal5_r}
+  perlong_r: {name: fibularis longus, commonName: long outer-ankle muscle, groups: [lateralLeg_r], nerve: superficialFibular_r, origin: fibula_r, insertion: metatarsal1_r}
+  piri_r: {name: piriformis, commonName: deep hip rotator, groups: [deepHipRotators_r], nerve: nervePiriformis_r, ontologyName: piriformis muscle}
+  psoas_r: {name: psoas major, commonName: deep hip flexor, groups: [iliopsoas_r], nerve: lumbarPlexus_r}
+  recfem_r: {name: rectus femoris, commonName: front quad, groups: [quadriceps_r, anteriorThigh_r], nerve: femoral_r, insertion: patella_r}
+  sart_r: {name: sartorius, commonName: tailor's muscle, groups: [anteriorThigh_r], nerve: femoral_r}
+  semimem_r: {name: semimembranosus, commonName: inner hamstring, groups: [hamstrings_r], nerve: sciatic_r}
+  semiten_r: {name: semitendinosus, commonName: inner hamstring, groups: [hamstrings_r], nerve: sciatic_r}
+  soleus_r: {name: soleus, commonName: deep calf, groups: [tricepsSurae_r], nerve: tibial_r}
+  tfl_r: {name: tensor fasciae latae, commonName: hip pocket muscle, groups: [gluteals_r], nerve: supgluteal_r}
+  tibant_r: {name: tibialis anterior, commonName: shin muscle, groups: [anteriorLeg_r], nerve: deepFibular_r, insertion: medial_cuneiform_r}
+  tibpost_r: {name: tibialis posterior, commonName: deep arch muscle, groups: [deepPosteriorLeg_r], nerve: tibial_r, insertion: navicular_r}
+  vasint_r: {name: vastus intermedius, commonName: middle quad, groups: [quadriceps_r, anteriorThigh_r], nerve: femoral_r, insertion: patella_r}
+  vaslat_r: {name: vastus lateralis, commonName: outer quad, groups: [quadriceps_r, anteriorThigh_r], nerve: femoral_r, insertion: patella_r}
+  vasmed_r: {name: vastus medialis, commonName: inner quad, groups: [quadriceps_r, anteriorThigh_r], nerve: femoral_r, insertion: patella_r}
