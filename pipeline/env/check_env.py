@@ -2,10 +2,8 @@
 
 Loads the scaled Rajagopal model and the walking trial's inverse-kinematics coordinates,
 checks the motion's columns against the model's coordinates, and prints the counts. Then
-loads the upper-body source models (Holzbaur arm, Mortensen neck; `initSystem()`) and
-checks their muscle counts. A Christophy lumbar model placed by hand under
-data/raw/christophy/ is loaded and reported too; a failure there is a note, not an error,
-because that model is in the older OpenSim 2 format (survey K19 left it "to test").
+loads the upper-body source models (Holzbaur arm, Mortensen neck, FBLS trunk;
+`initSystem()`) and checks their muscle counts.
 Exit code 0 on success. Usage: check_env.py [RAJAGOPAL_DIR]   (default data/raw/rajagopal)
 """
 from __future__ import annotations
@@ -21,10 +19,12 @@ opensim: Any = importlib.import_module("opensim")
 REPO = Path(__file__).resolve().parents[2]
 RAW = REPO / "data" / "raw"
 
-# Upper-body source models: (label, folder under data/raw, model file, expected muscle count).
+# Source models for the arm, neck and trunk: (label, folder under data/raw, model file, expected muscle count).
 UPPER_BODY = (
     ("holzbaur", "holzbaur", "Stanford_VA_Upper_Limb_original.osim", 50),
     ("mortensen", "mortensen", "HYOID_1.2_ScaledStrenght_UpdatedInertia.osim", 72),
+    # FBLS (trunk, D-011): git-ignored, fetched from a mirror that holds no meshes.
+    ("fbls", "fbls", "FBLSmodel.osim", 324),
 )
 
 
@@ -48,7 +48,7 @@ def load_counts(folder: Path, model_file: Path) -> dict[str, Any]:
 
 
 def check_upper_body() -> int:
-    """Load each fetched upper-body model; return the number of failures."""
+    """Load each fetched source model; return the number of failures."""
     failures = 0
     for label, folder, name, expected in UPPER_BODY:
         path = RAW / folder / name
@@ -63,18 +63,6 @@ def check_upper_body() -> int:
         if c["muscles"] != expected:
             print(f"check_env: {label} has {c['muscles']} muscles, expected {expected}", file=sys.stderr)
             failures += 1
-    chr_dir = RAW / "christophy"
-    chr_models = sorted(chr_dir.glob("*.osim")) if chr_dir.is_dir() else []
-    if not chr_models:
-        print("christophy      : absent (manual download from simtk.org, see data/raw/christophy/README.md)")
-    for path in chr_models:
-        try:
-            c = load_counts(chr_dir, path)
-            print(f"christophy      : {c['name']} ({path.name}), muscles {c['muscles']}, "
-                  f"coordinates {c['coordinates']}, bodies {c['bodies']}")
-        except Exception as err:
-            first = str(err).strip().splitlines()[0] if str(err).strip() else "load failed"
-            print(f"christophy      : {path.name} does not load in this OpenSim ({first})")
     return failures
 
 
