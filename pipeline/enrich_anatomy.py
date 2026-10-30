@@ -7,9 +7,20 @@ command of this module).
 
 Entities. anatomy.yaml lists entities per kind: `bones`, `joints`, `muscles`, `groups`
 (muscle groups), `ligaments`, `nerves`, `actions` (joint actions), `phases`, `movement`. An
-entity's key gives its node: side `right` for a key ending in `_r`, `midline` otherwise.
-`opensimName` is the model element: the muscle's own key, a bone's body, a joint's first
-`opensim` joint.
+entity's key gives its node: side `right` for a key ending in `_r`, `left` for a key ending in
+`_l`, `midline` otherwise (`side_of`). `opensimName` is the model element: the muscle's own key,
+a bone's body, a joint's first `opensim` joint.
+
+Mirroring (`with_left`). anatomy.yaml holds the right side and the midline; the left side comes
+from mirroring in code, so each fact lives once. Every right entry (key ending in `_r`) of the
+sections of `MIRRORED_SECTIONS` gains a left twin: the key with `_l` for `_r`, every reference
+field of `REFERENCE_FIELDS` mirrored the same way (a value ending in `_r`: bones, bodies, model
+joints, coordinates, actions, groups, nerves, joints of a ligament), and the FMA term `fmaName`
+with "left" for "right" (`mirror_text`); `name`, `commonName` and `ontologyName` stay, as the
+anatomy of the two sides is the same. Midline entries (e.g. `pelvis`) stay single, and a left
+entry's references to them stay. The `bodies` map mirrors its keys and values. The model holds
+the left twin of every right element under the mirrored name (`hip_l`, `femur_l`, `vaslat_l`),
+and the attachment and articulation checks below run on the left entries as on the right ones.
 
 Regions (`regions_of`). anatomy.yaml `regions` maps each OpenSim body, side suffix dropped, to
 its body region. A bone takes its body's region; a joint, the region of its first `opensim`
@@ -29,8 +40,9 @@ else `ontologyName`, else `name`, compared case-insensitively.
   - Uberon: the term whose name equals the lookup term, else one with an EXACT synonym equal to
     it, else one with any other synonym equal to it; ties go to the lowest identifier. Uberon
     terms are species- and side-neutral.
-  - FMA: for right-side entities the class labelled "Right <term>" (FMA models sides), else the
-    class labelled <term>; label first, then FMA synonyms; ties go to the lowest identifier.
+  - FMA: for right-side entities the class labelled "Right <term>" and for left-side entities
+    the class labelled "Left <term>" (FMA models sides), else the class labelled <term>; label
+    first, then FMA synonyms; ties go to the lowest identifier.
   An entity without a match gets `null` and the stage lists it. FMA serves identifiers alone,
   in line with its licence terms (`data/raw/ontology/SOURCES.md`).
 
@@ -46,7 +58,8 @@ Output `enriched.json`:
   unresolved   [{kind, key, ontology, term}]: lookups without a match
 
 Run from the repository root: `python -m pipeline.enrich_anatomy` (pure Python with PyYAML);
-`python -m pipeline.enrich_anatomy subset --uberon-full F --fma-full G` writes the subsets.
+`python -m pipeline.enrich_anatomy subset --uberon-full F --fma-full G` writes the subsets,
+with the lookup terms of both sides (`wanted_terms` reads the mirrored anatomy).
 """
 from __future__ import annotations
 
@@ -89,8 +102,62 @@ OWL = "http://www.w3.org/2002/07/owl#"
 FMA_NS = "http://purl.org/sig/ont/fma/"
 
 
+MIRRORED_SECTIONS = ("bones", "bodies", "joints", "coordinates", "actions", "groups", "nerves", "ligaments", "muscles")
+"""anatomy.yaml sections whose right entries gain a left twin (`with_left`)."""
+
+REFERENCE_FIELDS = ("body", "opensim", "articulates", "joint", "positive", "negative", "stabilises", "groups", "nerve", "origin", "insertion")
+"""Entry fields that name other entries or model elements, mirrored with the entry."""
+
+
 def side_of(key: str) -> str:
-    return "right" if key.endswith("_r") else "midline"
+    if key.endswith("_r"):
+        return "right"
+    return "left" if key.endswith("_l") else "midline"
+
+
+def mirror_name(name: str) -> str:
+    """The left twin of a right key or model name (`vaslat_r` -> `vaslat_l`); other names stay."""
+    return name[:-2] + "_l" if name.endswith("_r") else name
+
+
+def mirror_text(text: str) -> str:
+    """`text` with the side word "right" turned to "left", capital kept ("Right" -> "Left")."""
+    return re.sub(r"\b([Rr])ight\b", lambda m: "Left" if m.group(1) == "R" else "left", text)
+
+
+def mirror_value(value: Any) -> Any:
+    if isinstance(value, list):
+        return [mirror_name(str(v)) for v in value]
+    return mirror_name(str(value))
+
+
+def mirror_entry(entry: Any) -> Any:
+    """The left twin of a right entry (module docstring, Mirroring)."""
+    if not isinstance(entry, dict):
+        return mirror_value(entry)
+    out = {}
+    for k, v in entry.items():
+        if k in REFERENCE_FIELDS:
+            out[k] = mirror_value(v)
+        elif k == "fmaName":
+            out[k] = mirror_text(str(v))
+        else:
+            out[k] = v
+    return out
+
+
+def with_left(anatomy: dict[str, Any]) -> dict[str, Any]:
+    """`anatomy` (anatomy.yaml as read: right side and midline) with the left twin of every right
+    entry after the right entries of its section. A left key in anatomy.yaml raises: the left
+    side lives in this function."""
+    out = dict(anatomy)
+    for section in MIRRORED_SECTIONS:
+        entries: dict[str, Any] = anatomy[section]
+        left = sorted(k for k in entries if side_of(k) == "left")
+        if left:
+            raise ValueError(f"anatomy.yaml {section}: left keys {left}; the left side comes from mirroring the right")
+        out[section] = {**entries, **{mirror_name(k): mirror_entry(e) for k, e in entries.items() if side_of(k) == "right"}}
+    return out
 
 
 # ---------------------------------------------------------------------------------------------
@@ -239,12 +306,14 @@ def lookup_terms(kind: str, key: str, entry: dict[str, Any]) -> tuple[list[str],
     """The Uberon and FMA lookup terms of an entity, in preference order."""
     base = str(entry.get("ontologyName", entry["name"]))
     fma = str(entry.get("fmaName", base))
-    fma_terms = ([f"right {fma}"] if side_of(key) == "right" else []) + [fma]
+    side = side_of(key)
+    fma_terms = ([f"{side} {fma}"] if side in ("right", "left") else []) + [fma]
     return [base], fma_terms
 
 
 def wanted_terms(anatomy: dict[str, Any]) -> tuple[set[str], set[str]]:
-    """Every lower-case lookup term of anatomy.yaml, for Uberon and for FMA."""
+    """Every lower-case lookup term of anatomy.yaml, both sides, for Uberon and for FMA."""
+    anatomy = with_left(anatomy)
     ub: set[str] = set()
     fm: set[str] = set()
     for section, kind in SECTIONS.items():
@@ -317,7 +386,9 @@ def check_attachment(muscle: str, role: str, bone: str, bones: dict[str, Any], p
 
 
 def enrich(roles: dict[str, Any], model: dict[str, Any], anatomy: dict[str, Any], uberon: Ontology, fma: Ontology) -> dict[str, Any]:
-    """The contents of `enriched.json`."""
+    """The contents of `enriched.json`; `anatomy` is anatomy.yaml as read, and the left side
+    comes from mirroring it (`with_left`)."""
+    anatomy = with_left(anatomy)
     bones = anatomy["bones"]
     muscles_model = {m["name"]: m for m in model["muscles"]}
     joints_model = {j["name"]: j for j in model["joints"]}

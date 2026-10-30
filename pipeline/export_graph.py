@@ -5,8 +5,9 @@ checks the result with `schema.validate_graph` and raises on any error.
 
 Node ids: `<prefix>:<key>`, the key from `enriched.json` (anatomy.yaml keys, OpenSim muscle
 names, `GaitPhase` constructors) and the prefix per kind (`PREFIX`), e.g. `muscle:glmed1_r`,
-`bone:femur_r`, `joint:knee_r`, `group:quadriceps_r`, `phase:midStance`,
-`action:knee_flexion_r`. Nodes come in the order of `schema.KIND`, then of anatomy.yaml.
+`muscle:glmed1_l`, `bone:femur_r`, `joint:knee_r`, `group:quadriceps_r`, `phase:midStance`,
+`action:knee_flexion_r`. Nodes come in the order of `schema.KIND`, then of anatomy.yaml with the
+left twins after the right entries of each section (`enrich_anatomy.with_left`).
 
 Edges, by relation (all from `enriched.json`):
   origin, insertion   muscle → bone: the muscle's attachment bones

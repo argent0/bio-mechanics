@@ -1,9 +1,31 @@
 """Stage `labelRoles`: each muscle's role per gait phase and joint action (decisions D-002, D-006).
 
 Scope. One complete stride of the right leg (stride 0 of `phases.csv`), its seven phases, the
-right-leg muscles (`Config.muscle_suffix`), and the joint coordinates of `Config.coordinates`.
-A phase spans the frames from the event that opens it to the event that closes it, both
-included, so the phases tile the stride; integrals use the trapezoid rule over those frames.
+muscles of both legs (`Config.muscle_suffixes`, `labelled_muscles`), and the joint coordinates
+of `Config.coordinates`. A coordinate takes the muscles of its own leg (`muscles_of`): those
+whose name ends in the coordinate's suffix, e.g. `vaslat_l` for `knee_angle_l`. A phase spans
+the frames from the event that opens it to the event that closes it, both included, so the
+phases tile the stride; integrals use the trapezoid rule over those frames.
+
+One timeline for both legs (decision D-007). The right leg is the reference leg: its initial
+contacts bound the stride and its seven events bound the phases, and every muscle of either leg
+takes its roles per phase of this one timeline. The left leg's own phases read off it about half
+a stride later, at the left leg's events, which `phases.csv` carries as the opposite events:
+  - left initial contact = `oppositeInitialContact`, which opens the reference pre-swing; so the
+    reference pre-swing holds the left loading response (left initial contact to right toe-off);
+  - left toe-off = `oppositeToeOff`, which opens the reference mid-stance; the reference
+    loading response holds the left pre-swing, and the reference mid-stance and terminal
+    stance hold the left swing;
+  - right toe-off to right initial contact (the reference initial, mid- and terminal swing)
+    holds the left single-leg stance (left mid-stance and terminal stance).
+Stage `segmentPhases` takes each left event from the force plates when the left foot meets or
+leaves a plate, and from the markers otherwise (Zeni et al. 2008: heel and toe marker extrema
+relative to the pelvis). In this trial the left foot stands on a force plate once, from 0.84 s
+to 1.58 s (vertical force above `load_model.CONTACT_THRESHOLD_N`): the left initial contact at
+0.84 s and the left toe-off at 1.59 s come from the plate, and the left toe-off at 0.45 s and
+the left initial contact at 1.97 s, outside the plate contact, come from the markers. Each
+event's `source` in `phases.csv` and `roles.json` `events` records which
+(`pipeline/tests/test_l_stages.py` pins these four).
 
 Joint action of a coordinate in a phase (`choose_action`). The coordinate's change over the
 phase is Δq = q(end) − q(start).
@@ -33,7 +55,7 @@ rules 2–4 also need the muscle to be active in the phase (`active`, decision D
 replaces D-004 and D-005): its mean activation over the phase ā satisfies
   ā ≥ `role_min_activation` and (ā ≥ `role_clear_activation` or ā ≥ `role_min_peak_fraction` × P),
 P being the muscle's own peak activation over the stride: the largest activation between the
-stride's two right initial contacts, both included. The first clause drops near-silent muscles
+stride's two right initial contacts, both included (for the left leg's muscles too, D-007). The first clause drops near-silent muscles
 whose small peak would let them pass the relative clause; the relative clause keeps muscles that
 work hard for their own size (e.g. the vasti braking in loading response); the clear clause
 keeps muscles with a large push-off peak active in earlier phases (e.g. the calf in mid-stance).
@@ -51,8 +73,8 @@ v̄ = ∫ a·v dt / ∫ a dt (`mt_lengths.csv`; the plain mean when the muscle i
 
 Curves. `activation` and `momentArm` are sampled at `samples_per_phase` evenly spaced times from
 the phase start to its end (linear interpolation between frames); `peakActivation` is the
-largest activation over the phase's frames. `crosses` lists, for every right-leg muscle and
-coordinate with |r| ≥ `moment_arm_min_m` somewhere in the stride, the moment arm sampled at
+largest activation over the phase's frames. `crosses` lists, for every labelled muscle and
+coordinate of its leg with |r| ≥ `moment_arm_min_m` somewhere in the stride, the moment arm sampled at
 `samples_per_stride` evenly spaced times over the stride.
 
 Output `roles.json`:
@@ -65,7 +87,7 @@ Output `roles.json`:
             meanActivation, peakActivation (over the phase), stridePeakActivation,
             meanVelocity (m/s), activation, momentArm (m)}
   crosses   [{muscle, coordinate, momentArm}]
-  muscles   {name: {maxIsometricForce}} for the right-leg muscles
+  muscles   {name: {maxIsometricForce}} for the labelled muscles of both legs
 
 Run from the repository root: `python -m pipeline.label_roles` (pure Python; any interpreter
 with PyYAML).
@@ -109,7 +131,7 @@ class Config:
     isometric_max_velocity: float
     samples_per_phase: int
     samples_per_stride: int
-    muscle_suffix: str
+    muscle_suffixes: tuple[str, ...]
     coordinates: tuple[str, ...]
 
     @staticmethod
@@ -131,6 +153,7 @@ class Config:
             raise ValueError(f"roles.yaml: missing {missing}, unknown {unknown}")
         v = {keys[k]: data[k] for k in keys}
         v["coordinates"] = tuple(v["coordinates"])
+        v["muscle_suffixes"] = tuple(v["muscle_suffixes"])
         return Config(**v)
 
     def as_json(self) -> dict[str, Any]:
@@ -143,6 +166,19 @@ def load_config(path: Path) -> Config:
     if not isinstance(data, dict):
         raise ValueError(f"{path}: expected a mapping")
     return Config.from_yaml(data)
+
+
+def labelled_muscles(names: Sequence[str], cfg: Config) -> list[str]:
+    """The muscles of `names` whose name ends in one of `cfg.muscle_suffixes`, in their order."""
+    return [m for m in names if m.endswith(cfg.muscle_suffixes)]
+
+
+def muscles_of(coordinate: str, muscles: Sequence[str], cfg: Config) -> list[str]:
+    """The muscles of `muscles` that count for `coordinate`: those of the coordinate's own leg
+    (the muscle suffix the coordinate's name ends in), every one of them for a coordinate
+    without a leg suffix."""
+    side = next((s for s in cfg.muscle_suffixes if coordinate.endswith(s)), None)
+    return [m for m in muscles if side is None or m.endswith(side)]
 
 
 # ---------------------------------------------------------------------------------------------
@@ -313,7 +349,7 @@ def r6(x: float, digits: int) -> float:
 def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, Any]:
     """The contents of `roles.json`."""
     t_all = trial.time
-    muscles = [m for m in trial.activation if m.endswith(cfg.muscle_suffix)]
+    muscles = labelled_muscles(list(trial.activation), cfg)
     bounds = phase_bounds(p, stride)
     s0, s1 = t_all[bounds[0][1]], t_all[bounds[-1][2]]
     stride_peak = {m: max(trial.activation[m][bounds[0][1] : bounds[-1][2] + 1]) for m in muscles}
@@ -332,7 +368,7 @@ def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, An
                     trial.max_force[m],
                     stride_peak[m],
                 )
-                for m in muscles
+                for m in muscles_of(coord, muscles, cfg)
                 if (m, coord) in trial.moment_arm
             }
             direction, stabilised = choose_action(change, net_moment(t, list(crossing.values())), cfg)
@@ -386,6 +422,8 @@ def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, An
     fs0, fs1 = bounds[0][1], bounds[-1][2]
     for m in muscles:
         for coord in cfg.coordinates:
+            if m not in muscles_of(coord, [m], cfg):
+                continue
             r = trial.moment_arm.get((m, coord))
             if r is None or max(abs(x) for x in r[fs0 : fs1 + 1]) < cfg.moment_arm_min_m:
                 continue
