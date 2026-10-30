@@ -1,5 +1,5 @@
-"""Stage `exportDynamics`: each right-leg muscle's moment about each labelled joint coordinate,
-and the coordinate's angle, per frame, for the web's dynamics panel.
+"""Stage `exportDynamics`: each leg muscle's moment about each labelled joint coordinate of its
+leg, and the coordinate's angle, per frame, for the web's dynamics panel.
 
 Moments. A muscle's moment about a coordinate at a frame is a·F·r in N·m, the moment of
 decision D-002 that stage `labelRoles` integrates: activation a (`activations.csv`), max isometric
@@ -7,9 +7,11 @@ force F (`model.json`), moment arm r (`moment_arms.csv`; r > 0 turns the coordin
 positive direction). A positive moment therefore pushes the coordinate toward its `positive`
 action, a negative one toward its `negative` action.
 
-Scope, from `roles.yaml` (`label_roles.Config`): the coordinates of `coordinates`, in that order,
-and per coordinate the muscles ending in `muscleSuffix` whose |r| reaches `momentArmMinM` at some
-frame of the stride (the muscles of `roles.json` `crosses`).
+Scope, from `roles.yaml` (`label_roles.Config`): the coordinates of `coordinates`, in that order
+(right leg, then left leg), and per coordinate the muscles of its leg (`label_roles.muscles_of`)
+whose |r| reaches `momentArmMinM` at some frame of the stride (the muscles of `roles.json`
+`crosses`). The joints and actions of the left leg come from mirroring the right leg's entries
+of anatomy.yaml (`enrich_anatomy.with_left`).
 
 Frames: the frames of `muscle_paths.json` (`export_muscle_paths.frame_step`), so the two files
 share one time base and the viewer's playhead indexes both.
@@ -20,7 +22,7 @@ Output `data/out/dynamics.json`:
   time         [s] per frame
   stride       {start, end} in s, as in `muscle_paths.json` (`export_muscle_paths.stride_bounds`)
   coordinates  [{coordinate, joint, positive, negative, angleDeg, moments}] in `roles.yaml` order:
-               joint               graph id of the joint, e.g. `joint:knee_r`
+               joint               graph id of the joint, e.g. `joint:knee_r`, `joint:knee_l`
                positive, negative  graph ids of the joint action each direction of the
                                    coordinate is (anatomy.yaml `coordinates`), e.g.
                                    `action:knee_flexion_r`, `action:knee_extension_r`
@@ -41,10 +43,10 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from pipeline.enrich_anatomy import load_anatomy
+from pipeline.enrich_anatomy import load_anatomy, with_left
 from pipeline.export_graph import node_id
 from pipeline.export_muscle_paths import frame_step, stride_bounds
-from pipeline.label_roles import Config, Trial, load_config, read_trial
+from pipeline.label_roles import Config, Trial, labelled_muscles, load_config, muscles_of, read_trial
 from pipeline.load_model import REPO, sample_rate
 from pipeline.segment_phases import GENERATED, Phases, read_phases
 
@@ -61,18 +63,20 @@ def stride_frames(time: Sequence[float], stride: dict[str, float]) -> tuple[int,
 
 
 def crossing(trial: Trial, coord: str, cfg: Config, f0: int, f1: int) -> list[str]:
-    """Right-leg muscles whose |moment arm| about `coord` reaches the floor within the stride."""
+    """Muscles of `coord`'s leg whose |moment arm| about `coord` reaches the floor within the
+    stride."""
     return [
         m
-        for m in trial.activation
-        if m.endswith(cfg.muscle_suffix)
-        and (r := trial.moment_arm.get((m, coord))) is not None
+        for m in muscles_of(coord, labelled_muscles(list(trial.activation), cfg), cfg)
+        if (r := trial.moment_arm.get((m, coord))) is not None
         and max(abs(x) for x in r[f0 : f1 + 1]) >= cfg.moment_arm_min_m
     ]
 
 
 def build(trial: Trial, p: Phases, cfg: Config, anatomy: dict[str, Any]) -> dict[str, Any]:
-    """The contents of `dynamics.json`."""
+    """The contents of `dynamics.json`; `anatomy` is anatomy.yaml as read, the right leg's
+    entries, and the left leg's entries come from mirroring them."""
+    anatomy = with_left(anatomy)
     step = frame_step(sample_rate(trial.time))
     frames = list(range(0, len(trial.time), step))
     stride = stride_bounds(p)
