@@ -41,8 +41,9 @@ lengths and one set of coordinates.
 Theorems: the stage graph is acyclic and `topoOrder` is a topological order of
 it; every input of a stage is a source or an output of a stage upstream of it;
 each derived file has exactly one writer; `buildModel` runs upstream of every
-other stage and is the one stage that reads the scaled model and the
-inverse-kinematics motion.
+other stage and is the one stage that reads the scaled model, the
+inverse-kinematics motion, the merge recipe, and the files the recipe names
+(the meshes of `geometry` aside, which `exportMeshes` reads too).
 -/
 
 namespace BioMech.Pipeline
@@ -139,7 +140,7 @@ abbrev graph : Digraph Stage := ofEdges edges
 
 /-- The directory a pipeline file lives in. -/
 inductive Dir
-  /-- Downloads (OpenSim model, walking trial, ontology subsets) and the scaled
+  /-- Downloads (OpenSim models, walking trial, ontology subsets) and the scaled
   model and joint angles derived from them in `pipeline/env/`. -/
   | raw
   /-- Hand-written anatomy facts. -/
@@ -170,7 +171,14 @@ inductive Artefact
   /-- The Rajagopal full-body model scaled to the walking subject: the base
   model `buildModel` merges the upper-body muscles onto. -/
   | scaledModel
-  /-- The bone surface meshes (`.vtp`) the model refers to, at generic size. -/
+  /-- The subject's scale factors per body, from the OpenSim ScaleTool:
+  `buildModel` multiplies each merged point by its body's factors. -/
+  | scaleSet
+  /-- Joint coordinates of the standing calibration pose (the static pose):
+  the head orientation that the neck angles hold (D-010). -/
+  | staticPose
+  /-- The bone surface meshes (`.vtp`) the model refers to, at generic size;
+  `buildModel` places the neck model on `hat_skull.vtp` among them. -/
   | geometry
   /-- Joint coordinates per frame of the walking trial, from inverse kinematics
   on `scaledModel`; `buildModel` adds the neck angles to them. -/
@@ -180,6 +188,18 @@ inductive Artefact
   /-- OpenSim external loads: each foot's ground reaction force on `calcn_r`
   and `calcn_l`, read from `grfMotion`. -/
   | externalLoads
+  /-- The full-body lumbar spine model of Raabe and Chaudhari (2016, FBLS):
+  the lumbar vertebrae and the trunk and latissimus muscles (D-011). -/
+  | fblsModel
+  /-- The Stanford VA upper-limb model of Holzbaur (2005), right arm: the arm
+  muscles, mirrored for the left arm. -/
+  | holzbaurModel
+  /-- The HYOID 1.2 head and neck model of Mortensen (2018): the cervical
+  vertebrae, the skull, and the neck muscles (D-009). -/
+  | mortensenModel
+  /-- The skull mesh of `mortensenModel`: its bounding box, laid on that of
+  Rajagopal's `hat_skull.vtp`, places the neck model on the torso. -/
+  | mortensenSkull
   /-- Uberon subset: anatomy terms and part-of relations. -/
   | uberon
   /-- FMA subset: attachments and innervation. -/
@@ -189,7 +209,9 @@ inductive Artefact
   /-- Role-classification thresholds. -/
   | roleThresholds
   /-- The merge recipe: the source models, the Rajagopal body each source body
-  maps onto, and the neck assumption (D-008, D-010). -/
+  maps onto, the paths of the scale set, static pose, and meshes, and the
+  neck assumption (D-008 to D-011). Each file it names is a read of
+  `buildModel`. -/
   | mergeRecipe
   /-- The scaled Rajagopal model with the trunk, arm, and neck muscles merged
   in and the head on its own body behind a neck joint: the one model every
@@ -234,7 +256,8 @@ inductive Artefact
 
 /-- Every artefact, in declaration order. -/
 def Artefact.all : List Artefact :=
-  [.scaledModel, .geometry, .ikMotion, .grfMotion, .externalLoads, .uberon, .fma,
+  [.scaledModel, .scaleSet, .staticPose, .geometry, .ikMotion, .grfMotion, .externalLoads,
+   .fblsModel, .holzbaurModel, .mortensenModel, .mortensenSkull, .uberon, .fma,
    .curatedAnatomy, .roleThresholds, .mergeRecipe,
    .mergedModel, .ikFull, .model, .kinematics, .grf, .activations, .momentArms, .mtLengths, .phases,
    .roles, .enriched,
@@ -251,7 +274,8 @@ instance : Fintype Artefact :=
 
 /-- The directory an artefact lives in. -/
 def Artefact.dir : Artefact → Dir
-  | .scaledModel | .geometry | .ikMotion | .grfMotion | .externalLoads
+  | .scaledModel | .scaleSet | .staticPose | .geometry | .ikMotion | .grfMotion
+  | .externalLoads | .fblsModel | .holzbaurModel | .mortensenModel | .mortensenSkull
   | .uberon | .fma => .raw
   | .curatedAnatomy => .curated
   | .roleThresholds | .mergeRecipe => .config
@@ -262,10 +286,16 @@ def Artefact.dir : Artefact → Dir
 /-- The artefact's path inside its directory. A trailing `/` marks a directory. -/
 def Artefact.file : Artefact → String
   | .scaledModel => "rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim"
+  | .scaleSet => "rajagopal/walk_pipeline/Scale/scaleSet_applied_walk.xml"
+  | .staticPose => "rajagopal/walk_pipeline/Scale/scale_output_walk.mot"
   | .geometry => "rajagopal/Geometry/"
   | .ikMotion => "rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot"
   | .grfMotion => "rajagopal/walk_pipeline/ExpData/grf_walk.mot"
   | .externalLoads => "rajagopal/walk_pipeline/ID/grf_walk.xml"
+  | .fblsModel => "fbls/FBLSmodel.osim"
+  | .holzbaurModel => "holzbaur/Stanford_VA_Upper_Limb_original.osim"
+  | .mortensenModel => "mortensen/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim"
+  | .mortensenSkull => "mortensen/Geometry/skull.vtp"
   | .uberon => "ontology/uberon.obo"
   | .fma => "ontology/fma.owl"
   | .curatedAnatomy => "anatomy.yaml"
@@ -299,9 +329,12 @@ theorem Artefact.nodup_paths : (Artefact.all.map Artefact.path).Nodup := by deci
 /-- The files a stage reads. Every file a stage's script opens appears here,
 so ninja reruns the stage whenever one of them changes. Reads whose reason is
 less evident from the stage's purpose:
-* `buildModel` reads `ikMotion`: OpenSim poses the scaled model at each frame
-  of it to find the torso's rotation in the ground frame, which the neck
-  angles cancel (D-010).
+* `buildModel` reads the files the merge recipe names: the three source
+  models, the scale set, the static pose, and two meshes for placing the neck
+  model (`mortensenSkull` and `hat_skull.vtp` in `geometry`). `ikMotion`
+  serves it twice: the right arm's mean posture over the trial fixes the arm
+  muscles' via points, and the torso's rotation in the ground frame at each
+  frame gives the neck angles that cancel it (D-010).
 * `segmentPhases` reads `mergedModel`: OpenSim poses the model at each frame
   of `kinematics` and reports the foot and leg marker positions that locate
   the gait events.
@@ -316,7 +349,8 @@ less evident from the stage's purpose:
   direction of a coordinate is, and `mtLengths` only because `labelRoles`'s
   trial reader loads it alongside the moment arms. -/
 def Stage.reads : Stage → List Artefact
-  | .buildModel => [.scaledModel, .ikMotion, .mergeRecipe]
+  | .buildModel => [.scaledModel, .ikMotion, .mergeRecipe, .scaleSet, .staticPose,
+      .fblsModel, .holzbaurModel, .mortensenModel, .mortensenSkull, .geometry]
   | .loadModel => [.mergedModel, .ikFull, .grfMotion]
   | .runStaticOpt => [.mergedModel, .externalLoads, .grfMotion, .kinematics]
   | .computeMomentArms => [.mergedModel, .kinematics]
@@ -402,6 +436,13 @@ inverse-kinematics motion; every other stage loads the merged model and the
 joint angles that carry the neck angles (D-008, D-010). -/
 theorem buildModel_sole_reader_of_scaled : ∀ s : Stage,
     (.scaledModel ∈ s.reads ∨ .ikMotion ∈ s.reads) ↔ s = .buildModel := by
+  decide
+
+/-- The merge recipe and the files it names, the meshes of `geometry` aside,
+feed `buildModel` alone. -/
+theorem merge_sources_feed_buildModel : ∀ s : Stage, ∀ a ∈ [Artefact.mergeRecipe,
+    .scaleSet, .staticPose, .fblsModel, .holzbaurModel, .mortensenModel, .mortensenSkull],
+    a ∈ s.reads ↔ s = .buildModel := by
   decide
 
 end BioMech.Pipeline
