@@ -13,3 +13,10 @@
 **Terms:** *Joint action* — one joint moving about one axis in one direction, e.g. knee flexion. *Moment arm* — the lever distance between the muscle's line of pull and the joint axis; its sign gives the direction the muscle's force turns the joint. *Max isometric force* — the largest force the muscle model produces at optimal length and zero velocity. *Share* — the muscle's moment integrated over the phase, divided by the sum over all agonists (or all opposing muscles).
 **Why:** Unstated by the director, who chose the coordinator's recommended option. The recommendation's reason: strong, small muscles rank by what they contribute to the movement, so a role reflects a muscle's mechanical contribution.
 **Code:** `pipeline/label_roles.py` and `pipeline/config/roles.yaml` (workstream P2); `pipeline/config/roles.yaml` is the artefact `roleThresholds` read by stage `labelRoles` in `spec/BioMech/Pipeline.lean`.
+
+## D-003 — The site is hosted on GitHub Pages (2026-10-29)
+
+**Decision:** The static site (`web/dist/`, built by `npm run build` in `web/`) is published to GitHub Pages by a deploy job in the GitHub Actions workflow, on every push to `main` once the gate jobs pass. The repository lives on GitHub; the director creates it and gives its URL.
+**Terms:** *GitHub Pages* — GitHub's free static hosting, fed here by the Actions "deploy-pages" flow. *Static site* — HTML, JavaScript, JSON and glTF files served as they are; the browser answers every graph query in memory.
+**Why:** Unstated by the director, who chose the coordinator's recommended option. The recommendation's reason: the CI workflow already runs on GitHub Actions, the build uses relative paths (`base: './'`), and the deploy job is a placeholder waiting to be enabled.
+**Code:** `.github/workflows/ci.yml` (the commented deploy job, workstream G); `web/src/architecture/config.ts` `SOURCE_BASE_URL` takes the repository URL once it exists.
