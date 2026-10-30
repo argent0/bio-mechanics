@@ -7,19 +7,19 @@ const raw = JSON.parse(readFileSync(new URL("../../../data/out/muscle_paths.json
 describe("bm-muscle-paths/1", () => {
   const clip = parseMusclePaths(raw);
 
-  it("parses the real file: 119 frames at 50 Hz, 13 bodies, 80 muscles", () => {
-    expect(clip.rateHz).toBe(50);
-    expect(clip.time.length).toBe(119);
-    expect(clip.time[118]).toBeCloseTo(2.36, 6);
-    expect([...clip.bodies.keys()]).toHaveLength(13);
-    expect(clip.bodies.get("pelvis")).toHaveLength(119 * 7);
-    expect(clip.muscles.size).toBe(80);
+  it("parses the real file: 60 frames at 25 Hz, 37 bodies, 462 muscles", () => {
+    expect(clip.rateHz).toBe(25);
+    expect(clip.time.length).toBe(60);
+    expect(clip.time[59]).toBeCloseTo(2.36, 6);
+    expect([...clip.bodies.keys()]).toHaveLength(37);
+    expect(clip.bodies.get("pelvis")).toHaveLength(60 * 7);
+    expect(clip.muscles.size).toBe(462);
   });
 
   it("keeps per-frame point lists whole (3 numbers per point, at least two points)", () => {
     for (const m of clip.muscles.values()) {
-      expect(m.activation).toHaveLength(119);
-      expect(m.velocity).toHaveLength(119);
+      expect(m.activation).toHaveLength(60);
+      expect(m.velocity).toHaveLength(60);
       for (const p of m.points) {
         expect(p.length % 3).toBe(0);
         expect(p.length).toBeGreaterThanOrEqual(6);

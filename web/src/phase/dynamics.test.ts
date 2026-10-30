@@ -19,7 +19,7 @@ const real = new QueryEngine(new GraphStore(GRAPH));
 describe("parseDynamics", () => {
   it("reads the pipeline's file on the clip's frames", () => {
     expect(Array.from(dyn.time)).toEqual(Array.from(clip.time));
-    expect(dyn.coordinates.map((c) => c.coordinate)).toEqual(["hip_flexion_r", "hip_adduction_r", "hip_rotation_r", "knee_angle_r", "ankle_angle_r", "hip_flexion_l", "hip_adduction_l", "hip_rotation_l", "knee_angle_l", "ankle_angle_l"]);
+    expect(dyn.coordinates.map((c) => c.coordinate)).toEqual(["hip_flexion_r", "hip_adduction_r", "hip_rotation_r", "knee_angle_r", "ankle_angle_r", "hip_flexion_l", "hip_adduction_l", "hip_rotation_l", "knee_angle_l", "ankle_angle_l", "lumbar_extension", "lumbar_bending", "lumbar_rotation", "neck_lower_extension", "neck_lower_bending", "neck_lower_rotation", "neck_upper_extension", "neck_upper_bending", "neck_upper_rotation", ...["_r", "_l"].flatMap((s) => ["arm_flex", "arm_add", "arm_rot", "elbow_flex", "pro_sup", "wrist_flex", "wrist_dev"].map((c) => c + s))]);
     const knee = dyn.coordinates[3]!;
     expect([knee.joint, knee.positive, knee.negative]).toEqual(["joint:knee_r", "action:knee_flexion_r", "action:knee_extension_r"]);
     for (const id of [knee.joint, knee.positive, knee.negative, ...knee.moments.keys()]) expect(real.node(id)).toBeDefined();

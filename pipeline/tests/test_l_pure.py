@@ -12,7 +12,7 @@ import pytest
 
 import gait_fsm
 from pipeline import enrich_anatomy as ea
-from pipeline import export_dynamics, label_roles
+from pipeline import export_dynamics, export_muscle_paths, label_roles
 from pipeline import segment_phases as sp
 from pipeline.load_model import REPO
 
@@ -50,7 +50,7 @@ def test_every_right_entry_gains_one_left_twin() -> None:
         left = [k for k in m[section] if ea.side_of(k) == "left"]
         assert left == [ea.mirror_name(k) for k in right], section
         assert list(m[section])[: len(a[section])] == list(a[section]), section  # right entries first, unchanged
-    assert len([k for k in m["muscles"] if k.endswith("_l")]) == 40 == len([k for k in m["muscles"] if k.endswith("_r")])
+    assert len([k for k in m["muscles"] if k.endswith("_l")]) == 231 == len([k for k in m["muscles"] if k.endswith("_r")])
     for section in ("regions", "phases", "movement"):
         assert m[section] == a[section]
 
@@ -92,7 +92,7 @@ def test_left_lookups_ask_fma_for_the_left_class() -> None:
 def test_each_coordinate_takes_the_muscles_of_its_leg() -> None:
     c = config()
     assert c.muscle_suffixes == ("_r", "_l")
-    assert c.coordinates == tuple(f"{x}_{s}" for s in "rl" for x in ("hip_flexion", "hip_adduction", "hip_rotation", "knee_angle", "ankle_angle"))
+    assert c.coordinates[:10] == tuple(f"{x}_{s}" for s in "rl" for x in ("hip_flexion", "hip_adduction", "hip_rotation", "knee_angle", "ankle_angle"))
     names = ["vaslat_r", "vaslat_l", "ercspn_r", "lumbar_x"]
     assert label_roles.labelled_muscles(names, c) == ["vaslat_r", "vaslat_l", "ercspn_r"]
     assert label_roles.muscles_of("knee_angle_l", ["vaslat_r", "vaslat_l"], c) == ["vaslat_l"]
@@ -115,7 +115,7 @@ def test_dynamics_of_the_left_leg_name_left_joints_and_muscles() -> None:
     d = export_dynamics.build(trial, sp.Phases(t, [], [], [], stride_events()), c, anatomy())
     knee = next(x for x in d["coordinates"] if x["coordinate"] == "knee_angle_l")
     assert (knee["joint"], knee["positive"], knee["negative"]) == ("joint:knee_l", "action:knee_flexion_l", "action:knee_extension_l")
-    assert list(knee["moments"]) == ["muscle:a_l"] and knee["moments"]["muscle:a_l"] == [-20.0] * 45
+    assert list(knee["moments"]) == ["muscle:a_l"] and knee["moments"]["muscle:a_l"] == [-20.0] * len(range(0, n, export_muscle_paths.frame_step(100.0)))
 
 
 def test_committed_output_stays_under_8_mb() -> None:

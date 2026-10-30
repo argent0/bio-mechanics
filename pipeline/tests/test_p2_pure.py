@@ -128,13 +128,13 @@ def test_dynamics_moments_are_activation_force_moment_arm() -> None:
         max_force={"a_r": 1000.0, "b_r": 1000.0, "a_l": 1000.0},
     )
     d = export_dynamics.build(trial, sp.Phases(t, [], [], [], stride_events()), c, ea.load_anatomy(REPO / "data" / "curated" / "anatomy.yaml"))
-    assert d["format"] == export_dynamics.FORMAT and d["rateHz"] == 50.0
+    assert d["format"] == export_dynamics.FORMAT and d["rateHz"] == 25.0
     assert d["time"] == t[:: export_muscle_paths.frame_step(100.0)] and d["stride"] == {"start": 0.05, "end": 0.75}
-    assert [x["coordinate"] for x in d["coordinates"]] == list(c.coordinates)
+    assert [x["coordinate"] for x in d["coordinates"]] == ["knee_angle_r"]  # the coordinates a muscle of its side spans
     knee = next(x for x in d["coordinates"] if x["coordinate"] == "knee_angle_r")
     assert (knee["joint"], knee["positive"], knee["negative"]) == ("joint:knee_r", "action:knee_flexion_r", "action:knee_extension_r")
-    assert list(knee["moments"]) == ["muscle:a_r"] and knee["moments"]["muscle:a_r"] == [-20.0] * 45
-    assert knee["angleDeg"] == [10.0] * 45
+    assert list(knee["moments"]) == ["muscle:a_r"] and knee["moments"]["muscle:a_r"] == [-20.0] * len(d["time"])
+    assert knee["angleDeg"] == [10.0] * len(d["time"])
 
 
 # ---------------------------------------------------------------------------------------------
@@ -361,7 +361,7 @@ def test_check_attachment_keeps_curation_on_the_model_path() -> None:
 
 def test_curated_anatomy_covers_the_right_leg() -> None:
     a = ea.load_anatomy(REPO / "data" / "curated" / "anatomy.yaml")
-    assert len(a["muscles"]) == 40 and all(k.endswith("_r") for k in a["muscles"])
+    assert len(a["muscles"]) == 40 + 191 and all(k.endswith("_r") for k in a["muscles"])  # legs, trunk, arm, neck
     assert {"acl_r", "pcl_r", "mcl_r", "lcl_r", "iliofemoral_r", "ischiofemoral_r", "pubofemoral_r", "atfl_r", "deltoid_r"} <= set(a["ligaments"])
     assert set(a["phases"]) == set(gait_fsm.PHASES)
     for m in a["muscles"].values():
@@ -424,4 +424,4 @@ def test_quaternion_and_merge() -> None:
     assert q([[1, 0, 0], [0, -1, 0], [0, 0, -1]]) == pytest.approx((1.0, 0.0, 0.0, 0.0))  # 180° about x
     pts = [(0.0, 0.0, 0.0), (0.0005, 0.0, 0.0), (0.01, 0.0, 0.0), (0.0104, 0.0, 0.0)]
     assert export_muscle_paths.merge_close(pts, 0.001) == [(0.0, 0.0, 0.0), (0.0104, 0.0, 0.0)]
-    assert export_muscle_paths.frame_step(100.0) == 2 and export_muscle_paths.frame_step(60.0) == 1
+    assert export_muscle_paths.frame_step(100.0) == 4 and export_muscle_paths.frame_step(30.0) == 1
