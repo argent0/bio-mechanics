@@ -1,6 +1,6 @@
-# Plan: Implementing the Handover with Parallel Agents
+# Plan: The Whole Body, Walking
 
-Status as of 2026-10-29. Source document: `handover.md`. This plan splits the handover's ten next steps into workstreams that run in parallel, with one coordinator agent that owns the order, the contracts, and the merges.
+Status as of 2026-10-30. Goal: extend the Explorer from the right lower limb and pelvis to the whole body (left leg, trunk, arms, head), with walking as the one movement. The work splits into workstreams that run in parallel, with one coordinator agent that owns the order, the contracts, and the merges, as in the first slice.
 
 ## Jargon
 
@@ -8,178 +8,180 @@ Status as of 2026-10-29. Source document: `handover.md`. This plan splits the ha
 |---|---|
 | **Coordinator** | The agent that owns the task board, assigns workstreams, merges finished work, and brings open items to the director. |
 | **Worker** | An agent assigned one workstream. It works in its own git worktree and hands back a branch. |
-| **Workstream** | A sequence of tasks with one owner and one directory of responsibility (e.g. `spec/BioMech/GaitFsm.lean`). |
-| **Wave** | A group of workstreams that run at the same time. A wave starts once its inputs are merged on `main`. |
-| **Contract** | A file that several workstreams read and one workstream writes, e.g. `Schema.lean` or `graph.json`'s shape. Contracts freeze before the wave that reads them. |
-| **Fixture** | A small hand-made sample of a contract's output (e.g. `data/fixtures/graph.sample.json`) that lets readers start before the writer finishes. |
-| **Worktree** | A separate checkout of the same git repository (`git worktree`), so workers edit files side by side safely. |
-| **Task board** | `TASKS.md` at the repository root: every task with its owner, model, worker ID, failure count, state, inputs, and outputs. The coordinator is its sole writer. |
-| **Worker ID** | The agent ID the `Agent` tool returns at launch. `SendMessage` to this ID resumes the same worker with its full context. |
-| **Module map** | `spec/BioMech/Architecture.lean`: every module (one per workstream, with its owned paths), every API between modules (the contracts), and which module generates and which consumes each API. The single source for ownership. |
-| **Arch tool** | `lake exe arch`: `check` (every file owned by exactly one module), `export` (writes `generated/modules.json`), `print --detail N` (the map as text). The viewer `tools/arch/` adds `watch` (live terminal map) and `svg`. |
-| **Gate** | A check a branch passes before merge: `lake build`, `lake exe gen` with an empty diff, `tsc`, `mypy`, `lake exe arch check`, `lake exe arch print --detail 0`, plus the workstream's own acceptance test. |
+| **Workstream** | A sequence of tasks with one owner and one set of owned paths. |
+| **Wave** | A group of workstreams that run at the same time. A workstream starts once its own inputs are merged on `main`. |
+| **Contract** | A file that several workstreams read and one writes, e.g. `Schema.lean` or the shape of `graph.json`. Contracts freeze before the wave that reads them. |
+| **Fixture** | A small hand-made sample of a contract's output that lets readers start before the writer finishes. |
+| **Worktree** | A separate checkout of the same repository (`git worktree`). |
+| **Task board** | `TASKS.md`; the coordinator is its sole writer. |
+| **Worker ID** | The agent ID the `Agent` tool returns at launch; `SendMessage` to it resumes the same worker. |
+| **Module map** | `spec/BioMech/Architecture.lean`: modules, owned paths, and the APIs between them. |
+| **Gate** | `scripts/gate.sh`, plus the workstream's own acceptance test. |
 | **Green main** | `main` passing the full gate at every commit. |
-| **Model tier** | The Claude model an agent runs on. From most to least capable: Fable 5.1 (`fable`), Opus 5.5 (`opus`), Sonnet 5.5 (`sonnet`), Haiku 5.5 (`haiku`). Price per million output tokens: $50, $20, $10, $0.50. |
-| **Effort** | How deeply an agent reasons per step: `low`, `medium`, `high`, `xhigh`, `max`. Higher effort spends more tokens for more careful work. |
-| **Escalation** | Relaunching a stuck workstream on the next tier up, with the previous attempt's report as input. |
+| **Model tier** | The Claude model an agent runs on: Fable 5.1 (`fable`), Opus 5.5 (`opus`), Sonnet 5.5 (`sonnet`), Haiku 5.5 (`haiku`), most to least capable. |
+| **Effort** | Reasoning depth per step: `low`, `medium`, `high`, `xhigh`, `max`. |
+| **Escalation** | Relaunching a stuck workstream on the next tier up, with the previous report as input. |
+| **Torque actuator** | An OpenSim `CoordinateActuator`: a motor that drives one joint coordinate directly. In the Rajagopal model, all lumbar, shoulder, elbow, forearm and wrist coordinates are driven this way, and every muscle sits in the legs. |
+| **Reserve actuator** | A weak torque actuator that static optimisation uses for the moment the muscles leave unexplained. Small reserves mean the muscles explain the motion. |
+| **Model merge** | Building one OpenSim model from the Rajagopal model plus the trunk and arm muscles of a second, muscle-driven model, attached to the matching bodies. |
+| **Reference leg** | The right leg. Its seven gait phases form the one timeline for the whole body. |
+| **Region** | A body part a node belongs to: `lowerLimb`, `pelvis`, `trunk`, `upperLimb`, `head`. |
+| **Mirroring** | Deriving each left-side entry from its right-side entry in code: key `_r` → `_l`, side `right` → `left`, FMA term "Right …" → "Left …". |
+
+## Starting point (from the code)
+
+- `data/raw/rajagopal/Rajagopal2016.osim`: 22 bodies, both legs with muscles, a torso carrying the head, both arms with hands; torque actuators on `lumbar_*`, `shoulder_*`/`arm_*`, `elbow_flex_*`, `pro_sup_*`, `wrist_*`.
+- The walking trial's inverse kinematics (`IK/results_walk/ik_output_walk.mot`) holds every coordinate, upper body included; the marker file holds shoulder, clavicle, elbow and wrist markers.
+- `pipeline/config/roles.yaml` selects the right leg (`muscleSuffix: "_r"`, five right coordinates); `pipeline/enrich_anatomy.py` gives side `right` or `midline`; `pipeline/export_meshes.py` and `pipeline/export_dynamics.py` list right-leg bodies and muscles; `data/curated/anatomy.yaml` covers the right lower limb and pelvis.
+- `Side` in `spec/BioMech/Schema.lean` already holds `left | right | midline`.
 
 ## Principles
 
-1. **Contracts first.** Everything downstream reads `Schema.lean` and the generated types, so the coordinator lands those on `main` before any wave fans out.
-2. **One owner per file.** Each workstream owns its directories. Shared files (contracts, `TASKS.md`, `lakefile.lean`, root config) belong to the coordinator.
-3. **Fixtures unblock readers.** Web and checker work starts on fixtures; the real pipeline output replaces them in a later wave.
-4. **Source code is the truth.** Workers carry facts in code and code comments; documentation is generated from them (`CLAUDE.md`).
-5. **Director decisions arrive one question at a time**, asked by the coordinator at the moment a workstream needs the answer.
-6. **The architecture is visible at all times.** From Wave 0 on, every commit on `main` holds a module map that `lake exe arch print` draws. Each workstream is a module, its owned paths are the module's paths, and each contract is an API. Generators sit above their consumers. Zoom levels: 0 names and arrows, 1 boxed modules with API names, 2 a head line per box (language, owner, state), 3 everything (paths, acceptance commands, API files).
-7. **Green main.** A new gate check lands in the same commit as the data or code that satisfies it, or with a recorded exemption.
-8. **Acceptance criteria are hard numbers and exact commands**, e.g. "between 20 and 25 nodes", "zero `sorry`".
+1. **Contracts first.** The coordinator lands the schema change and the fixture on `main` before any wave fans out.
+2. **One owner per file.** Shared files (contracts, `TASKS.md`, `lakefile.lean`, root config) belong to the coordinator.
+3. **Fixtures unblock readers.** Web work starts on the extended fixture; real output replaces it later.
+4. **Source code is the truth** (`CLAUDE.md`). Left-side anatomy comes from mirroring in code, so each fact lives once.
+5. **The model is the source of movement facts** (handover D1). Every role in the trunk and arms comes from muscles in an OpenSim model.
+6. **The right leg holds still.** Every right-leg role in today's `data/out/graph.json` survives, checked by `scripts/compare_graph.py` within its current tolerance.
+7. **Director decisions arrive one question at a time**, at the moment a workstream needs the answer, recorded with the `decision` skill in `DECISIONS.md` (D-007 onward).
+8. **The architecture is visible at all times**: each new workstream enters the module map before its code.
+9. **Green main**: a new gate check lands in the same commit as the code that satisfies it.
+10. **Acceptance criteria are hard numbers and exact commands.**
+
+## Director questions, in order
+
+| # | Asked when | Question | Coordinator's recommendation |
+|---|---|---|---|
+| Q1 | Wave 0, before 0.3 | Phase timeline for the whole body: the reference leg's seven phases for every muscle, or a phase set per leg | Reference leg: one timeline, one `Timeline` component, and the left leg's own phases read off as half a stride later. |
+| Q2 | Wave 0, after investigation K19 | Source of trunk and arm muscles: merge a muscle-driven model (K19's pick) onto Rajagopal, or keep torque actuators and show the trunk and arms with joint moments and anatomy only | Model merge: it keeps principle 5. |
+| Q3 | When P4 starts | Head and neck: head rigid with the torso (as in Rajagopal), or a neck with muscles | Rigid head for this plan; neck muscles join the later list. |
 
 ## Roles
 
-### Coordinator (one agent, runs for the whole project)
+### Coordinator (one agent, the whole project)
 
-- Runs Wave 0 personally.
-- Writes and maintains `TASKS.md`.
-- Creates each worker's worktree and branch itself (`git worktree add ../bm-<ID> -b ws/<ID>`) and puts the absolute worktree path in the brief. `isolation: "worktree"` becomes an option once a toy run inside this repository confirms where the harness places the worktree and which branch it starts from.
-- Launches workers with a brief naming its worktree path, owned paths, input contracts, outputs, acceptance test, and the gate steps that belong to other owners.
-- Records each worker ID in `TASKS.md`.
-- Before launching a workstream, adds its module to the module map and commits it on `main`, so the map shows the module before its code exists.
-- Reviews each returned branch: `git diff --name-only main...<branch>` lists only owned paths, and the gate passes in the worktree. Then it merges to `main`, regenerates `generated/`, and reruns the gate on `main`.
-- Changes a frozen contract only through a coordinator task, then re-briefs every affected worker.
-- Keeps the open items list and asks the director exactly one question at a time, when that answer is the next thing blocking work.
-- Keeps the wave size at five workers or fewer.
+- Runs Wave 0 and Wave 3 personally.
+- Adds a section **Whole body** to `TASKS.md`; the first slice's sections stay as history.
+- Creates each worktree (`git worktree add ../bm-<ID> -b ws/<ID>`) and puts its absolute path in the brief.
+- Adds each workstream's module to the module map and commits it on `main` before launch.
+- Reviews each branch: `git diff --name-only main...<branch>` lists only owned paths, and the gate passes in the worktree; then merges, runs `lake exe gen`, reruns the gate on `main`, and commits.
+- Changes a frozen contract only through a coordinator task, then re-briefs affected workers.
+- Keeps waves at five workers or fewer.
 
-### Workers (one agent per workstream)
+### Workers
 
 - First report `pwd`, `git rev-parse --show-toplevel`, and `git branch --show-current`.
-- Work only inside their owned paths, inside their worktree.
-- Read contracts; propose contract changes to the coordinator in their report.
-- Finish with a report: branch name, what passes, what remains, and any proposed contract change.
+- Work inside their owned paths and worktree.
+- Finish with a report: branch, what passes, what remains, proposed contract changes.
 
 ## Model selection
 
-Rule: the tier follows the hardest kind of reasoning in the task. Formal proofs, contract design, and biomechanics correctness go to Opus 5.5. Conventional application code and tooling go to Sonnet 5.5. Read-only lookups and log triage go to Haiku 5.5. Fable 5.1 is the escalation tier, used when an Opus 5.5 worker stays stuck after two gate rounds.
+Rule: the tier follows the hardest reasoning in the task. Proofs, contracts, model building and biomechanics correctness go to Opus 5.5; application code and tooling to Sonnet 5.5; lookups and log triage to Haiku 5.5; Fable 5.1 is the escalation tier.
 
 | Agent | Model | Effort | Reason |
 |---|---|---|---|
-| Coordinator (incl. Wave 0, Wave 4) | `opus` | `high` | Designs contracts C1–C3, reviews every branch, and holds the whole project in mind; it runs for the whole project, so Opus 5.5 keeps that long run affordable. |
-| **A** Lean FSMs | `opus` | `xhigh` | Lean proofs over DFAs; correctness rests on theorem statements and proof search. |
-| **B** Lean graphs | `opus` | `xhigh` | Acyclicity and layering proofs by `decide`; needs care in keeping types small (see Risks). |
-| **C** Emitters | `opus` | `high` | Lean metaprogramming that every generated file depends on. |
-| **F** Lean checkers | `opus` | `high` | Lean executables whose error messages name the failing edge or trace step. |
-| **P1** Pipeline stages 1–3 | `opus` | `high` | OpenSim static optimisation and moment arms; physiological plausibility needs domain judgment. |
-| **P2** Pipeline stages 4–7 | `opus` | `high` | Gait-phase segmentation and muscle-role labels define the facts the app teaches. |
-| **D** Data acquisition | `sonnet` | `high` | Installs, downloads, and licence notes; well-trodden steps with occasional install debugging. |
-| **E** Web scaffold | `sonnet` | `medium` | Standard Vite + TypeScript setup over a fixed fixture. |
-| **E2** ArchitectureView | `sonnet` | `medium` | Renders diagrams from a given `architecture.json`. |
-| **E3** Movement views | `sonnet` | `high` | Larger Three.js and timeline work, still conventional front-end code. |
-| **G** CI and traces | `sonnet` | `medium` | GitHub Actions workflows and a trace recorder. |
-| **H** Arch viewer | `sonnet` | `high` | Layered layout and a terminal UI over `generated/modules.json`; conventional code with a clear input. |
-| Lookups and gate-log triage (`Explore` agents) | `haiku` | `low` | Searching files, summarising long `lake build` or CI logs for the coordinator. |
-| Escalation of any Lean or pipeline workstream | `fable` | `high` | Most capable tier, for proofs or numerics that resist two Opus 5.5 rounds. |
+| Coordinator | `opus` | `high` | Contract design, reviews, the whole project in mind. |
+| **K19** Upper-body model survey | `opus` | `high` | Judges model quality, licences, and fit with Rajagopal's bodies. |
+| **S** Lean spec additions | `opus` | `xhigh` | New stages, components and theorems with proofs by `decide`. |
+| **L** Left leg | `opus` | `high` | Roles and teaching examples on a second side. |
+| **M** Model merge | `opus` | `xhigh` | Attaching foreign muscles to Rajagopal bodies and tuning reserves. |
+| **P4** Trunk and arm stages | `opus` | `high` | Roles and teaching examples for new regions. |
+| **D2** Upper-body data | `sonnet` | `high` | Fetch, checksum, licence notes, env check. |
+| **W1** Web, whole-body views | `sonnet` | `high` | Three.js framing, regions, filters on a fixture. |
+| **W2** Web, real output | `sonnet` | `medium` | Wiring and performance on the real graph. |
+| **G2** CI | `sonnet` | `medium` | Workflow changes for the new data and stages. |
+| Lookups and log triage | `haiku` | `low` | Searches and log summaries for the coordinator. |
+| Escalation of any Opus workstream | `fable` | `high` | For proofs or numerics that resist two Opus rounds. |
 
-The coordinator passes `model` and `effort` from this table on every `Agent` call. A Haiku 5.5 or Sonnet 5.5 worker that fails its gate twice escalates one tier up; an Opus 5.5 worker escalates to Fable 5.1. The coordinator records each escalation in `TASKS.md`: from-tier, to-tier, reason.
-
-Escalation brief: the previous worker's report, every failing gate output, the same worktree and branch, and the owned paths restated. The new worker reviews the commits already on its branch and builds on them.
-
-Two toy runs on 2026-10-29 confirmed this way of working with a Sonnet 5.5 coordinator and Haiku 5.5 and Sonnet 5.5 workers: parallel worktrees, owned paths, fixtures, gate, merges, `SendMessage` resume, and escalation all worked.
+A Haiku or Sonnet worker that fails its gate twice escalates one tier up; an Opus worker escalates to Fable. Each escalation goes into `TASKS.md` with from-tier, to-tier and reason. Escalation brief: the previous report, every failing gate output, the same worktree and branch, and the owned paths restated.
 
 ## Waves
 
-### Wave 0 — Foundation (coordinator, serial)
-
-Handover steps 1, 2 (schema part), 4 (first emitter).
+### Wave 0 — Foundation (coordinator, serial, plus K19 in parallel)
 
 | Task | Output | Acceptance |
 |---|---|---|
-| 0.1 `git init` in the project root, layout from handover, `.gitignore`, `TASKS.md`, one baseline test so the gate's test run counts at least one test | repository skeleton | tree matches handover layout; gate passes |
-| 0.2 Lean package with Mathlib pinned to Mathlib's toolchain; `lake exe cache get` | `spec/lakefile.lean`, `spec/lean-toolchain` | `lake build` succeeds |
-| 0.3 `Schema.lean`: `Kind`, `SchemaArrow`, `Quiver` instance, attribute structures | **contract C1** | `lake build` succeeds |
-| 0.3a Module map `Architecture.lean` with modules A–H plus `coordinator`, the APIs C1–C4, and `lake exe arch check / export / print` | **contract C4** (`generated/modules.json`) | `arch check` passes; `arch print --detail 1` draws every module and API |
-| 0.4 Minimal `lake exe gen` emitting `types.ts` and `schema.py` from C1, with the header line | **contract C2** (`generated/ts/types.ts`, `generated/py/schema.py`) | regenerate gives an empty diff |
-| 0.5 Hand-written fixture `data/fixtures/graph.sample.json` (20 to 25 nodes around the knee and hip) typed against C2 | **contract C3** (graph.json shape) | validates against `schema.py`; node count between 20 and 25 |
-| 0.6 Ask the director: initial contact as its own DFA state, or an instant at the start of loading response | decision recorded in `DECISIONS.md` | answer in hand before Wave 1 workstream A starts |
+| 0.1 `TASKS.md` section **Whole body** with every task of this plan | task board | each task has owner, model, state, inputs, outputs, acceptance |
+| 0.2 Launch **K19** (read-only survey, see below) | K19 report | report in hand before Q2 |
+| 0.3 Ask Q1; record D-007 | `DECISIONS.md` | answer before 0.4 |
+| 0.4 Contract C1: `Region` enum and a `region` field in `NodeAttrs`; a theorem that every `Kind` used for anatomy carries a region | `spec/BioMech/Schema.lean` | `lake build`, zero `sorry` |
+| 0.5 Contract C2: regenerate | `generated/ts/types.ts`, `generated/py/schema.py` | regenerate gives an empty diff |
+| 0.6 Contract C3: extend the fixtures with a left knee, the lumbar joint, a right shoulder and elbow, and their muscles | `data/fixtures/graph.sample.json`, `graph.bad-edge.json` | between 40 and 50 nodes; `lake exe checkGraph` passes the sample and names the bad edge |
+| 0.7 Ask Q2 with K19's report; record D-008 | `DECISIONS.md` | answer before M starts |
+
+**K19 — Upper-body model survey.** Candidates to assess include the Christophy 2012 lumbar spine model, the Raabe & Chaudhari 2016 full-body lumbar spine model (built on Rajagopal), the Holzbaur 2005 upper-extremity model, and MoBL-ARMS (Saul 2015). Per candidate: licence, OpenSim 4.6 load test, muscle count per region, body and joint names against Rajagopal's `torso`, `humerus_*`, `ulna_*`, `radius_*`, `hand_*`, and the work a merge needs. Output: a ranked table with one pick and the reason, in the K19 report. Model `opus`, effort `high`.
 
 ### Wave 1 — Five parallel workstreams
 
 | ID | Workstream | Owned paths | Inputs | Outputs | Acceptance |
 |---|---|---|---|---|---|
-| **A** | Lean FSMs (handover step 2) | `spec/BioMech/GaitFsm.lean`, `UiFsm.lean` | C1, decision 0.6 | gait DFA and UI DFA with `Fintype`, `DecidableEq`, decidable `accept`; theorems: one-stride word returns to start, every phase reached, every UI state reaches `idle`, `scrubbing` ends in `paused` | `lake build` with zero `sorry` |
-| **B** | Lean graphs (handover step 3) | `spec/BioMech/Pipeline.lean`, `Components.lean`, `Acyclic.lean` | C1 | stage and component Digraphs; acyclicity by `decide`; topological order; layering theorem `Viewer3D` → `GraphStore` only via `QueryEngine` | `lake build` with zero `sorry` |
-| **D** | Data acquisition (handover step 5) | `data/raw/`, `pipeline/env/` | — | OpenSim Python bindings installed (conda env file), Rajagopal model + walking trial in `data/raw/`, licence notes for SimTK, Uberon, FMA | `python -c "import opensim"` loads the model and trial |
-| **E** | Web scaffold (handover step 8, start) | `web/` | C2, C3 | Vite + TypeScript + Three.js + Cytoscape.js app; `GraphStore` and `QueryEngine` over the fixture; `GraphView` showing the fixture | `tsc` clean; `npm run build` produces a static site |
-| **H** | Arch viewer (inspired by `dashboardpp`) | `tools/arch/` | C4 | Python viewer: `watch` (terminal map, scroll, zoom 0–3, Tab selects a box and lights its APIs, reloads within 1 s of a change to `generated/modules.json`), `print`, `svg -o FILE` | `mypy` clean; `print --detail 0..3` and `svg` succeed on `main`'s map; a test edits the map and `watch` redraws within 2 s |
+| **S** | Lean spec additions | `spec/BioMech/Pipeline.lean`, `Components.lean`, `Gen/` | C1, D-008 | stage `buildModel` before `loadModel` (when D-008 is the merge); component `RegionFilter` between `QueryEngine` and the views; emitters for the region enum | acyclicity and layering theorems hold; zero `sorry`; `ninja -n -f generated/pipeline.ninja` accepts the new stage |
+| **L** | Left leg | `pipeline/label_roles.py`, `enrich_anatomy.py`, `export_*.py`, `pipeline/config/roles.yaml` | C1–C3, D-007 | roles for both legs on the reference timeline; left anatomy by mirroring; left bodies in meshes, paths and dynamics | 40 left-leg muscles in `graph.json`, equal to the right; `compare_graph.py` shows the right leg unchanged; mirrored teaching examples pass, e.g. left vasti eccentric antagonists of knee flexion in the reference phase that holds left loading response; `checkGraph` passes |
+| **D2** | Upper-body data | `data/raw/<D-008 model>/`, `pipeline/env/` | D-008 | fetch script, `SHA256SUMS` entries, a `SOURCES.md` section with licence terms | `pipeline/env/check_env.py` loads the model in OpenSim 4.6 |
+| **W1** | Web, whole-body views | `web/src/viewer/`, `phase/`, `graphview/`, `web/src/region/` | C2, C3 fixture | viewer frames the whole skeleton, head and hands included; region and side filter; `PhasePanel` and the dynamics panel grouped by region and side; search across regions | `tsc` clean; web tests pass; boundary test passes with `RegionFilter` once S merges |
+| **G2** | CI | `.github/workflows/` | D2 | CI fetches and caches the upper-body model; pipeline job runs every stage | CI green on `main`; pipeline job under 15 minutes |
 
-### Wave 2 — Four parallel workstreams
+Wave 1 sizing: K19 finishes in Wave 0, so five workers run here. D2 starts once D-008 is recorded; L, W1 and S's component part start at once.
 
-Starts once A and B are merged (C) and D is merged (P1).
-
-| ID | Workstream | Owned paths | Inputs | Outputs | Acceptance |
-|---|---|---|---|---|---|
-| **C** | Emitters (handover step 4, rest) | `spec/BioMech/Gen/` | A, B | `gaitFsm.ts`, `gait_fsm.py`, `uiFsm.ts`, `pipeline.ninja`, `eslint-boundaries.json`, `architecture.json`, Mermaid and DOT diagrams | regenerate gives an empty diff; `ninja -n` accepts `pipeline.ninja` |
-| **P1** | Pipeline stages 1–3 (handover step 6) | `pipeline/load_model.py`, `static_opt.py`, `moment_arms.py` | D, C2 | activations, moment arms, muscle-tendon lengths and velocities per frame | `mypy` clean; plausibility test: tibialis anterior active after initial contact, gluteus medius active in single-leg stance |
-| **F** | Lean checkers (handover steps 7, 9 Lean side) | `spec/BioMech/CheckGraph.lean`, `Conform.lean` | C1, A, C3 | `lake exe checkGraph` and `lake exe conform` | fixture passes; a fixture with a bad edge fails with that edge named; a bad trace fails |
-| **E2** | Web, ArchitectureView (handover step 8) | `web/src/architecture/` | C's `architecture.json` (fixture copy until C merges) | `/architecture` page rendering schema quiver, both FSMs, pipeline DAG, component DAG, linked to Lean source | `tsc` clean; page renders all four diagrams |
-
-Director question for this wave (asked when P2 approaches): role-classification thresholds.
-
-### Wave 3 — Three parallel workstreams
+### Wave 2 — Three parallel workstreams
 
 | ID | Workstream | Owned paths | Inputs | Outputs | Acceptance |
 |---|---|---|---|---|---|
-| **P2** | Pipeline stages 4–7 (handover step 7) | `pipeline/segment_phases.py`, `label_roles.py`, `enrich_anatomy.py`, `export_*.py`, `pipeline/config/roles.yaml`, `data/curated/*.yaml` | P1, C (`gait_fsm.py`, `pipeline.ninja`), thresholds decision | `data/out/graph.json`, bone glTF, muscle paths per frame | `ninja` runs end to end; `lake exe checkGraph data/out/graph.json` passes |
-| **E3** | Web, movement views (handover step 8) | `web/src/viewer/`, `timeline/`, `phase/` | C (`gaitFsm.ts`, `uiFsm.ts`, `eslint-boundaries.json`), P2 output (fixture until merged) | `Viewer3D` with tube muscles coloured by activation and hue by concentric/eccentric; scrubbable `Timeline`; `PhasePanel` with common and anatomical names and roles | `tsc` and eslint boundaries clean; walking plays and scrubs |
-| **G** | CI and trace recording (handover steps 9, 10) | `.github/workflows/`, `web/src/trace/` | F, C | dev-mode trace recording to `trace.json`; CI: Lean build, theorems, regenerate-and-diff, `tsc`, `mypy`, pipeline smoke test, `conform` on a recorded trace | CI green on `main` |
+| **M** | Model merge | `pipeline/build_model.py`, `pipeline/static_opt.py`, `pipeline/config/model.yaml` | D2, S (`buildModel` stage), D-008 | one model with leg, trunk and arm muscles; muscles replace the torque actuators on the coordinates they span; reserves on every coordinate | model loads; static optimisation completes over the stride; reserve moments under 10 N·m RMS on lumbar coordinates and under 2 N·m RMS on arm coordinates; leg activations change by under 0.02 RMS from today's run |
+| **P4** | Trunk and arm stages | `pipeline/label_roles.py`, `enrich_anatomy.py`, `export_*.py`, `pipeline/config/roles.yaml`, `data/curated/anatomy.yaml` (takes these over from L once L merges) | M, L, Q3 | roles for lumbar, shoulder, elbow, forearm and wrist actions; curated anatomy for trunk, arms and head with Uberon and FMA ids; meshes for torso, head, arms and hands | teaching examples pinned by tests: erector spinae active within 10 % of the stride around each initial contact (two bursts per stride); posterior deltoid active during the arm's backward swing; a test that records which arm muscles fall below the D-006 floor; `checkGraph` passes |
+| **W2** | Web, real output | `web/src/` (the paths W1 owned) | P4 output, S | real graph wired in; muscle tubes for every muscle | viewer holds 30 fps or more with every muscle drawn on the director's machine; `data/out/` stays under 8 MB; a recorded session trace conforms |
 
-Director question for this wave (asked when G reaches deployment): hosting target.
+### Wave 3 — Integration (coordinator)
 
-### Wave 4 — Integration (coordinator)
-
-- Replace every fixture reference with real pipeline output.
-- Run the full gate on `main`.
-- Record a walking session trace in dev mode and pass `lake exe conform`.
-- Write a fresh `handover.md` status section from the merged code.
-- Ask the director the last open item: order of later movements.
+- Replace every fixture reference with real output; run the full gate on `main`.
+- Record a whole-body walking trace in dev mode; `lake exe conform` accepts it.
+- Update `README.md` pointers and `handover.md` (open work and known limits only).
+- Deploy to GitHub Pages and check `#/walking` shows both legs, trunk and arms.
 
 ## Dependency graph
 
 ```
-Wave 0 (coordinator): C1 Schema → C2 types → C3 fixture
-                         │
-   ┌────────────┬────────┴─────┬──────────────┬──────────────┐
-   A FSMs       B Graphs       D Data         E Web scaffold H Arch viewer
-   └─────┬──────┘              │              │
-         C Emitters ──┐        P1 Stages 1–3  E2 ArchitectureView
-         F Checkers   │        │
-                      ├────────┴──┐
-                      P2 Stages 4–7   E3 Movement views   G CI + traces
-                                  └──────────┬──────────┘
-                                   Wave 4 Integration
+Wave 0 (coordinator): Q1 → C1 Region → C2 types → C3 fixture       K19 survey → Q2
+                         │                                              │
+   ┌───────────────┬─────┴──────────┬────────────────┐                  │
+   L Left leg      W1 Web views     S Lean additions D2 Upper data ─────┘
+   │               │                │                │       G2 CI
+   │               │                └──────┬─────────┘
+   │               │                       M Model merge
+   └───────────────┼───────────────────────┤
+                   │                       P4 Trunk and arms (Q3)
+                   └───────────┬───────────┘
+                               W2 Web, real output
+                               │
+                    Wave 3 Integration
 ```
 
 ## Coordinator brief
 
-The director starts the coordinator session on Opus 5.5 (`claude --model opus`, effort `high`) with this prompt, and keeps the map open beside it with `lake exe arch print` (and `python -m tools.arch watch` once H merges):
+The director starts the coordinator on Opus 5.5 (`claude --model opus`, effort `high`) with:
 
-> You are the coordinator for the Bio-Mechanics Explorer. Read `CLAUDE.md`, `handover.md`, and `plan.md` in `/home/aner/software/bio-mechanics`. Follow `plan.md`.
+> You are the coordinator for the Bio-Mechanics Explorer. Read `CLAUDE.md`, `README.md`, `handover.md`, `DECISIONS.md`, and `plan.md` in `/home/aner/software/bio-mechanics`. Follow `plan.md`.
 >
-> 1. Run Wave 0 yourself. Create `TASKS.md` with every task from `plan.md`, each with owner, state (`todo` / `running` / `review` / `merged`), inputs, outputs, and acceptance test. You are its sole writer.
-> 2. For each wave: add each workstream's module to the module map and commit it on `main`; create each worktree (`git worktree add ../bm-<ID> -b ws/<ID>`); then launch the workers together in one message, each with the `model` and `effort` that the Model selection table gives its workstream. Record each worker ID in `TASKS.md`. Each brief states: the absolute worktree path, owned paths, input contracts with their paths on `main`, expected outputs, acceptance test with hard numbers, the gate steps owned by others, and the rules "first report `pwd`, repository root, and branch; work only inside your owned paths; report proposed contract changes to the coordinator".
-> 3. When a worker returns, check `git diff --name-only main...<branch>` against its owned paths and run the gate in its worktree. Passing branches merge to `main`; then run `lake exe gen`, rerun the gate on `main`, and commit. A failing branch goes back to the same worker ID via `SendMessage` with the exact failing output, and its failure count in `TASKS.md` goes up by one. At two failures, escalate one tier up with the escalation brief from the Model selection section.
-> 3a. A new gate check lands in the same commit as its fix or with a recorded exemption, so `main` stays green.
-> 4. Start a later-wave workstream as soon as its own inputs are merged; a whole wave finishing first is optional.
-> 5. Ask the director one question at a time, only when the answer blocks the next task. Record each answer with the `decision` skill in `DECISIONS.md`.
-> 6. After each merge, post a two-line status to the director: what merged, what runs now.
+> 1. Run Wave 0 yourself and launch K19 at its start. Add the section **Whole body** to `TASKS.md` with every task of `plan.md`; you are its sole writer.
+> 2. For each workstream: add its module to the module map and commit on `main`; create its worktree; launch workers together in one message with the `model` and `effort` from the Model selection table; record each worker ID in `TASKS.md`. Each brief states: the absolute worktree path, owned paths, input contracts with their paths on `main`, outputs, the acceptance test with hard numbers, the gate steps owned by others, and the rules "first report `pwd`, repository root, and branch; work inside your owned paths; report proposed contract changes to the coordinator".
+> 3. When a worker returns, check `git diff --name-only main...<branch>` against its owned paths and run the gate in its worktree. A passing branch merges to `main`; then run `lake exe gen`, rerun the gate, and commit. A failing branch goes back to the same worker ID via `SendMessage` with the exact failing output, and its failure count goes up by one. At two failures, escalate.
+> 4. Start each workstream as soon as its own inputs are merged.
+> 5. Ask the director the questions Q1–Q3 one at a time, at the moment each blocks work. Record each answer with the `decision` skill.
+> 6. After each merge, post a two-line status: what merged, what runs now.
 > 7. Commit with the `commit` skill.
 
 ## Risks and responses
 
 | Risk | Response |
 |---|---|
-| Mathlib build time slows every worker | Coordinator runs `lake exe cache get` once in Wave 0; worktrees share `~/.cache/mathlib`. |
-| OpenSim install fails through conda | Workstream D records the working install path in `pipeline/env/`; P1 starts only after D's acceptance test passes. |
-| A contract change during a wave | Coordinator owns the change as its own task, regenerates, and re-briefs affected workers. |
-| Walking trial lacks ground-contact data for event detection | P2 derives events from kinematics (foot marker velocity) and records the method in code comments. |
-| Proofs by `decide` time out | Workstream B keeps stage and module types small and finite, and splits lemmas per edge. |
-| A Lean workstream stays stuck on Opus 5.5 | Coordinator escalates it to Fable 5.1 with the failing goals and the previous report. |
-| Token spend grows with the wave count | Front-end, CI, and data work run on Sonnet 5.5; lookups run on Haiku 5.5; Fable 5.1 runs only on escalation. |
+| The chosen upper-body model names bodies differently from Rajagopal | M maps bodies in `pipeline/config/model.yaml` and checks every muscle path point lands on an existing body. |
+| Merged muscles leave large reserves | M tunes path points and optimal fibre lengths within the source model's ranges; past two rounds the coordinator opens an investigation (K20) and asks the director. |
+| Static optimisation shows arm swing as nearly passive | That is a known feature of walking; P4 records it in a test and the app shows it as a teaching example. |
+| The left foot leaves the force plates outside 0.40–1.98 s | L takes left events from markers there, as today, and pins the method in code comments. |
+| Many more tubes slow the viewer | W2 merges tube geometry per region and measures frame rate in its acceptance test. |
+| Right-leg roles drift through the merged model | Principle 6: `compare_graph.py` gates every merge into `main`. |
+| Token spend grows with the workstream count | Web, CI and data work run on Sonnet 5.5; lookups on Haiku 5.5; Fable 5.1 only on escalation. |
+
+## Later
+
+Further movements (order deferred by the director), exercise links per muscle, neck muscles, sculpted muscle meshes: see `handover.md`.
