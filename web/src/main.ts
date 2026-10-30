@@ -2,23 +2,27 @@ import { GRAPH } from "./config";
 import { GraphStore } from "./store/GraphStore";
 import { QueryEngine } from "./query/QueryEngine";
 import { GraphView } from "./graphview/GraphView";
+import { searchNodes, searchOptions } from "./graphview/search";
+import { RegionFilter, mountRegionFilter } from "./region";
 import { highlightState, mountArchitectureView } from "./architecture";
 import { recorder } from "./trace";
 
-/** App: wires store, query, and view; the search box focuses a node on Enter or on a picked suggestion. */
+/** App: wires store, query, region filter, and views; the search box focuses a node on Enter
+ * or on a picked suggestion, among the nodes the region filter passes. */
 const query = new QueryEngine(new GraphStore(GRAPH));
 const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const view = new GraphView(byId("graph"), query, byId("details"));
+const regionFilter = new RegionFilter();
+view.setFilter(regionFilter);
+mountRegionFilter(byId("region-filter"), regionFilter);
 
 const search = byId<HTMLInputElement>("search");
 const hits = byId<HTMLDataListElement>("hits");
-for (const n of query.allNodes()) {
-  for (const label of [n.name, n.commonName]) {
-    if (label) hits.append(Object.assign(document.createElement("option"), { value: label }));
-  }
+for (const o of searchOptions(query.allNodes())) {
+  hits.append(Object.assign(document.createElement("option"), { value: o.value }));
 }
 const select = () => {
-  const found = query.search(search.value)[0];
+  const found = searchNodes(query.allNodes(), search.value, (n) => regionFilter.passes(n))[0];
   if (found) view.focus(found.id);
 };
 /** Enter selects the first match. Picking a suggestion selects it too: browsers
@@ -37,9 +41,9 @@ async function mountWalking(): Promise<void> {
   const [clip, dynamics] = await Promise.all([loadMusclePaths("./"), loadDynamics("./")]);
   const timeline = new Timeline({ query, clip });
   mountTimeline(byId("walk-timeline"), timeline);
-  mountPhasePanel(byId("walk-phase"), { query, timeline });
-  mountDynamicsPanel(byId("walk-dynamics"), { query, timeline, clip, dynamics });
-  await mountViewer3D(byId("walk-view"), { query, timeline, dataBase: "./" });
+  mountPhasePanel(byId("walk-phase"), { query, timeline, filter: regionFilter });
+  mountDynamicsPanel(byId("walk-dynamics"), { query, timeline, clip, dynamics, filter: regionFilter });
+  await mountViewer3D(byId("walk-view"), { query, timeline, dataBase: "./", filter: regionFilter });
 }
 
 /** In dev mode, every recorded FSM step lights the matching state on the architecture page. */
