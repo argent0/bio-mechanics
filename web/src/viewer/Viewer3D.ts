@@ -9,6 +9,10 @@
  * Muscle appearance: see `colour.ts` (hue by work type, lightness and opacity by activation).
  * The legend in the corner is generated from the same constants.
  *
+ * Framing: on mount the camera fits the bounds of every mesh in the mesh index (`frame.ts`), so
+ * the whole skeleton shows, legs to head and hands; the fit follows resizes until the first drag.
+ * An optional `RegionFilter` hides the muscle tubes outside the chosen regions and sides.
+ *
  * Interaction: orbit camera (drag, wheel); the camera follows the pelvis along x. Hover names a
  * muscle; a click on a muscle with a graph node selects `muscle:<opensim name>` through the
  * Timeline (`selectNode`); a click on empty space clears the selection.
@@ -24,12 +28,18 @@ import type { QueryEngine } from "../query/QueryEngine";
 import { frameAt, type MusclePaths } from "../timeline/clip";
 import type { Timeline } from "../timeline/Timeline";
 import { A_ACTIVE, L_MAX, L_MIN, OPACITY_MIN, V_ISOMETRIC, WORK_LABEL, hslToRgb, muscleColour, cssColour, type WorkType } from "./colour";
+import type { RegionFilter } from "../region";
+import { fitCamera, unionBounds } from "./frame";
 import { parseMeshIndex } from "./meshIndex";
 import { RADIAL, RINGS, resamplePath, tubeIndices, writeTube } from "./tube";
 
 /** Nominal tube radius: a muscle belly is wider than the model's path points suggest; this reads well at body scale. */
 export const TUBE_RADIUS_M = 0.011;
 const SELECTED_RADIUS_FACTOR = 1.7;
+/** Room around the skeleton in the fitted view (1.12: twelve percent). */
+const FIT_MARGIN = 1.12;
+/** From the centre of the skeleton toward the camera: the walker's side, a little above and ahead. */
+const VIEW_DIRECTION = new THREE.Vector3(0.25, 0.18, 1).normalize();
 const DIMMED_OPACITY_FACTOR = 0.35;
 
 export interface Viewer3DOptions {
@@ -37,6 +47,8 @@ export interface Viewer3DOptions {
   timeline: Timeline;
   /** URL prefix of the pipeline output (`graph.json`, `meshes/`, `muscle_paths.json`), default `./`. */
   dataBase?: string;
+  /** Hides the muscles outside its region and side selection. */
+  filter?: RegionFilter;
 }
 
 interface MuscleTube {
@@ -70,6 +82,8 @@ export class Viewer3D {
   private dirty = true;
   private raf = 0;
   private selectedName: string | null = null;
+  /** True once the user has moved the camera; the fit then stops following resizes. */
+  private userMoved = false;
   private frameCount = 0;
   private fpsWindowStart = performance.now();
   /** Frames drawn per second, measured over the last second of drawing. */
@@ -100,6 +114,7 @@ export class Viewer3D {
     this.controls.target.set(0, 0.75, 0);
     this.controls.update();
     this.controls.addEventListener("change", () => (this.dirty = true));
+    this.controls.addEventListener("start", () => (this.userMoved = true));
   }
 
   /** Build the viewer in `el`: loads the meshes, creates the muscle tubes, subscribes to the timeline. */
@@ -108,6 +123,8 @@ export class Viewer3D {
     await v.loadBones();
     v.buildMuscles();
     v.attach();
+    v.update();
+    v.frameSkeleton();
     return v;
   }
 
@@ -197,6 +214,8 @@ export class Viewer3D {
       }),
     );
     this.selectedName = timeline.selectedId?.startsWith("muscle:") ? timeline.selectedId.slice(7) : null;
+    if (this.opts.filter) this.offs.push(this.opts.filter.onChange(() => this.applyFilter()));
+    this.applyFilter();
 
     const dom = this.renderer.domElement;
     let down: { x: number; y: number } | null = null;
@@ -229,6 +248,26 @@ export class Viewer3D {
     this.controls.dispose();
     this.renderer.dispose();
     this.el.innerHTML = "";
+  }
+
+  /** Put the camera where the bounds of every mesh in the mesh index fit the view, seen from the
+   * side and slightly above. Call after `update()` so the bodies stand in the current pose. */
+  frameSkeleton(): void {
+    const boxes = [...this.bodyNodes.values()].map((node) => {
+      node.updateMatrixWorld(true);
+      const b = new THREE.Box3().setFromObject(node);
+      return { min: [b.min.x, b.min.y, b.min.z] as const, max: [b.max.x, b.max.y, b.max.z] as const };
+    });
+    const bounds = unionBounds(boxes);
+    if (!bounds) return;
+    const fit = fitCamera(bounds, this.camera.fov, this.camera.aspect, FIT_MARGIN);
+    const centre = new THREE.Vector3(...fit.centre);
+    this.controls.target.copy(centre);
+    this.camera.position.copy(centre).addScaledVector(VIEW_DIRECTION, fit.distance);
+    this.camera.far = Math.max(this.camera.far, fit.distance * 4);
+    this.camera.updateProjectionMatrix();
+    this.controls.update();
+    this.dirty = true;
   }
 
   // ---- per frame ----
@@ -297,6 +336,17 @@ export class Viewer3D {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+    if (!this.userMoved && this.bodyNodes.size > 0) this.frameSkeleton();
+    this.dirty = true;
+  }
+
+  /** Show the muscles that pass the region filter. */
+  private applyFilter(): void {
+    const { filter, query } = this.opts;
+    for (const t of this.tubes) {
+      const node = query.node(t.nodeId);
+      t.mesh.visible = !filter || !node || filter.passes(node);
+    }
     this.dirty = true;
   }
 
@@ -305,7 +355,7 @@ export class Viewer3D {
     const rect = this.renderer.domElement.getBoundingClientRect();
     const ndc = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
     this.raycaster.setFromCamera(ndc, this.camera);
-    const hit = this.raycaster.intersectObjects(this.tubes.map((t) => t.mesh), false)[0];
+    const hit = this.raycaster.intersectObjects(this.tubes.filter((t) => t.mesh.visible).map((t) => t.mesh), false)[0];
     return hit && this.tubes.find((t) => t.mesh === hit.object);
   }
 
