@@ -23,7 +23,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | A | Lean FSMs | opus / xhigh | `ae7b4cbffa4f406b3` | 0 | running | `ws/A` | C1, decision 0.6 | `GaitFsm.lean`, `UiFsm.lean` | `lake build`, zero `sorry` |
 | B | Lean graphs | opus / xhigh | `a54604c9ec4fc8fac` | 0 | running | `ws/B` | C1 | `Pipeline.lean`, `Components.lean`, `Acyclic.lean` | `lake build`, zero `sorry` |
 | D | Data acquisition | sonnet / high | `a896e3b530ce7f2c7` | 0 | running | `ws/D` | — | `pipeline/env/`, `data/raw/` | `python -c "import opensim"` loads model and trial |
-| E | Web scaffold | sonnet / medium | `ac8730c51e9090ac6` | 0 | running | `ws/E` | C2, C3 | `web/` | `tsc` clean; `npm run build` |
+| E | Web scaffold | sonnet / medium | `ac8730c51e9090ac6` | 0 | merged | `ws/E` | C2, C3 | `web/` | `tsc` clean; `npm run build` |
 | H | Arch viewer | sonnet / high | `a9e35040ecfdb0d36` | 0 | running | `ws/H` | C4 | `tools/arch/` | `mypy`; `print --detail 0..3`; `svg`; watch redraw < 2 s |
 
 ## Wave 2

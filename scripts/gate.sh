@@ -34,6 +34,8 @@ for d in pipeline tools; do [ -d "$d" ] && targets+=("$d"); done
 if [ -f web/package.json ]; then
   step "tsc"
   (cd web && npx --no-install tsc --noEmit)
+  step "npm test"
+  (cd web && npm test --silent)
 fi
 
 step "pytest"
