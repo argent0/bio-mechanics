@@ -38,8 +38,10 @@ describe("phasePanelModel logic (fixture graph)", () => {
   });
 
   it("orders actions by range of motion and muscles by role, strongest first", () => {
-    expect(loading.actions.map((a) => a.id)).toEqual(["action:knee_flexion_r", "action:hip_extension_r"]);
-    const hip = loading.actions[1]!;
+    expect(loading.actions.map((a) => a.id)).toEqual([
+      "action:knee_flexion_l", "action:knee_flexion_r", "action:hip_extension_r", "action:lumbar_extension",
+    ]);
+    const hip = loading.actions[2]!;
     expect(hip.muscles.map((m) => [m.id, m.role, m.workLabel])).toEqual([
       ["muscle:glmax1_r", "mainMover", "shortening"],
       ["muscle:bflh_r", "helper", "shortening"],

@@ -66,7 +66,9 @@ describe("tugOfWarAt", () => {
 describe("sequenceModel", () => {
   it("lists each muscle of the phase once, with peak and onset (fixture)", () => {
     const rows = sequenceModel(fixture, "phase:loadingResponse");
-    expect(rows.map((r) => r.id)).toEqual(["muscle:vaslat_r", "muscle:glmax1_r", "muscle:bflh_r"]);
+    expect(rows.map((r) => r.id)).toEqual([
+      "muscle:vaslat_r", "muscle:glmax1_r", "muscle:ercspn_r", "muscle:ercspn_l", "muscle:bflh_r", "muscle:bflh_l",
+    ]);
     expect(rows[0]).toMatchObject({ peak: 0.45, peakAt: 0.5, onsetAt: 0.2, commonName: "outer quad" });
   });
 

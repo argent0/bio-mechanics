@@ -25,9 +25,10 @@ every error and exits 1 otherwise.
   `relation`.
 * *Resolve*: find the node an edge endpoint names, the first node whose `id`
   equals it (`RawGraph.resolve`).
-* *Well typed* (`WellTyped g`): every node kind names a `Kind`, and every edge
+* *Well typed* (`WellTyped g`): every node kind names a `Kind`, every edge
   resolves both endpoints and names, by its relation, a `SchemaArrow` from the
-  source node's kind to the target node's kind.
+  source node's kind to the target node's kind, and every node of a
+  `Kind.regional` kind names a `Region`.
 * *Diagnostics*: the error messages. They name the failing node or edge by its
   position in the file, e.g. `edges[51]`.
 
@@ -36,7 +37,8 @@ every error and exits 1 otherwise.
 1. **Typing** (`WellTyped`, decided in `check`). `check_ok_prefunctor` proves
    that success yields a prefunctor `DataQuiver g ⥤q Kind` whose `obj` is each
    node's declared kind and whose `map` is, for each edge, the `SchemaArrow`
-   constructor its relation names. The theorem speaks about `RawGraph`, the
+   constructor its relation names. `check_ok_region` proves that every node of
+   a regional kind carries a region. The theorems speak about `RawGraph`, the
    strings above.
 2. **Attribute fields** (`fieldErrors`): every `NodeAttrs` field on each node
    and, for each relation that `edgeAttrs` lists, every field of its attribute
@@ -137,6 +139,9 @@ def schemaStructs : List (Name × List (String × FieldTy)) := schema_structs%
 /-- Constructor names of `Kind`, from `ctor_table%`. -/
 def kindTable : List (String × Kind) := ctor_table% Kind
 
+/-- Constructor names of `Region`, from `ctor_table%`. -/
+def regionTable : List (String × Region) := ctor_table% Region
+
 /-- Constructor names of `SchemaArrow`, each with its arrow, from `ctor_table%`. -/
 def arrowTable : List (String × Σ a b : Kind, SchemaArrow a b) := ctor_table% SchemaArrow
 
@@ -145,6 +150,9 @@ theorem arrowTable_arrows : arrowTable.map (·.2) = SchemaArrow.all := rfl
 
 /-- The `Kind` a string names. -/
 def kindOf? (s : String) : Option Kind := kindTable.lookup s
+
+/-- The `Region` a string names. -/
+def regionOf? (s : String) : Option Region := regionTable.lookup s
 
 /-- The schema arrow a relation names, with its source and target kinds. -/
 def arrowOf? (s : String) : Option (Σ a b : Kind, SchemaArrow a b) := arrowTable.lookup s
@@ -168,10 +176,12 @@ def edgeFields (relation : String) : List (String × FieldTy) :=
 
 /-! ## The raw graph and its quiver -/
 
-/-- One node, as strings: its `id` and its `kind`. -/
+/-- One node, as strings: its `id`, its `kind`, and its `region` (`""` when
+the field holds `null`). -/
 structure RawNode where
   id : String
   kind : String
+  region : String
 
 /-- One edge, as strings: its endpoints' ids and its relation. -/
 structure RawEdge where
@@ -200,11 +210,20 @@ def EdgeTyped (g : RawGraph) (e : RawEdge) : Prop :=
 instance (g : RawGraph) (e : RawEdge) : Decidable (EdgeTyped g e) := by
   unfold EdgeTyped; split <;> infer_instance
 
-/-- The graph is well typed: every node's kind names a `Kind`, and every edge
-is well typed. -/
+/-- Node `n` carries a region when its kind is regional: a node of a
+`Kind.regional` kind names a `Region`. -/
+def RegionTyped (n : RawNode) : Prop :=
+  (kindOf? n.kind).any Kind.regional = true → (regionOf? n.region).isSome
+
+instance (n : RawNode) : Decidable (RegionTyped n) := by
+  unfold RegionTyped; infer_instance
+
+/-- The graph is well typed: every node's kind names a `Kind`, every edge is
+well typed, and every node of a regional kind names a `Region`. -/
 def WellTyped (g : RawGraph) : Prop :=
   (∀ v : Fin g.nodes.size, (kindOf? g.nodes[v].kind).isSome) ∧
-    ∀ i : Fin g.edges.size, EdgeTyped g g.edges[i]
+    (∀ i : Fin g.edges.size, EdgeTyped g g.edges[i]) ∧
+    ∀ v : Fin g.nodes.size, RegionTyped g.nodes[v]
 
 instance (g : RawGraph) : Decidable (WellTyped g) := by
   unfold WellTyped; infer_instance
@@ -229,7 +248,7 @@ theorem exists_schemaArrow {g : RawGraph} (h : WellTyped g) {s t : DataQuiver g}
     ∃ x : SchemaArrow (kindAt h s) (kindAt h t),
       arrowOf? g.edges[e.1].relation = some ⟨_, _, x⟩ := by
   obtain ⟨i, hs, ht⟩ := e
-  have hi := h.2 i
+  have hi := h.2.1 i
   unfold EdgeTyped at hi
   rw [hs, ht] at hi
   dsimp only
@@ -313,7 +332,7 @@ def parse (j : Json) : RawGraph × Array String := Id.run do
   for h : i in [:nodesJ.size] do
     let n := nodesJ[i]
     errs := errs ++ fieldErrors (nodeLabel i (strField n "id")) nodeFields n
-    nodes := nodes.push { id := strField n "id", kind := strField n "kind" }
+    nodes := nodes.push { id := strField n "id", kind := strField n "kind", region := strField n "region" }
   let mut edges := #[]
   for h : i in [:edgesJ.size] do
     let o := edgesJ[i]
@@ -326,17 +345,21 @@ def parse (j : Json) : RawGraph × Array String := Id.run do
 
 /-! ## Typing diagnostics -/
 
-/-- Diagnostics for typing: duplicate ids, unknown relations, unknown node ids,
-and edges whose endpoint kinds lack the arrow their relation names. Unknown
-kinds are reported by `fieldErrors` (the `kind` field is an enumeration). -/
+/-- Diagnostics for typing: duplicate ids, regional nodes without a region,
+unknown relations, unknown node ids, and edges whose endpoint kinds lack the
+arrow their relation names. Unknown kinds and regions are reported by
+`fieldErrors` (both fields are enumerations). -/
 def typeErrors (g : RawGraph) : Array String := Id.run do
   let mut errs := #[]
   let mut seen : Std.HashMap String Nat := {}
   for h : i in [:g.nodes.size] do
-    let id := g.nodes[i].id
+    let n := g.nodes[i]
+    let id := n.id
     match seen[id]? with
     | some j => errs := errs.push s!"{nodeAt i}: duplicate id {id}, first at {nodeAt j}"
     | none => seen := seen.insert id i
+    if n.region == "" ∧ ¬ RegionTyped n then
+      errs := errs.push s!"{nodeLabel i id}: kind {n.kind} needs a region, got null"
   for h : i in [:g.edges.size] do
     let e := g.edges[i]
     let at_ := edgeAt i e
@@ -387,6 +410,13 @@ theorem check_ok_prefunctor {j : Json} {g : RawGraph} (h : check j = .ok g) :
       (∀ v, kindOf? g.nodes[v.idx].kind = some (F.obj v)) ∧
       ∀ {s t : DataQuiver g} (e : s ⟶ t), arrowOf? g.edges[e.1].relation = some ⟨_, _, F.map e⟩ :=
   ⟨(check_ok h).1, prefunctor_of_wellTyped (check_ok h).2⟩
+
+/-- **Success yields a region on every regional node.** When `check` accepts a
+file, each node whose kind is `Kind.regional` names a `Region`. -/
+theorem check_ok_region {j : Json} {g : RawGraph} (h : check j = .ok g) (v : Fin g.nodes.size)
+    (hk : (kindOf? g.nodes[v].kind).any Kind.regional = true) :
+    (regionOf? g.nodes[v].region).isSome :=
+  (check_ok h).2.2.2 v hk
 
 /-- Summary of a well typed graph: node count per kind and edge count per
 relation, in constructor order. -/

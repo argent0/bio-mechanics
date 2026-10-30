@@ -294,8 +294,8 @@ def test_fma_subset_round_trip(tmp_path: Path) -> None:
 
 
 def tiny_enriched() -> dict[str, object]:
-    def ent(name: str, side: str = "right") -> dict[str, object]:
-        return {"name": name, "commonName": None, "side": side, "uberonId": None, "fmaId": None, "opensimName": None}
+    def ent(name: str, side: str = "right", region: str | None = "lowerLimb") -> dict[str, object]:
+        return {"name": name, "commonName": None, "side": side, "region": region, "uberonId": None, "fmaId": None, "opensimName": None}
 
     roles = {
         "config": {"coordinates": ["knee_angle_r"]},
@@ -322,8 +322,8 @@ def tiny_enriched() -> dict[str, object]:
             "ligament": {"acl_r": ent("anterior cruciate ligament")},
             "nerve": {"femoral_r": ent("femoral nerve")},
             "jointAction": {"knee_flexion_r": ent("knee flexion"), "knee_extension_r": ent("knee extension")},
-            "phase": {ph: ent(ph, "midline") for ph in gait_fsm.PHASES},
-            "movement": {"walking": ent("walking", "midline")},
+            "phase": {ph: ent(ph, "midline", None) for ph in gait_fsm.PHASES},
+            "movement": {"walking": ent("walking", "midline", None)},
         },
         "muscles": {"vaslat_r": {"origin": "femur_r", "insertion": "patella_r", "groups": ["quadriceps_r"], "nerve": "femoral_r"}},
         "joints": {"knee_r": {"articulates": ["femur_r", "tibia_r", "patella_r"]}},
@@ -368,6 +368,21 @@ def test_curated_anatomy_covers_the_right_leg() -> None:
         assert m["nerve"] in a["nerves"] and all(g in a["groups"] for g in m["groups"])
         for k in ("origin", "insertion"):
             assert m.get(k, "femur_r") in a["bones"]
+
+
+def test_regions_follow_the_model_bodies() -> None:
+    a = ea.load_anatomy(REPO / "data" / "curated" / "anatomy.yaml")
+    model = json.loads((REPO / "data" / "work" / "model.json").read_text()) if (REPO / "data" / "work" / "model.json").exists() else None
+    if model is None:
+        pytest.skip("data/work/model.json comes from stage loadModel")
+    r = ea.regions_of(a, model)
+    assert r["bone"]["pelvis"] == "pelvis" and r["bone"]["femur_r"] == "lowerLimb"
+    assert r["joint"]["hip_r"] == "lowerLimb"
+    assert r["muscle"]["glmax1_r"] == "lowerLimb" and r["muscle"]["iliacus_r"] == "lowerLimb"
+    assert r["jointAction"]["knee_flexion_r"] == "lowerLimb"
+    assert set(r["muscleGroup"]) == set(a["groups"]) and set(r["nerve"]) == set(a["nerves"])
+    assert set(r["ligament"]) == set(a["ligaments"])
+    assert {b["name"] for b in model["bodies"]} - {"ground"} <= {f"{k}{s}" for k in a["regions"] for s in ("", "_r", "_l")}
 
 
 # ---------------------------------------------------------------------------------------------

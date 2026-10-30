@@ -84,3 +84,60 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 ## Open items for the director
 
 1. Order of later movements (Wave 4).
+
+# Whole body
+
+Source plan: `plan.md` (2026-10-30). The sections above are the first slice, kept as history.
+
+## Wave 0 — Foundation (coordinator, K19 in parallel)
+
+| Task | Owner | Model | State | Inputs | Output | Acceptance |
+|---|---|---|---|---|---|---|
+| 0.1 Section **Whole body** with every task of `plan.md` | coordinator | opus | merged | `plan.md` | this section | each task has owner, model, state, inputs, outputs, acceptance |
+| 0.2 Launch K19 | coordinator | opus | merged | — | K19 running | report in hand before 0.7 |
+| 0.3 Q1 phase timeline | coordinator | opus | merged | — | D-007: reference leg | answer before 0.4 |
+| 0.4 **C1** `Region`, `NodeAttrs.region`, `Kind.regional_iff`; `checkGraph` needs a region on every regional node (`check_ok_region`) | coordinator | opus | merged | D-007 | `Schema.lean`, `CheckGraph.lean`, schema version 4 | `lake build`, zero `sorry` |
+| 0.5 **C2** regenerate | coordinator | opus | merged | C1 | `generated/ts/types.ts`, `generated/py/schema.py` | regenerate gives an empty diff |
+| 0.6 **C3** fixture: left knee, lumbar joint, right shoulder and elbow, their muscles; `region` on every node | coordinator | opus | merged | C1 | `graph.sample.json` (50 nodes, 103 edges), `graph.bad-edge.json` | `checkGraph` passes the sample, names `edges[103]` of the bad one |
+| 0.6a Regions in the pipeline: `anatomy.yaml` `regions`, `enrich_anatomy.regions_of`; `data/out/graph.json` regenerated (edges unchanged) | coordinator | opus | merged | C1 | `region` on every node of `graph.json` | `checkGraph ../data/out/graph.json`; gate |
+| 0.6b `compare_graph.py --within-committed` | coordinator | opus | merged | — | `scripts/compare_graph.py`, `tests/test_compare_graph.py` | pytest |
+| 0.7 K19 picks confirmed against D-008 | coordinator | opus | todo | K19 report | picks below | picks before D2 |
+| 0.8 Module map: S, L, D2, W1, G2, M, P4, W2; APIs C8, C9 | coordinator | opus | merged | — | `Architecture.lean` | `lake exe arch check` |
+
+| ID | Investigation | Model / effort | Worker ID | State | Output |
+|---|---|---|---|---|---|
+| K19 | Upper-body model survey (trunk, arm, neck picks) | opus / high | `a61d8613137080615` | running | ranked table, one pick per region |
+
+K19 picks: pending.
+
+## Wave 1
+
+| ID | Workstream | Model / effort | Worker ID | Fails | State | Branch | Inputs | Outputs | Acceptance |
+|---|---|---|---|---|---|---|---|---|---|
+| S | Lean spec additions | opus / xhigh | — | 0 | todo | `ws/S` | C1, D-008 | stage `buildModel` before `loadModel`; component `RegionFilter`; region emitters | acyclicity and layering theorems; zero `sorry`; `ninja -n -f generated/pipeline.ninja` |
+| L | Left leg | opus / high | — | 0 | todo | `ws/L` | C1–C3, D-007 | both legs on the reference timeline; left anatomy by mirroring; left meshes, paths, dynamics | 40 left-leg muscles; `compare_graph.py --within-committed` passes; mirrored teaching examples; `checkGraph` |
+| D2 | Upper-body data | sonnet / high | — | 0 | todo | `ws/D2` | D-008, K19 picks | fetch script, `SHA256SUMS`, `SOURCES.md` section | `check_env.py` loads the model in OpenSim 4.6 |
+| W1 | Web, whole-body views | sonnet / high | — | 0 | todo | `ws/W1` | C2, C3 | whole-skeleton framing; region and side filter; panels grouped by region and side; search across regions | `tsc`; web tests; boundary test with `RegionFilter` once S merges |
+| G2 | CI | sonnet / medium | — | 0 | todo | `ws/G2` | D2 | CI fetches and caches the upper-body model; every stage runs | CI green on `main`; pipeline job under 15 minutes |
+
+## Wave 2
+
+| ID | Workstream | Model / effort | Worker ID | Fails | State | Branch | Inputs | Outputs | Acceptance |
+|---|---|---|---|---|---|---|---|---|---|
+| M | Model merge | opus / xhigh | — | 0 | todo | `ws/M` | D2, S, D-008–D-010 | merged model, head split, neck angles holding the head level, reserves | static optimisation over the stride; reserves RMS < 10 N·m lumbar, < 2 N·m arm, < 1 N·m neck; leg activations within 0.02 RMS of today |
+| P4 | Trunk and arm stages | opus / high | — | 0 | todo | `ws/P4` | M, L, D-009 | roles for neck, lumbar, shoulder, elbow, forearm, wrist; curated anatomy; meshes | erector spinae two bursts per stride; posterior deltoid in backward swing; neck extensors stabilising; D-006 floor test; `checkGraph` |
+| W2 | Web, real output | sonnet / medium | — | 0 | todo | `ws/W2` | P4, S | real graph wired in; tubes for every muscle | ≥ 30 fps with every muscle; `data/out/` < 8 MB; recorded trace conforms |
+
+## Wave 3 — Integration (coordinator)
+
+| Task | State |
+|---|---|
+| Fixture references replaced by real output; full gate on `main` | todo |
+| Whole-body walking trace; `lake exe conform` | todo |
+| `README.md` pointers, `handover.md` | todo |
+| Deploy; `#/walking` shows both legs, trunk and arms | todo |
+
+## Escalations (whole body)
+
+| Workstream | From | To | Reason |
+|---|---|---|---|

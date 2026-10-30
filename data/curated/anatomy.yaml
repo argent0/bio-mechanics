@@ -51,6 +51,24 @@ bodies:
   calcn_r: calcaneus_r
   toes_r: phalanges_r
 
+# OpenSim body, side suffix `_r` / `_l` dropped -> body region (schema `Region`). Bones take
+# the region of their body, joints that of their first model joint's child body, muscles that
+# of their insertion bone (pipeline/enrich_anatomy.py `regions_of`).
+regions:
+  pelvis: pelvis
+  femur: lowerLimb
+  patella: lowerLimb
+  tibia: lowerLimb
+  talus: lowerLimb
+  calcn: lowerLimb
+  toes: lowerLimb
+  torso: trunk
+  head: head
+  humerus: upperLimb
+  ulna: upperLimb
+  radius: upperLimb
+  hand: upperLimb
+
 # Joints: `opensim` lists the model joints (the first names the node); `articulates` lists
 # bones, each of which belongs to a parent or child body of those model joints.
 joints:

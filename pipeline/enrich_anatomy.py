@@ -11,6 +11,12 @@ entity's key gives its node: side `right` for a key ending in `_r`, `midline` ot
 `opensimName` is the model element: the muscle's own key, a bone's body, a joint's first
 `opensim` joint.
 
+Regions (`regions_of`). anatomy.yaml `regions` maps each OpenSim body, side suffix dropped, to
+its body region. A bone takes its body's region; a joint, the region of its first `opensim`
+joint's child body; a muscle, its insertion bone's region; a joint action, its coordinate's
+joint's region; a muscle group, a nerve, a ligament, the region of its first member muscle,
+first innervated muscle, first stabilised joint. Phases and the movement carry `null`.
+
 Attachments. A muscle's origin bone is its `origin` in anatomy.yaml, else the bone that
 `bodies` maps the first body of its model path to (`model.json` `originBody`); its insertion
 likewise from `insertion` or the last body of the path. A curated bone must belong to a body on
@@ -31,7 +37,7 @@ else `ontologyName`, else `name`, compared case-insensitively.
 Output `enriched.json`:
   sources      ontology versions read (`uberon`: data-version, `fma`: versionInfo)
   roles        the contents of `roles.json`
-  entities     {kind: {key: {name, commonName, side, uberonId, fmaId, opensimName}}}, `kind`
+  entities     {kind: {key: {name, commonName, side, region, uberonId, fmaId, opensimName}}}, `kind`
                one of the schema's node kinds (`schema.KIND`)
   muscles      {key: {origin, insertion, groups, nerve}}: bone, group and nerve keys
   joints       {key: {articulates}}: bone keys
@@ -265,6 +271,45 @@ def subset(anatomy_path: Path, uberon_full: Path, fma_full: Path, uberon_out: Pa
     return n_ub, n_fma
 
 
+def body_region(anatomy: dict[str, Any], body: str) -> str:
+    """The region anatomy.yaml `regions` gives an OpenSim body, side suffix dropped."""
+    key = re.sub(r"_[rl]$", "", body)
+    if key not in anatomy["regions"]:
+        raise ValueError(f"anatomy.yaml regions lacks body {key}")
+    return str(anatomy["regions"][key])
+
+
+def regions_of(anatomy: dict[str, Any], model: dict[str, Any]) -> dict[str, dict[str, str]]:
+    """{kind: {key: region}} for every regional entity of anatomy.yaml (module docstring)."""
+    bones = {k: body_region(anatomy, e["body"]) for k, e in anatomy["bones"].items()}
+    joints_model = {j["name"]: j for j in model["joints"]}
+    joints = {k: body_region(anatomy, joints_model[e["opensim"][0]]["child"]) for k, e in anatomy["joints"].items()}
+    muscles_model = {m["name"]: m for m in model["muscles"]}
+    muscles: dict[str, str] = {}
+    for k, e in anatomy["muscles"].items():
+        if k in muscles_model:
+            muscles[k] = bones[e.get("insertion", anatomy["bodies"][muscles_model[k]["insertionBody"]])]
+    actions: dict[str, str] = {}
+    for c in anatomy["coordinates"].values():
+        for d in ("positive", "negative"):
+            actions[c[d]] = joints[c["joint"]]
+
+    def first(keys: Iterable[str], table: dict[str, str], what: str) -> str:
+        for k in keys:
+            if k in table:
+                return table[k]
+        raise ValueError(f"{what}: no member with a region")
+
+    ms = anatomy["muscles"]
+    groups = {k: first((m for m, e in ms.items() if k in e["groups"]), muscles, f"group {k}") for k in anatomy["groups"]}
+    nerves = {k: first((m for m, e in ms.items() if e["nerve"] == k), muscles, f"nerve {k}") for k in anatomy["nerves"]}
+    ligaments = {k: first(e["stabilises"], joints, f"ligament {k}") for k, e in anatomy["ligaments"].items()}
+    missing = sorted(set(anatomy["actions"]) - set(actions))
+    if missing:
+        raise ValueError(f"anatomy.yaml actions outside every coordinate: {missing}")
+    return {"bone": bones, "joint": joints, "muscle": muscles, "muscleGroup": groups, "ligament": ligaments, "nerve": nerves, "jointAction": actions}
+
+
 def check_attachment(muscle: str, role: str, bone: str, bones: dict[str, Any], path_bodies: Sequence[str]) -> None:
     body = bones[bone]["body"]
     if body not in path_bodies:
@@ -276,6 +321,7 @@ def enrich(roles: dict[str, Any], model: dict[str, Any], anatomy: dict[str, Any]
     bones = anatomy["bones"]
     muscles_model = {m["name"]: m for m in model["muscles"]}
     joints_model = {j["name"]: j for j in model["joints"]}
+    regions = regions_of(anatomy, model)
     unresolved: list[dict[str, str]] = []
     entities: dict[str, dict[str, Any]] = {}
     for section, kind in SECTIONS.items():
@@ -303,6 +349,7 @@ def enrich(roles: dict[str, Any], model: dict[str, Any], anatomy: dict[str, Any]
                 "name": entry["name"],
                 "commonName": entry.get("commonName"),
                 "side": side_of(key),
+                "region": regions.get(kind, {}).get(key),
                 "uberonId": uid,
                 "fmaId": fid,
                 "opensimName": opensim,

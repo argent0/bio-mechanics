@@ -1,6 +1,6 @@
 {
- "$comment": "Hand-made fixture (contract C3) around the right knee and hip. Numbers are illustrative; data/out/graph.json from the pipeline replaces them.",
- "schemaVersion": 3,
+ "$comment": "Hand-made fixture (contract C3) around the right knee and hip, the left knee, the lumbar joint, and the right shoulder and elbow. Numbers are illustrative; data/out/graph.json from the pipeline replaces them.",
+ "schemaVersion": 4,
  "nodes": [
   {
    "id": "bone:pelvis",
@@ -10,7 +10,8 @@
    "side": "midline",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "pelvis"
+   "opensimName": "pelvis",
+   "region": "pelvis"
   },
   {
    "id": "bone:femur_r",
@@ -20,7 +21,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "femur_r"
+   "opensimName": "femur_r",
+   "region": "lowerLimb"
   },
   {
    "id": "bone:tibia_r",
@@ -30,7 +32,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "tibia_r"
+   "opensimName": "tibia_r",
+   "region": "lowerLimb"
   },
   {
    "id": "bone:patella_r",
@@ -40,7 +43,74 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "patella_r"
+   "opensimName": "patella_r",
+   "region": "lowerLimb"
+  },
+  {
+   "id": "bone:femur_l",
+   "kind": "bone",
+   "name": "femur",
+   "commonName": "thigh bone",
+   "side": "left",
+   "region": "lowerLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "femur_l"
+  },
+  {
+   "id": "bone:tibia_l",
+   "kind": "bone",
+   "name": "tibia",
+   "commonName": "shin bone",
+   "side": "left",
+   "region": "lowerLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "tibia_l"
+  },
+  {
+   "id": "bone:torso",
+   "kind": "bone",
+   "name": "lumbar vertebrae",
+   "commonName": "lower back bones",
+   "side": "midline",
+   "region": "trunk",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "torso"
+  },
+  {
+   "id": "bone:humerus_r",
+   "kind": "bone",
+   "name": "humerus",
+   "commonName": "upper-arm bone",
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "humerus_r"
+  },
+  {
+   "id": "bone:ulna_r",
+   "kind": "bone",
+   "name": "ulna",
+   "commonName": "inner forearm bone",
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "ulna_r"
+  },
+  {
+   "id": "bone:radius_r",
+   "kind": "bone",
+   "name": "radius",
+   "commonName": "outer forearm bone",
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "radius_r"
   },
   {
    "id": "joint:hip_r",
@@ -50,7 +120,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "hip_r"
+   "opensimName": "hip_r",
+   "region": "lowerLimb"
   },
   {
    "id": "joint:knee_r",
@@ -60,7 +131,52 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "walker_knee_r"
+   "opensimName": "walker_knee_r",
+   "region": "lowerLimb"
+  },
+  {
+   "id": "joint:knee_l",
+   "kind": "joint",
+   "name": "knee joint",
+   "commonName": "knee",
+   "side": "left",
+   "region": "lowerLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "walker_knee_l"
+  },
+  {
+   "id": "joint:lumbar",
+   "kind": "joint",
+   "name": "lumbar joints",
+   "commonName": "lower back",
+   "side": "midline",
+   "region": "trunk",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "back"
+  },
+  {
+   "id": "joint:shoulder_r",
+   "kind": "joint",
+   "name": "shoulder joint",
+   "commonName": "shoulder",
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "acromial_r"
+  },
+  {
+   "id": "joint:elbow_r",
+   "kind": "joint",
+   "name": "elbow joint",
+   "commonName": "elbow",
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "elbow_r"
   },
   {
    "id": "muscle:glmax1_r",
@@ -70,7 +186,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "glmax1_r"
+   "opensimName": "glmax1_r",
+   "region": "lowerLimb"
   },
   {
    "id": "muscle:glmed1_r",
@@ -80,7 +197,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "glmed1_r"
+   "opensimName": "glmed1_r",
+   "region": "lowerLimb"
   },
   {
    "id": "muscle:iliacus_r",
@@ -90,7 +208,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "iliacus_r"
+   "opensimName": "iliacus_r",
+   "region": "lowerLimb"
   },
   {
    "id": "muscle:recfem_r",
@@ -100,7 +219,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "recfem_r"
+   "opensimName": "recfem_r",
+   "region": "lowerLimb"
   },
   {
    "id": "muscle:vaslat_r",
@@ -110,7 +230,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "vaslat_r"
+   "opensimName": "vaslat_r",
+   "region": "lowerLimb"
   },
   {
    "id": "muscle:bflh_r",
@@ -120,7 +241,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "bflh_r"
+   "opensimName": "bflh_r",
+   "region": "lowerLimb"
   },
   {
    "id": "muscle:semiten_r",
@@ -130,7 +252,85 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": "semiten_r"
+   "opensimName": "semiten_r",
+   "region": "lowerLimb"
+  },
+  {
+   "id": "muscle:vaslat_l",
+   "kind": "muscle",
+   "name": "vastus lateralis",
+   "commonName": "outer quad",
+   "side": "left",
+   "region": "lowerLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "vaslat_l"
+  },
+  {
+   "id": "muscle:bflh_l",
+   "kind": "muscle",
+   "name": "biceps femoris long head",
+   "commonName": "outer hamstring",
+   "side": "left",
+   "region": "lowerLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "bflh_l"
+  },
+  {
+   "id": "muscle:ercspn_r",
+   "kind": "muscle",
+   "name": "erector spinae",
+   "commonName": "back extensors",
+   "side": "right",
+   "region": "trunk",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "ercspn_r"
+  },
+  {
+   "id": "muscle:ercspn_l",
+   "kind": "muscle",
+   "name": "erector spinae",
+   "commonName": "back extensors",
+   "side": "left",
+   "region": "trunk",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "ercspn_l"
+  },
+  {
+   "id": "muscle:delt3_r",
+   "kind": "muscle",
+   "name": "deltoid (posterior part)",
+   "commonName": "rear shoulder",
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "delt3_r"
+  },
+  {
+   "id": "muscle:biclong_r",
+   "kind": "muscle",
+   "name": "biceps brachii long head",
+   "commonName": "biceps",
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "biclong_r"
+  },
+  {
+   "id": "muscle:trilong_r",
+   "kind": "muscle",
+   "name": "triceps brachii long head",
+   "commonName": "triceps",
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": "trilong_r"
   },
   {
    "id": "group:quadriceps_r",
@@ -140,7 +340,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": null
+   "opensimName": null,
+   "region": "lowerLimb"
   },
   {
    "id": "group:hamstrings_r",
@@ -150,7 +351,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": null
+   "opensimName": null,
+   "region": "lowerLimb"
   },
   {
    "id": "ligament:acl_r",
@@ -160,7 +362,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": null
+   "opensimName": null,
+   "region": "lowerLimb"
   },
   {
    "id": "nerve:femoral_r",
@@ -170,7 +373,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": null
+   "opensimName": null,
+   "region": "lowerLimb"
   },
   {
    "id": "nerve:sciatic_r",
@@ -180,7 +384,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": null
+   "opensimName": null,
+   "region": "lowerLimb"
   },
   {
    "id": "nerve:supgluteal_r",
@@ -188,6 +393,62 @@
    "name": "superior gluteal nerve",
    "commonName": null,
    "side": "right",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": null,
+   "region": "lowerLimb"
+  },
+  {
+   "id": "nerve:femoral_l",
+   "kind": "nerve",
+   "name": "femoral nerve",
+   "commonName": null,
+   "side": "left",
+   "region": "lowerLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": null
+  },
+  {
+   "id": "nerve:sciatic_l",
+   "kind": "nerve",
+   "name": "sciatic nerve",
+   "commonName": null,
+   "side": "left",
+   "region": "lowerLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": null
+  },
+  {
+   "id": "nerve:dorsalRami",
+   "kind": "nerve",
+   "name": "dorsal rami of the spinal nerves",
+   "commonName": "back nerve branches",
+   "side": "midline",
+   "region": "trunk",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": null
+  },
+  {
+   "id": "nerve:axillary_r",
+   "kind": "nerve",
+   "name": "axillary nerve",
+   "commonName": null,
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": null
+  },
+  {
+   "id": "nerve:musculocutaneous_r",
+   "kind": "nerve",
+   "name": "musculocutaneous nerve",
+   "commonName": null,
+   "side": "right",
+   "region": "upperLimb",
    "fmaId": null,
    "uberonId": null,
    "opensimName": null
@@ -200,7 +461,8 @@
    "side": "midline",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": null
+   "opensimName": null,
+   "region": null
   },
   {
    "id": "phase:loadingResponse",
@@ -210,7 +472,8 @@
    "side": "midline",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": null
+   "opensimName": null,
+   "region": null
   },
   {
    "id": "phase:midStance",
@@ -220,7 +483,8 @@
    "side": "midline",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": null
+   "opensimName": null,
+   "region": null
   },
   {
    "id": "action:knee_flexion_r",
@@ -230,7 +494,8 @@
    "side": "right",
    "fmaId": null,
    "uberonId": null,
-   "opensimName": null
+   "opensimName": null,
+   "region": "lowerLimb"
   },
   {
    "id": "action:hip_extension_r",
@@ -238,6 +503,51 @@
    "name": "hip extension",
    "commonName": "driving the thigh back",
    "side": "right",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": null,
+   "region": "lowerLimb"
+  },
+  {
+   "id": "action:knee_flexion_l",
+   "kind": "jointAction",
+   "name": "knee flexion",
+   "commonName": "bending the knee",
+   "side": "left",
+   "region": "lowerLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": null
+  },
+  {
+   "id": "action:lumbar_extension",
+   "kind": "jointAction",
+   "name": "lumbar extension",
+   "commonName": "arching the lower back",
+   "side": "midline",
+   "region": "trunk",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": null
+  },
+  {
+   "id": "action:shoulder_flexion_r",
+   "kind": "jointAction",
+   "name": "shoulder flexion",
+   "commonName": "swinging the arm forward",
+   "side": "right",
+   "region": "upperLimb",
+   "fmaId": null,
+   "uberonId": null,
+   "opensimName": null
+  },
+  {
+   "id": "action:elbow_flexion_r",
+   "kind": "jointAction",
+   "name": "elbow flexion",
+   "commonName": "bending the elbow",
+   "side": "right",
+   "region": "upperLimb",
    "fmaId": null,
    "uberonId": null,
    "opensimName": null
@@ -250,24 +560,79 @@
    "relation": "origin"
   },
   {
+   "source": "muscle:glmed1_r",
+   "target": "bone:pelvis",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:iliacus_r",
+   "target": "bone:pelvis",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:recfem_r",
+   "target": "bone:pelvis",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:vaslat_r",
+   "target": "bone:femur_r",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:bflh_r",
+   "target": "bone:pelvis",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:semiten_r",
+   "target": "bone:pelvis",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:vaslat_l",
+   "target": "bone:femur_l",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:bflh_l",
+   "target": "bone:pelvis",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:ercspn_r",
+   "target": "bone:pelvis",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:ercspn_l",
+   "target": "bone:pelvis",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:delt3_r",
+   "target": "bone:torso",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:biclong_r",
+   "target": "bone:torso",
+   "relation": "origin"
+  },
+  {
+   "source": "muscle:trilong_r",
+   "target": "bone:torso",
+   "relation": "origin"
+  },
+  {
    "source": "muscle:glmax1_r",
    "target": "bone:femur_r",
    "relation": "insertion"
   },
   {
    "source": "muscle:glmed1_r",
-   "target": "bone:pelvis",
-   "relation": "origin"
-  },
-  {
-   "source": "muscle:glmed1_r",
    "target": "bone:femur_r",
    "relation": "insertion"
-  },
-  {
-   "source": "muscle:iliacus_r",
-   "target": "bone:pelvis",
-   "relation": "origin"
   },
   {
    "source": "muscle:iliacus_r",
@@ -276,18 +641,8 @@
   },
   {
    "source": "muscle:recfem_r",
-   "target": "bone:pelvis",
-   "relation": "origin"
-  },
-  {
-   "source": "muscle:recfem_r",
    "target": "bone:patella_r",
    "relation": "insertion"
-  },
-  {
-   "source": "muscle:vaslat_r",
-   "target": "bone:femur_r",
-   "relation": "origin"
   },
   {
    "source": "muscle:vaslat_r",
@@ -296,22 +651,47 @@
   },
   {
    "source": "muscle:bflh_r",
-   "target": "bone:pelvis",
-   "relation": "origin"
-  },
-  {
-   "source": "muscle:bflh_r",
    "target": "bone:tibia_r",
    "relation": "insertion"
   },
   {
    "source": "muscle:semiten_r",
-   "target": "bone:pelvis",
-   "relation": "origin"
+   "target": "bone:tibia_r",
+   "relation": "insertion"
   },
   {
-   "source": "muscle:semiten_r",
-   "target": "bone:tibia_r",
+   "source": "muscle:vaslat_l",
+   "target": "bone:tibia_l",
+   "relation": "insertion"
+  },
+  {
+   "source": "muscle:bflh_l",
+   "target": "bone:tibia_l",
+   "relation": "insertion"
+  },
+  {
+   "source": "muscle:ercspn_r",
+   "target": "bone:torso",
+   "relation": "insertion"
+  },
+  {
+   "source": "muscle:ercspn_l",
+   "target": "bone:torso",
+   "relation": "insertion"
+  },
+  {
+   "source": "muscle:delt3_r",
+   "target": "bone:humerus_r",
+   "relation": "insertion"
+  },
+  {
+   "source": "muscle:biclong_r",
+   "target": "bone:radius_r",
+   "relation": "insertion"
+  },
+  {
+   "source": "muscle:trilong_r",
+   "target": "bone:ulna_r",
    "relation": "insertion"
   },
   {
@@ -365,6 +745,36 @@
    "relation": "innervatedBy"
   },
   {
+   "source": "muscle:vaslat_l",
+   "target": "nerve:femoral_l",
+   "relation": "innervatedBy"
+  },
+  {
+   "source": "muscle:bflh_l",
+   "target": "nerve:sciatic_l",
+   "relation": "innervatedBy"
+  },
+  {
+   "source": "muscle:ercspn_r",
+   "target": "nerve:dorsalRami",
+   "relation": "innervatedBy"
+  },
+  {
+   "source": "muscle:ercspn_l",
+   "target": "nerve:dorsalRami",
+   "relation": "innervatedBy"
+  },
+  {
+   "source": "muscle:delt3_r",
+   "target": "nerve:axillary_r",
+   "relation": "innervatedBy"
+  },
+  {
+   "source": "muscle:biclong_r",
+   "target": "nerve:musculocutaneous_r",
+   "relation": "innervatedBy"
+  },
+  {
    "source": "joint:hip_r",
    "target": "bone:pelvis",
    "relation": "articulates"
@@ -387,6 +797,51 @@
   {
    "source": "joint:knee_r",
    "target": "bone:patella_r",
+   "relation": "articulates"
+  },
+  {
+   "source": "joint:knee_l",
+   "target": "bone:femur_l",
+   "relation": "articulates"
+  },
+  {
+   "source": "joint:knee_l",
+   "target": "bone:tibia_l",
+   "relation": "articulates"
+  },
+  {
+   "source": "joint:lumbar",
+   "target": "bone:pelvis",
+   "relation": "articulates"
+  },
+  {
+   "source": "joint:lumbar",
+   "target": "bone:torso",
+   "relation": "articulates"
+  },
+  {
+   "source": "joint:shoulder_r",
+   "target": "bone:torso",
+   "relation": "articulates"
+  },
+  {
+   "source": "joint:shoulder_r",
+   "target": "bone:humerus_r",
+   "relation": "articulates"
+  },
+  {
+   "source": "joint:elbow_r",
+   "target": "bone:humerus_r",
+   "relation": "articulates"
+  },
+  {
+   "source": "joint:elbow_r",
+   "target": "bone:ulna_r",
+   "relation": "articulates"
+  },
+  {
+   "source": "joint:elbow_r",
+   "target": "bone:radius_r",
    "relation": "articulates"
   },
   {
@@ -585,6 +1040,177 @@
    ]
   },
   {
+   "source": "muscle:vaslat_l",
+   "target": "joint:knee_l",
+   "relation": "crosses",
+   "coordinate": "knee_angle_l",
+   "momentArm": [
+    -0.045,
+    -0.0445,
+    -0.044,
+    -0.0435,
+    -0.043,
+    -0.0425,
+    -0.042,
+    -0.0415,
+    -0.041,
+    -0.0405,
+    -0.04
+   ]
+  },
+  {
+   "source": "muscle:bflh_l",
+   "target": "joint:knee_l",
+   "relation": "crosses",
+   "coordinate": "knee_angle_l",
+   "momentArm": [
+    0.02,
+    0.021,
+    0.022,
+    0.023,
+    0.024,
+    0.025,
+    0.026,
+    0.027,
+    0.028,
+    0.029,
+    0.03
+   ]
+  },
+  {
+   "source": "muscle:ercspn_r",
+   "target": "joint:lumbar",
+   "relation": "crosses",
+   "coordinate": "lumbar_extension",
+   "momentArm": [
+    -0.05,
+    -0.0498,
+    -0.0496,
+    -0.0494,
+    -0.0492,
+    -0.049,
+    -0.0488,
+    -0.0486,
+    -0.0484,
+    -0.0482,
+    -0.048
+   ]
+  },
+  {
+   "source": "muscle:ercspn_l",
+   "target": "joint:lumbar",
+   "relation": "crosses",
+   "coordinate": "lumbar_extension",
+   "momentArm": [
+    -0.05,
+    -0.0498,
+    -0.0496,
+    -0.0494,
+    -0.0492,
+    -0.049,
+    -0.0488,
+    -0.0486,
+    -0.0484,
+    -0.0482,
+    -0.048
+   ]
+  },
+  {
+   "source": "muscle:delt3_r",
+   "target": "joint:shoulder_r",
+   "relation": "crosses",
+   "coordinate": "arm_flex_r",
+   "momentArm": [
+    -0.03,
+    -0.0295,
+    -0.029,
+    -0.0285,
+    -0.028,
+    -0.0275,
+    -0.027,
+    -0.0265,
+    -0.026,
+    -0.0255,
+    -0.025
+   ]
+  },
+  {
+   "source": "muscle:biclong_r",
+   "target": "joint:shoulder_r",
+   "relation": "crosses",
+   "coordinate": "arm_flex_r",
+   "momentArm": [
+    0.025,
+    0.0253,
+    0.0256,
+    0.0259,
+    0.0262,
+    0.0265,
+    0.0268,
+    0.0271,
+    0.0274,
+    0.0277,
+    0.028
+   ]
+  },
+  {
+   "source": "muscle:biclong_r",
+   "target": "joint:elbow_r",
+   "relation": "crosses",
+   "coordinate": "elbow_flex_r",
+   "momentArm": [
+    0.03,
+    0.0305,
+    0.031,
+    0.0315,
+    0.032,
+    0.0325,
+    0.033,
+    0.0335,
+    0.034,
+    0.0345,
+    0.035
+   ]
+  },
+  {
+   "source": "muscle:trilong_r",
+   "target": "joint:shoulder_r",
+   "relation": "crosses",
+   "coordinate": "arm_flex_r",
+   "momentArm": [
+    -0.02,
+    -0.0202,
+    -0.0204,
+    -0.0206,
+    -0.0208,
+    -0.021,
+    -0.0212,
+    -0.0214,
+    -0.0216,
+    -0.0218,
+    -0.022
+   ]
+  },
+  {
+   "source": "muscle:trilong_r",
+   "target": "joint:elbow_r",
+   "relation": "crosses",
+   "coordinate": "elbow_flex_r",
+   "momentArm": [
+    -0.02,
+    -0.0201,
+    -0.0202,
+    -0.0203,
+    -0.0204,
+    -0.0205,
+    -0.0206,
+    -0.0207,
+    -0.0208,
+    -0.0209,
+    -0.021
+   ]
+  },
+  {
    "source": "movement:walking",
    "target": "phase:loadingResponse",
    "relation": "hasPhase",
@@ -627,6 +1253,30 @@
    "rangeDeg": 12.0
   },
   {
+   "source": "phase:loadingResponse",
+   "target": "action:knee_flexion_l",
+   "relation": "involves",
+   "rangeDeg": 20.0
+  },
+  {
+   "source": "phase:loadingResponse",
+   "target": "action:lumbar_extension",
+   "relation": "involves",
+   "rangeDeg": 3.0
+  },
+  {
+   "source": "phase:midStance",
+   "target": "action:shoulder_flexion_r",
+   "relation": "involves",
+   "rangeDeg": 10.0
+  },
+  {
+   "source": "phase:midStance",
+   "target": "action:elbow_flexion_r",
+   "relation": "involves",
+   "rangeDeg": 6.0
+  },
+  {
    "source": "action:knee_flexion_r",
    "target": "joint:knee_r",
    "relation": "actionAt"
@@ -634,6 +1284,26 @@
   {
    "source": "action:hip_extension_r",
    "target": "joint:hip_r",
+   "relation": "actionAt"
+  },
+  {
+   "source": "action:knee_flexion_l",
+   "target": "joint:knee_l",
+   "relation": "actionAt"
+  },
+  {
+   "source": "action:lumbar_extension",
+   "target": "joint:lumbar",
+   "relation": "actionAt"
+  },
+  {
+   "source": "action:shoulder_flexion_r",
+   "target": "joint:shoulder_r",
+   "relation": "actionAt"
+  },
+  {
+   "source": "action:elbow_flexion_r",
+   "target": "joint:elbow_r",
    "relation": "actionAt"
   },
   {
@@ -774,6 +1444,181 @@
     -0.0084,
     -0.0082,
     -0.008
+   ]
+  },
+  {
+   "source": "action:knee_flexion_l",
+   "target": "muscle:bflh_l",
+   "relation": "drivenBy",
+   "phase": "phase:loadingResponse",
+   "role": "helper",
+   "contraction": "concentric",
+   "peakActivation": 0.12,
+   "activation": [
+    0.0,
+    0.037,
+    0.071,
+    0.097,
+    0.114,
+    0.12,
+    0.114,
+    0.097,
+    0.071,
+    0.037,
+    0.0
+   ],
+   "momentArm": [
+    0.02,
+    0.0205,
+    0.021,
+    0.0215,
+    0.022,
+    0.0225,
+    0.023,
+    0.0235,
+    0.024,
+    0.0245,
+    0.025
+   ]
+  },
+  {
+   "source": "action:lumbar_extension",
+   "target": "muscle:ercspn_r",
+   "relation": "drivenBy",
+   "phase": "phase:loadingResponse",
+   "role": "stabiliser",
+   "contraction": "isometric",
+   "peakActivation": 0.25,
+   "activation": [
+    0.0,
+    0.077,
+    0.147,
+    0.202,
+    0.238,
+    0.25,
+    0.238,
+    0.202,
+    0.147,
+    0.077,
+    0.0
+   ],
+   "momentArm": [
+    -0.05,
+    -0.0499,
+    -0.0498,
+    -0.0497,
+    -0.0496,
+    -0.0495,
+    -0.0494,
+    -0.0493,
+    -0.0492,
+    -0.0491,
+    -0.049
+   ]
+  },
+  {
+   "source": "action:lumbar_extension",
+   "target": "muscle:ercspn_l",
+   "relation": "drivenBy",
+   "phase": "phase:loadingResponse",
+   "role": "stabiliser",
+   "contraction": "isometric",
+   "peakActivation": 0.22,
+   "activation": [
+    0.0,
+    0.068,
+    0.129,
+    0.178,
+    0.209,
+    0.22,
+    0.209,
+    0.178,
+    0.129,
+    0.068,
+    0.0
+   ],
+   "momentArm": [
+    -0.05,
+    -0.0499,
+    -0.0498,
+    -0.0497,
+    -0.0496,
+    -0.0495,
+    -0.0494,
+    -0.0493,
+    -0.0492,
+    -0.0491,
+    -0.049
+   ]
+  },
+  {
+   "source": "action:shoulder_flexion_r",
+   "target": "muscle:delt3_r",
+   "relation": "drivenBy",
+   "phase": "phase:midStance",
+   "role": "antagonist",
+   "contraction": "eccentric",
+   "peakActivation": 0.1,
+   "activation": [
+    0.0,
+    0.031,
+    0.059,
+    0.081,
+    0.095,
+    0.1,
+    0.095,
+    0.081,
+    0.059,
+    0.031,
+    0.0
+   ],
+   "momentArm": [
+    -0.03,
+    -0.0298,
+    -0.0296,
+    -0.0294,
+    -0.0292,
+    -0.029,
+    -0.0288,
+    -0.0286,
+    -0.0284,
+    -0.0282,
+    -0.028
+   ]
+  },
+  {
+   "source": "action:elbow_flexion_r",
+   "target": "muscle:biclong_r",
+   "relation": "drivenBy",
+   "phase": "phase:midStance",
+   "role": "helper",
+   "contraction": "concentric",
+   "peakActivation": 0.06,
+   "activation": [
+    0.0,
+    0.019,
+    0.035,
+    0.049,
+    0.057,
+    0.06,
+    0.057,
+    0.049,
+    0.035,
+    0.019,
+    0.0
+   ],
+   "momentArm": [
+    0.03,
+    0.0303,
+    0.0306,
+    0.0309,
+    0.0312,
+    0.0315,
+    0.0318,
+    0.0321,
+    0.0324,
+    0.0327,
+    0.033
    ]
   }
  ]

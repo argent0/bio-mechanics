@@ -75,6 +75,23 @@ inductive Side
   | left | right | midline
   deriving DecidableEq, Repr, Inhabited
 
+/-- The body region a node belongs to. The pipeline reads a node's region off
+the OpenSim body it sits on (`data/curated/anatomy.yaml` `regions`). -/
+inductive Region
+  | lowerLimb | pelvis | trunk | upperLimb | head
+  deriving DecidableEq, Repr, Inhabited
+
+/-- The kinds whose nodes carry a region: the anatomy kinds and joint actions.
+Movements and phases span the whole body and carry `none`. -/
+def Kind.regional : Kind → Bool
+  | .movement | .phase => false
+  | _ => true
+
+/-- Every anatomy kind and the joint action carry a region; movements and
+phases are the two kinds without one. -/
+theorem Kind.regional_iff (k : Kind) : k.regional = true ↔ k ≠ .movement ∧ k ≠ .phase := by
+  cases k <;> decide
+
 /-! ## Node attributes -/
 
 /-- Attributes every node carries. `id` is unique within one graph. -/
@@ -89,6 +106,9 @@ structure NodeAttrs where
   commonName : Option String
   /-- Body side. -/
   side : Side
+  /-- Body region: `some` on every node whose kind is `Kind.regional`, checked
+  by `lake exe checkGraph`; `none` on movements and phases. -/
+  region : Option Region
   /-- Foundational Model of Anatomy identifier, e.g. `FMA:22314`. -/
   fmaId : Option String
   /-- Uberon identifier, e.g. `UBERON:0001367`. -/
@@ -163,6 +183,6 @@ def edgeAttrs : List (Name × Name) :=
 
 /-- Version of the `graph.json` shape. Bump on any change to this file's
 structures. -/
-def schemaVersion : Nat := 3
+def schemaVersion : Nat := 4
 
 end BioMech

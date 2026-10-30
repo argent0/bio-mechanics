@@ -5,13 +5,17 @@ from __future__ import annotations
 
 from typing import Final, Literal, TypedDict, Union
 
-SCHEMA_VERSION: Final = 3
+SCHEMA_VERSION: Final = 4
 
 Kind = Literal["bone", "joint", "muscle", "muscleGroup", "ligament", "nerve", "movement", "phase", "jointAction"]
 """Node kinds: the vertices of the schema quiver."""
 
 Side = Literal["left", "right", "midline"]
 """The side of the body a node belongs to; `midline` for unpaired parts."""
+
+Region = Literal["lowerLimb", "pelvis", "trunk", "upperLimb", "head"]
+"""The body region a node belongs to. The pipeline reads a node's region off
+the OpenSim body it sits on (`data/curated/anatomy.yaml` `regions`)."""
 
 Role = Literal["mainMover", "helper", "stabiliser", "antagonist"]
 """The role a muscle plays in a joint action during one phase."""
@@ -29,6 +33,7 @@ from the reference leg."""
 
 KIND: Final[tuple[Kind, ...]] = ("bone", "joint", "muscle", "muscleGroup", "ligament", "nerve", "movement", "phase", "jointAction",)
 SIDE: Final[tuple[Side, ...]] = ("left", "right", "midline",)
+REGION: Final[tuple[Region, ...]] = ("lowerLimb", "pelvis", "trunk", "upperLimb", "head",)
 ROLE: Final[tuple[Role, ...]] = ("mainMover", "helper", "stabiliser", "antagonist",)
 CONTRACTION: Final[tuple[Contraction, ...]] = ("concentric", "eccentric", "isometric",)
 PERIOD: Final[tuple[Period, ...]] = ("stance", "swing",)
@@ -47,6 +52,9 @@ class NodeAttrs(TypedDict):
     """Common name, e.g. "side glute"."""
     side: Side
     """Body side."""
+    region: Region | None
+    """Body region: `some` on every node whose kind is `Kind.regional`, checked
+by `lake exe checkGraph`; `none` on movements and phases."""
     fmaId: str | None
     """Foundational Model of Anatomy identifier, e.g. `FMA:22314`."""
     uberonId: str | None
@@ -201,6 +209,7 @@ EDGE_ATTRS: Final[dict[str, str]] = {
 ENUMS: Final[dict[str, tuple[str, ...]]] = {
     "Kind": KIND,
     "Side": SIDE,
+    "Region": REGION,
     "Role": ROLE,
     "Contraction": CONTRACTION,
     "Period": PERIOD,
@@ -217,6 +226,7 @@ FIELDS: Final[dict[str, dict[str, FieldSpec]]] = {
         "name": "str",
         "commonName": ("option", "str"),
         "side": ("enum", "Side"),
+        "region": ("option", ("enum", "Region")),
         "fmaId": ("option", "str"),
         "uberonId": ("option", "str"),
         "opensimName": ("option", "str"),

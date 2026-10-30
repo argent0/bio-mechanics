@@ -8,8 +8,8 @@ const q = new QueryEngine(new GraphStore(fixture as unknown as Graph));
 
 describe("QueryEngine over the fixture", () => {
   it("indexes the sample graph", () => {
-    expect(q.allNodes()).toHaveLength(24);
-    expect(q.allEdges()).toHaveLength(52);
+    expect(q.allNodes()).toHaveLength(50);
+    expect(q.allEdges()).toHaveLength(103);
     expect(q.nodesOfKind("phase").map((n) => n.id)).toContain("phase:midStance");
   });
 
@@ -50,8 +50,8 @@ describe("QueryEngine over the fixture", () => {
   it("muscleRolesFor and jointActionsFor a phase", () => {
     const roles = q.muscleRolesFor("phase:loadingResponse");
     expect(roles.find((r) => r.muscle.id === "muscle:glmax1_r")?.role).toBe("mainMover");
-    expect(q.muscleRolesFor("phase:midStance").map((r) => r.muscle.id)).toEqual(["muscle:glmed1_r"]);
-    expect(q.jointActionsFor("phase:loadingResponse")).toHaveLength(2);
+    expect(q.muscleRolesFor("phase:midStance").map((r) => r.muscle.id)).toEqual(["muscle:glmed1_r", "muscle:delt3_r", "muscle:biclong_r"]);
+    expect(q.jointActionsFor("phase:loadingResponse")).toHaveLength(4);
   });
 
   it("searches by either name", () => {

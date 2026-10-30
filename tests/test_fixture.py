@@ -21,7 +21,7 @@ def test_fixture_is_well_typed() -> None:
 def test_fixture_size() -> None:
     nodes = load()["nodes"]
     assert isinstance(nodes, list)
-    assert 20 <= len(nodes) <= 25
+    assert 40 <= len(nodes) <= 50
 
 
 def test_fixture_uses_every_kind() -> None:
@@ -43,3 +43,13 @@ def test_bad_edge_is_named() -> None:
     edges.append({"source": "bone:femur_r", "target": "joint:knee_r", "relation": "origin"})
     errors = validate_graph(graph)
     assert any(error.startswith(f"edges[{len(edges) - 1}].source") for error in errors)
+
+
+def test_fixture_regions() -> None:
+    """Every node carries a region except movements and phases (`Kind.regional` in Schema.lean)."""
+    nodes = load()["nodes"]
+    assert isinstance(nodes, list)
+    for node in nodes:
+        assert (node["region"] is None) == (node["kind"] in ("movement", "phase")), node["id"]
+    assert {node["side"] for node in nodes} == {"left", "right", "midline"}
+    assert {node["region"] for node in nodes} - {None} == {"lowerLimb", "pelvis", "trunk", "upperLimb"}

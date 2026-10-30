@@ -1,6 +1,7 @@
 """Compare two `graph.json` files: structure exactly, numbers within a tolerance.
 
 Usage: python scripts/compare_graph.py COMMITTED REGENERATED [--tol 0.02] [--rel 0.05] [--max-edge-frac 0.05]
+       [--within-committed]
 
 Inverse kinematics and static optimisation are numerical solvers, so a pipeline
 run on another machine reproduces the committed graph up to solver drift, and a
@@ -14,6 +15,11 @@ the regenerated graph to the committed one:
   for sample lists of equal length;
 * edges present in one graph only, and edges whose attributes differ, count as
   differing edges; at most `--max-edge-frac` of the committed edges may differ.
+
+With `--within-committed`, the regenerated graph is first cut down to the
+committed graph's node ids and the edges between them (`restrict`). A graph that
+grows (the left leg, the trunk and the arms, plan.md principle 6) then passes
+when the part the committed graph covers holds still.
 
 The teaching facts (e.g. the vasti braking knee flexion in loading response)
 are held exactly by the pipeline's env tests in `pipeline/tests/`.
@@ -47,6 +53,18 @@ def close(a: Json, b: Json, tol: float, rel: float = 0.0) -> bool:
     if isinstance(a, list) and isinstance(b, list):
         return len(a) == len(b) and all(close(x, y, tol, rel) for x, y in zip(a, b))
     return a == b
+
+
+def restrict(graph: dict[str, Json], ids: set[str]) -> dict[str, Json]:
+    """`graph` with the nodes whose id is in `ids` and the edges between them."""
+    nodes = graph["nodes"]
+    edges = graph["edges"]
+    assert isinstance(nodes, list) and isinstance(edges, list)
+    return {
+        **graph,
+        "nodes": [n for n in nodes if n["id"] in ids],
+        "edges": [e for e in edges if e["source"] in ids and e["target"] in ids],
+    }
 
 
 def differences(
@@ -91,9 +109,15 @@ def main() -> int:
     parser.add_argument("--tol", type=float, default=0.02)
     parser.add_argument("--rel", type=float, default=0.05)
     parser.add_argument("--max-edge-frac", type=float, default=0.05)
+    parser.add_argument("--within-committed", action="store_true",
+                        help="compare only the committed graph's nodes and the edges between them")
     args = parser.parse_args()
     old = json.loads(args.committed.read_text())
     new = json.loads(args.regenerated.read_text())
+    if args.within_committed:
+        old_nodes = old["nodes"]
+        assert isinstance(old_nodes, list)
+        new = restrict(new, {n["id"] for n in old_nodes})
     diffs, nodes_agree, differing, total = differences(old, new, args.tol, args.rel)
     for line in diffs:
         print(line)
