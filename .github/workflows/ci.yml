@@ -8,9 +8,8 @@ on:
   pull_request:
 
 env:
-  # One variable: the ninja target of the pipeline smoke test. Stages 1-3 today;
-  # extend to the full graph once P2 merges.
-  PIPELINE_TARGET: computeMomentArms
+  # One variable: the ninja targets of the pipeline smoke test, the final outputs of the full graph.
+  PIPELINE_TARGET: exportGraph exportMeshes exportMusclePaths
 
 jobs:
   lean:
@@ -129,11 +128,33 @@ jobs:
       - name: Create the OpenSim env (same path as local runs)
         run: bash pipeline/env/setup.sh
       - run: bash pipeline/env/fetch_data.sh
+      - uses: actions/cache@v4
+        with:
+          path: |
+            data/raw/ontology/uberon-full.obo
+            data/raw/ontology/fma-full.owl
+          key: ontology-${{ hashFiles('data/raw/ontology/fetch.sh') }}
+      - name: Fetch ontologies and cut the subsets
+        run: bash data/raw/ontology/fetch.sh
       - name: ninja target ${{ env.PIPELINE_TARGET }}
         run: |
           export PATH="$HOME/.local/share/bm-opensim/bin:$PATH"
           command -v ninja >/dev/null || sudo apt-get install -y ninja-build
-          ninja -f generated/pipeline.ninja "$PIPELINE_TARGET"
+          ninja -f generated/pipeline.ninja $PIPELINE_TARGET
+      # If static optimisation proves non-deterministic across machines, drop this diff.
+      - name: Regenerated graph.json equals the committed one
+        run: git diff --exit-code -- data/out/graph.json
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain "$(cat spec/lean-toolchain)"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - uses: actions/cache@v4
+        with:
+          path: spec/.lake
+          key: lake-${{ runner.os }}-${{ hashFiles('spec/lake-manifest.json', 'spec/lean-toolchain') }}
+      - name: checkGraph on the regenerated graph
+        working-directory: spec
+        run: lake exe cache get && lake exe checkGraph ../data/out/graph.json
       - run: $HOME/.local/share/bm-opensim/bin/python -m pytest -q pipeline/tests
 
   deploy:
