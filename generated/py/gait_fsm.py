@@ -70,6 +70,12 @@ PHASES: Final[tuple[GaitPhase, ...]] = ("loadingResponse", "midStance", "termina
 swing: the phase bands of the timeline.
 """
 
+STANCE: Final[tuple[GaitPhase, ...]] = ("loadingResponse", "midStance", "terminalStance", "preSwing")
+"""The stance phases in stride order: from initial contact to toe-off."""
+
+SWING: Final[tuple[GaitPhase, ...]] = ("initialSwing", "midSwing", "terminalSwing")
+"""The swing phases in stride order: from toe-off to the next initial contact."""
+
 START: Final[GaitPhase] = "loadingResponse"
 """The start state (`gaitDfa.start`)."""
 

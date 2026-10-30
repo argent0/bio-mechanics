@@ -1,4 +1,4 @@
-import type { Contraction, Edge, Kind, Node, Relation, Role } from "@gen/types";
+import type { Contraction, Edge, Kind, Node, Period, Relation, Role } from "@gen/types";
 import type { GraphStore } from "../store/GraphStore";
 
 /** An edge of relation `R` (narrowed from the `Edge` union). */
@@ -40,12 +40,23 @@ export interface PhaseInCycle {
   order: number;
   startPct: number;
   endPct: number;
+  period: Period;
 }
 
-/** A movement and its phases in cycle order (`hasPhase` order). */
+/** A run of consecutive phases of one period, with its span in percent of the cycle. */
+export interface PeriodSpan {
+  period: Period;
+  startPct: number;
+  endPct: number;
+  phases: PhaseInCycle[];
+}
+
+/** A movement, its phases in cycle order (`hasPhase` order), and the runs of
+ * consecutive phases that share a period. */
 export interface PhaseCycle {
   movement: Node;
   phases: PhaseInCycle[];
+  periods: PeriodSpan[];
 }
 
 /** The body parts of one joint action. */
@@ -131,10 +142,18 @@ export class QueryEngine {
       .filter((e) => e.source === movement.id)
       .flatMap((e) => {
         const phase = this.node(e.target);
-        return phase ? [{ phase, order: e.order, startPct: e.startPct, endPct: e.endPct }] : [];
+        return phase ? [{ phase, order: e.order, startPct: e.startPct, endPct: e.endPct, period: e.period }] : [];
       })
       .sort((a, b) => a.order - b.order);
-    return { movement, phases };
+    const periods: PeriodSpan[] = [];
+    for (const p of phases) {
+      const last = periods[periods.length - 1];
+      if (last?.period === p.period) {
+        last.phases.push(p);
+        last.endPct = p.endPct;
+      } else periods.push({ period: p.period, startPct: p.startPct, endPct: p.endPct, phases: [p] });
+    }
+    return { movement, phases, periods };
   }
 
   /** Joint actions the phase involves, with the angle change. */

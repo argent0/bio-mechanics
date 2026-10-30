@@ -32,6 +32,7 @@ describe("QueryEngine over the fixture", () => {
     expect(fromMovement?.phases.map((p) => p.phase.id)).toEqual(["phase:loadingResponse", "phase:midStance"]);
     expect(q.phaseCycle("phase:midStance")).toEqual(fromMovement);
     expect(q.phaseCycle("joint:knee_r")).toBeUndefined();
+    expect(fromMovement?.periods.map((s) => [s.period, s.startPct, s.endPct, s.phases.length])).toEqual([["stance", 0, 31, 2]]);
   });
 
   it("involvedParts of knee flexion", () => {

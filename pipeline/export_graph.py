@@ -16,7 +16,8 @@ Edges, by relation (all from `enriched.json`):
   innervatedBy        muscle → nerve
   stabilises          ligament → joint
   articulates         joint → bone
-  hasPhase            movement → phase: order and bounds in percent of the stride
+  hasPhase            movement → phase: order and bounds in percent of the stride, and the
+                      period (stance or swing) from `gait_fsm.STANCE`
   precedes            phase → next phase: one edge per row of the gait DFA's transitions
                       (`gait_fsm.TRANSITIONS`), with the event between the two phases
   involves            phase → jointAction: the action each coordinate takes in the phase
@@ -66,6 +67,11 @@ def node_id(kind: str, key: str) -> str:
     return f"{PREFIX[kind]}:{key}"
 
 
+def period_of(phase: str) -> str:
+    """`stance` for the phases of `gait_fsm.STANCE`, `swing` for every other phase."""
+    return "stance" if phase in gait_fsm.STANCE else "swing"
+
+
 def build_graph(e: dict[str, Any]) -> dict[str, Any]:
     """The contents of `graph.json`."""
     ent = e["entities"]
@@ -100,7 +106,7 @@ def build_graph(e: dict[str, Any]) -> dict[str, Any]:
         for b in a["articulates"]:
             edge("articulates", "joint", j, "bone", b)
     for ph in roles["phases"]:
-        edge("hasPhase", "movement", MOVEMENT, "phase", ph["phase"], order=ph["order"], startPct=ph["startPct"], endPct=ph["endPct"])
+        edge("hasPhase", "movement", MOVEMENT, "phase", ph["phase"], order=ph["order"], startPct=ph["startPct"], endPct=ph["endPct"], period=period_of(ph["phase"]))
     for src, event, dst in gait_fsm.TRANSITIONS:
         edge("precedes", "phase", src, "phase", dst, event=event)
 

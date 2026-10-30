@@ -141,6 +141,8 @@ structure HasPhaseAttrs where
   startPct : Float
   /-- End of the phase, in percent of the cycle. -/
   endPct : Float
+  /-- The period the phase belongs to (`Gait.GaitPhase.stance`, `Gait.GaitPhase.swing`). -/
+  period : Gait.Period
 
 /-- Attributes of `precedes` (phase → phase): the next phase of the cycle, one
 edge per row of `Gait.transitions`. The edges form one loop through the seven
@@ -161,6 +163,6 @@ def edgeAttrs : List (Name × Name) :=
 
 /-- Version of the `graph.json` shape. Bump on any change to this file's
 structures. -/
-def schemaVersion : Nat := 2
+def schemaVersion : Nat := 3
 
 end BioMech

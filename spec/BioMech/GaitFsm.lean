@@ -13,6 +13,8 @@ import Mathlib.Computability.DFA
 * *Reference leg*: the leg the automaton follows. *Opposite* names the other leg.
 * *Gait event*: an instant of the gait cycle, e.g. the foot touching the ground.
 * *Gait phase*: the interval between two consecutive gait events.
+* *Period*: stance (the reference foot on the ground) or swing (the reference
+  foot in the air). Each phase belongs to one period.
 * *Stride*: one full gait cycle of the reference leg, from one initial contact
   to the next.
 * *Sink state*: a state that every event maps back to itself. *Absorbing*: once
@@ -39,7 +41,13 @@ after an initial contact, so it covers whole strides. `strideWord` is one stride
 (`strideWord_accepted`), and every repetition of it is accepted
 (`strides_accepted`).
 
-**Emitter data** (read by `lake exe gen`): `GaitPhase.phases`, `GaitPhase.all`,
+**Periods.** `GaitPhase.stance` and `GaitPhase.swing` split `GaitPhase.phases`
+in two (`phases_eq_stance_append_swing`). Toe-off is the one transition from
+stance to swing, and initial contact the one from swing to stance
+(`period_changes`).
+
+**Emitter data** (read by `lake exe gen`): `GaitPhase.phases`, `GaitPhase.stance`,
+`GaitPhase.swing`, `GaitPhase.all`,
 `GaitEvent.all`, `transitions`, `gaitDfa.start`, `acceptStates`, `strideWord`.
 `transitions` is the single source of `step`, so the generated tables and the
 automaton the theorems speak about are one and the same.
@@ -105,6 +113,22 @@ swing: the phase bands of the timeline. -/
 def GaitPhase.phases : List GaitPhase :=
   [.loadingResponse, .midStance, .terminalStance, .preSwing,
    .initialSwing, .midSwing, .terminalSwing]
+
+/-- The two periods of the stride. -/
+inductive Period
+  /-- The reference foot is on the ground. -/
+  | stance
+  /-- The reference foot is in the air. -/
+  | swing
+  deriving DecidableEq, Repr, Inhabited
+
+/-- The stance phases in stride order: from initial contact to toe-off. -/
+def GaitPhase.stance : List GaitPhase :=
+  [.loadingResponse, .midStance, .terminalStance, .preSwing]
+
+/-- The swing phases in stride order: from toe-off to the next initial contact. -/
+def GaitPhase.swing : List GaitPhase :=
+  [.initialSwing, .midSwing, .terminalSwing]
 
 /-- Every state: the seven phases in stride order, then `invalid`. -/
 def GaitPhase.all : List GaitPhase := GaitPhase.phases ++ [.invalid]
@@ -211,6 +235,19 @@ position opens the phase at the same position. -/
 theorem event_opens_phase :
     ∀ ep ∈ GaitEvent.all.zip GaitPhase.phases, ∃ s, (s, ep.1, ep.2) ∈ transitions := by
   decide
+
+/-! ## Periods -/
+
+/-- The stance phases, then the swing phases, are the seven phases in stride order. -/
+theorem phases_eq_stance_append_swing :
+    GaitPhase.phases = GaitPhase.stance ++ GaitPhase.swing := rfl
+
+/-- A row leads from stance to swing exactly at toe-off, and from swing to
+stance exactly at initial contact. -/
+theorem period_changes : ∀ t ∈ transitions,
+    ((t.1 ∈ GaitPhase.stance ∧ t.2.2 ∈ GaitPhase.swing) ↔ t.2.1 = .toeOff) ∧
+    ((t.1 ∈ GaitPhase.swing ∧ t.2.2 ∈ GaitPhase.stance) ↔ t.2.1 = .initialContact) := by
+  decide +kernel
 
 /-! ## One stride -/
 

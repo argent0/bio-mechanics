@@ -85,6 +85,12 @@ export const EVENTS: readonly GaitEvent[] = ["initialContact", "oppositeToeOff",
  */
 export const PHASES: readonly GaitPhase[] = ["loadingResponse", "midStance", "terminalStance", "preSwing", "initialSwing", "midSwing", "terminalSwing"];
 
+/** The stance phases in stride order: from initial contact to toe-off. */
+export const STANCE: readonly GaitPhase[] = ["loadingResponse", "midStance", "terminalStance", "preSwing"];
+
+/** The swing phases in stride order: from toe-off to the next initial contact. */
+export const SWING: readonly GaitPhase[] = ["initialSwing", "midSwing", "terminalSwing"];
+
 /** The start state (`gaitDfa.start`). */
 export const START: GaitPhase = "loadingResponse";
 

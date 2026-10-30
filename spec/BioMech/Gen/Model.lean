@@ -81,7 +81,7 @@ def gaitConfig : FsmConfig where
   step := "step"
   start := "gaitDfa.start"
   accept := "acceptStates"
-  stateLists := ["GaitPhase.phases"]
+  stateLists := ["GaitPhase.phases", "GaitPhase.stance", "GaitPhase.swing"]
   words := ["strideWord"]
 
 /-- The UI DFA of `BioMech.UiFsm`. -/

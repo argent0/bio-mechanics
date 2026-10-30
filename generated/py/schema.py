@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Final, Literal, TypedDict, Union
 
-SCHEMA_VERSION: Final = 2
+SCHEMA_VERSION: Final = 3
 
 Kind = Literal["bone", "joint", "muscle", "muscleGroup", "ligament", "nerve", "movement", "phase", "jointAction"]
 """Node kinds: the vertices of the schema quiver."""
@@ -20,6 +20,9 @@ Contraction = Literal["concentric", "eccentric", "isometric"]
 """The kind of work a muscle does: shortening, lengthening under load
 (braking), or holding length."""
 
+Period = Literal["stance", "swing"]
+"""The two periods of the stride."""
+
 GaitEvent = Literal["initialContact", "oppositeToeOff", "heelOff", "oppositeInitialContact", "toeOff", "feetAdjacent", "tibiaVertical"]
 """Input symbols of the gait DFA: the gait events that bound the phases, named
 from the reference leg."""
@@ -28,6 +31,7 @@ KIND: Final[tuple[Kind, ...]] = ("bone", "joint", "muscle", "muscleGroup", "liga
 SIDE: Final[tuple[Side, ...]] = ("left", "right", "midline",)
 ROLE: Final[tuple[Role, ...]] = ("mainMover", "helper", "stabiliser", "antagonist",)
 CONTRACTION: Final[tuple[Contraction, ...]] = ("concentric", "eccentric", "isometric",)
+PERIOD: Final[tuple[Period, ...]] = ("stance", "swing",)
 GAITEVENT: Final[tuple[GaitEvent, ...]] = ("initialContact", "oppositeToeOff", "heelOff", "oppositeInitialContact", "toeOff", "feetAdjacent", "tibiaVertical",)
 
 
@@ -92,6 +96,8 @@ class HasPhaseAttrs(TypedDict):
     """Start of the phase, in percent of the cycle."""
     endPct: float
     """End of the phase, in percent of the cycle."""
+    period: Period
+    """The period the phase belongs to (`Gait.GaitPhase.stance`, `Gait.GaitPhase.swing`)."""
 
 
 class PrecedesAttrs(TypedDict):
@@ -197,6 +203,7 @@ ENUMS: Final[dict[str, tuple[str, ...]]] = {
     "Side": SIDE,
     "Role": ROLE,
     "Contraction": CONTRACTION,
+    "Period": PERIOD,
     "GaitEvent": GAITEVENT,
 }
 
@@ -233,6 +240,7 @@ FIELDS: Final[dict[str, dict[str, FieldSpec]]] = {
         "order": "nat",
         "startPct": "float",
         "endPct": "float",
+        "period": ("enum", "Period"),
     },
     "PrecedesAttrs": {
         "event": ("enum", "GaitEvent"),

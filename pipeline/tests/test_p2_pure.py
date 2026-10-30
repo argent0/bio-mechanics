@@ -317,6 +317,10 @@ def test_build_graph_is_well_typed_and_uses_every_relation() -> None:
     assert involves["rangeDeg"] == pytest.approx(19.9)
 
 
+def test_period_of_follows_the_gait_dfa() -> None:
+    assert [export_graph.period_of(p) for p in gait_fsm.PHASES] == ["stance"] * 4 + ["swing"] * 3
+
+
 def test_precedes_edges_follow_the_gait_dfa() -> None:
     g = export_graph.build_graph(tiny_enriched())
     precedes = [(e["source"], e["event"], e["target"]) for e in g["edges"] if e["relation"] == "precedes"]
