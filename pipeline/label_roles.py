@@ -1,4 +1,4 @@
-"""Stage `labelRoles`: each muscle's role per gait phase and joint action (decision D-002).
+"""Stage `labelRoles`: each muscle's role per gait phase and joint action (decisions D-002, D-004).
 
 Scope. One complete stride of the right leg (stride 0 of `phases.csv`), its seven phases, the
 right-leg muscles (`Config.muscle_suffix`), and the joint coordinates of `Config.coordinates`.
@@ -29,7 +29,11 @@ Roles (`classify`), the first rule that holds:
   2. main mover: A_i ≥ O_i and A_i / A ≥ `main_mover_min_share`;
   3. helper: A_i ≥ O_i and A_i / A ≥ `helper_min_share`;
   4. antagonist: O_i > A_i and O_i / O ≥ `antagonist_min_share`;
-otherwise the muscle has no role in the action during the phase and roles.json omits it.
+rules 2–4 also need a mean activation over the phase ≥ `role_min_activation` (decision D-004);
+below that floor the muscle is inactive for the action in the phase. Otherwise the muscle has no
+role in the action during the phase and roles.json omits it (and the graph has no `drivenBy`
+edge for it). The totals A and O sum over every muscle crossing the coordinate, inactive ones
+included: the floor decides who earns a role, and the shares stay the D-002 moment shares.
 `share` in roles.json is A_i / A for movers and helpers, O_i / O for antagonists, and the
 larger of the two for stabilisers.
 
@@ -55,7 +59,6 @@ Output `roles.json`:
   crosses   [{muscle, coordinate, momentArm}]
   muscles   {name: {maxIsometricForce}} for the right-leg muscles
 
-Inputs beyond the stage's declared ones: `model.json` (max isometric force per muscle).
 Run from the repository root: `python -m pipeline.label_roles` (pure Python; any interpreter
 with PyYAML).
 """
@@ -90,6 +93,7 @@ class Config:
     main_mover_min_share: float
     helper_min_share: float
     antagonist_min_share: float
+    role_min_activation: float
     stabiliser_min_activation: float
     stabiliser_max_change_deg: float
     isometric_max_velocity: float
@@ -186,6 +190,8 @@ def classify(t: Sequence[float], m: MuscleInPhase, s: Shares, total: Shares, sta
     mean_act = trapezoid(t, m.activation) / (t[-1] - t[0])
     if stabilised and mean_act >= cfg.stabiliser_min_activation and max(abs(r) for r in m.moment_arm) >= cfg.moment_arm_min_m:
         return "stabiliser", max(ag, op)
+    if mean_act < cfg.role_min_activation:
+        return None
     if s.agonist >= s.opposing and s.agonist > 0:
         if ag >= cfg.main_mover_min_share:
             return "mainMover", ag
