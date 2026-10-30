@@ -1,17 +1,23 @@
-# Hand-curated anatomy of the right lower limb and pelvis, read by stage enrichAnatomy
-# (pipeline/enrich_anatomy.py, whose docstring defines every field and the checks it runs).
+# Hand-curated anatomy of the whole body, read by stage enrichAnatomy (pipeline/enrich_anatomy.py,
+# whose docstring defines every field and the checks it runs).
 #
 # Keys are node keys: the graph id is `<kind>:<key>`, e.g. `muscle:glmed1_r`. A key ending in
-# `_r` is a right-side node; every other key is a midline node.
+# `_r` is a right-side node and every other key is a midline node; this file holds the right side
+# and the midline, and the left side comes from code (`enrich_anatomy.with_left` mirrors every
+# right entry into its `_l` twin, so each fact lives once).
 # `name` is the anatomical name, `commonName` the everyday name.
 # `ontologyName` (optional) is the term looked up in Uberon and FMA when it differs from
 # `name`; `fmaName` (optional) overrides it for FMA alone, and may name the side itself where
-# FMA puts it mid-label (e.g. "long head of right biceps femoris"). A muscle modelled as several lines of
-# action (e.g. gluteus medius 1-3) carries the ontology ids of the whole muscle.
+# FMA puts it mid-label (e.g. "long head of right biceps femoris"). A muscle modelled as several
+# lines of action (e.g. gluteus medius 1-3, the FBLS fascicles of multifidus) carries the
+# ontology ids of the whole muscle, and a group per named muscle gathers its lines of action.
 # Sources for attachments and innervation: standard anatomy texts (Gray's Anatomy, 42nd ed.;
 # Moore, Clinically Oriented Anatomy, 8th ed.); the OpenSim bodies of each muscle path come
 # from the model (model.json), and an `origin` / `insertion` here refines the bone within the
-# model's body.
+# model's body. The merged model's trunk muscles come from FBLS (Raabe & Chaudhari 2016), the
+# arm muscles from Holzbaur 2005 and the neck muscles from Mortensen 2018
+# (pipeline/config/model.yaml); their names, path bodies and the fascicle levels in the
+# names below follow those models.
 
 movement:
   walking: {name: walking, commonName: walking}
@@ -27,7 +33,7 @@ phases:
 
 # Bones, each with the OpenSim body it belongs to.
 bones:
-  pelvis: {name: pelvis, commonName: hip bones, body: pelvis, ontologyName: bony pelvis}
+  pelvis: {name: pelvis, commonName: hip bones, body: pelvis, extraBodies: [Abdomen], ontologyName: bony pelvis}
   femur_r: {name: femur, commonName: thigh bone, body: femur_r}
   patella_r: {name: patella, commonName: kneecap, body: patella_r}
   tibia_r: {name: tibia, commonName: shin bone, body: tibia_r}
@@ -39,11 +45,63 @@ bones:
   metatarsal1_r: {name: first metatarsal bone, commonName: big-toe foot bone, body: calcn_r, ontologyName: metatarsal bone of digit 1, fmaName: first metatarsal bone}
   metatarsal5_r: {name: fifth metatarsal bone, commonName: little-toe foot bone, body: calcn_r, ontologyName: metatarsal bone of digit 5, fmaName: fifth metatarsal bone}
   phalanges_r: {name: phalanges of the foot, commonName: toe bones, body: toes_r, ontologyName: phalanx of pes, fmaName: set of phalanges of right foot}
+  # Trunk. The lumbar vertebrae are FBLS bodies; Rajagopal's torso body carries the thoracic
+  # spine, rib cage, sternum and shoulder girdle; FBLS's Abdomen body carries the abdominal wall
+  # (linea alba and rectus sheath, from the rib cage to the pubic bones), so the pelvis and the
+  # rib cage list it in `extraBodies`.
+  sacrum: {name: sacrum, commonName: tailbone base, body: pelvis}
+  l5: {name: fifth lumbar vertebra, commonName: L5, body: lumbar5}
+  l4: {name: fourth lumbar vertebra, commonName: L4, body: lumbar4}
+  l3: {name: third lumbar vertebra, commonName: L3, body: lumbar3}
+  l2: {name: second lumbar vertebra, commonName: L2, body: lumbar2}
+  l1: {name: first lumbar vertebra, commonName: L1, body: lumbar1}
+  thoracicSpine: {name: thoracic vertebral column, commonName: upper back spine, body: torso}
+  ribCage: {name: rib cage, commonName: ribs, body: torso, extraBodies: [Abdomen]}
+  sternum: {name: sternum, commonName: breastbone, body: torso}
+  clavicle_r: {name: clavicle, commonName: collarbone, body: torso}
+  scapula_r: {name: scapula, commonName: shoulder blade, body: torso}
+  # Neck and head: Mortensen's cervical vertebrae, and the head body with skull and jaw.
+  c7: {name: seventh cervical vertebra, commonName: C7, body: cerv7}
+  c6: {name: sixth cervical vertebra, commonName: C6, body: cerv6}
+  c5: {name: fifth cervical vertebra, commonName: C5, body: cerv5}
+  c4: {name: fourth cervical vertebra, commonName: C4, body: cerv4}
+  c3: {name: third cervical vertebra, commonName: C3, body: cerv3}
+  axis: {name: axis, commonName: C2, body: cerv2}
+  atlas: {name: atlas, commonName: C1, body: cerv1}
+  hyoid: {name: hyoid bone, commonName: tongue bone, body: cerv3, extraBodies: [cerv1]}
+  skull: {name: skull, commonName: skull, body: head}
+  mandible: {name: mandible, commonName: jaw, body: head}
+  # Arm.
+  humerus_r: {name: humerus, commonName: upper-arm bone, body: humerus_r}
+  ulna_r: {name: ulna, commonName: inner forearm bone, body: ulna_r}
+  radius_r: {name: radius, commonName: outer forearm bone, body: radius_r}
+  carpals_r: {name: carpal bones, commonName: wrist bones, body: hand_r, ontologyName: carpal bone, fmaName: set of carpal bones of right hand}
+  metacarpals_r: {name: metacarpal bones, commonName: palm bones, body: hand_r, ontologyName: metacarpal bone, fmaName: set of metacarpal bones of right hand}
+  handPhalanges_r: {name: phalanges of the hand, commonName: finger bones, body: hand_r, ontologyName: phalanx of manus, fmaName: set of phalanges of right hand}
 
 # OpenSim body -> the bone a muscle attaches to when its path ends on that body and the muscle
 # names no `origin` / `insertion` of its own.
 bodies:
   pelvis: pelvis
+  lumbar5: l5
+  lumbar4: l4
+  lumbar3: l3
+  lumbar2: l2
+  lumbar1: l1
+  Abdomen: pelvis
+  torso: thoracicSpine
+  cerv7: c7
+  cerv6: c6
+  cerv5: c5
+  cerv4: c4
+  cerv3: c3
+  cerv2: axis
+  cerv1: atlas
+  head: skull
+  humerus_r: humerus_r
+  ulna_r: ulna_r
+  radius_r: radius_r
+  hand_r: metacarpals_r
   femur_r: femur_r
   patella_r: patella_r
   tibia_r: tibia_r
@@ -93,14 +151,46 @@ joints:
   ankle_r: {name: ankle joint, commonName: ankle, opensim: [ankle_r], articulates: [tibia_r, fibula_r, talus_r]}
   subtalar_r: {name: subtalar joint, commonName: heel joint, opensim: [subtalar_r], articulates: [talus_r, calcaneus_r]}
   mtp_r: {name: metatarsophalangeal joints, commonName: ball of the foot, opensim: [mtp_r], articulates: [metatarsal1_r, metatarsal5_r, phalanges_r], ontologyName: metatarsophalangeal joint}
+  # The spine: FBLS's lumbar chain (one coordinate per axis, shared out over the five joints),
+  # and Mortensen's neck in two groups of coupled joints, C7-T1 to C2-C3 and the head on C2.
+  lumbarSpine: {name: joints of the lumbar vertebral column, commonName: lower back, opensim: [L5_S1_IVDjnt, L4_L5_IVDjnt, L3_L4_IVDjnt, L2_L3_IVD_jnt, L1_L2_IVD_jnt, Torsojnt], articulates: [sacrum, l5, l4, l3, l2, l1, thoracicSpine], ontologyName: intervertebral joint, fmaName: joint of lumbar vertebral column}
+  cervicalSpine: {name: joints of the cervical vertebral column, commonName: neck, opensim: [auxt1jnt, aux7jnt, aux6jnt, aux5jnt, aux4jnt, aux3jnt], articulates: [thoracicSpine, c7, c6, c5, c4, c3, axis], ontologyName: intervertebral joint, fmaName: joint of cervical vertebral column}
+  craniovertebral: {name: craniovertebral joints, commonName: head on neck, opensim: [aux2jnt, aux1jnt], articulates: [axis, atlas, skull], ontologyName: craniovertebral joint}
+  # The arm.
+  shoulder_r: {name: glenohumeral joint, commonName: shoulder, opensim: [acromial_r], articulates: [scapula_r, humerus_r]}
+  elbow_r: {name: elbow joint, commonName: elbow, opensim: [elbow_r], articulates: [humerus_r, ulna_r]}
+  radioulnar_r: {name: radio-ulnar joints, commonName: forearm rotation, opensim: [radioulnar_r], articulates: [ulna_r, radius_r], ontologyName: radio-ulnar joint}
+  wrist_r: {name: wrist joint, commonName: wrist, opensim: [radius_hand_r], articulates: [radius_r, carpals_r]}
 
-# Model coordinate -> its joint and the joint action of each direction (OpenSim signs).
+# Model coordinate -> its joint and the joint action of each direction (OpenSim signs). A
+# coordinate without a side suffix sits on the midline and takes the muscles of both sides
+# (pipeline/label_roles.py `muscles_of`). Signs, from the model's moment arms: lumbar and neck
+# extension positive, bending to the right positive, rotation to the left positive; shoulder
+# flexion, adduction and internal rotation positive; elbow flexion, forearm pronation, wrist
+# flexion and ulnar deviation positive.
 coordinates:
   hip_flexion_r: {joint: hip_r, positive: hip_flexion_r, negative: hip_extension_r}
   hip_adduction_r: {joint: hip_r, positive: hip_adduction_r, negative: hip_abduction_r}
   hip_rotation_r: {joint: hip_r, positive: hip_internal_rotation_r, negative: hip_external_rotation_r}
   knee_angle_r: {joint: knee_r, positive: knee_flexion_r, negative: knee_extension_r}
   ankle_angle_r: {joint: ankle_r, positive: ankle_dorsiflexion_r, negative: ankle_plantarflexion_r}
+  lumbar_extension: {joint: lumbarSpine, positive: lumbar_extension, negative: lumbar_flexion}
+  lumbar_bending: {joint: lumbarSpine, positive: lumbar_right_bending, negative: lumbar_left_bending}
+  lumbar_rotation: {joint: lumbarSpine, positive: lumbar_left_rotation, negative: lumbar_right_rotation}
+  # Neck angles rest on decision D-010: the head holds its standing orientation in space.
+  neck_lower_extension: {joint: cervicalSpine, positive: neck_extension, negative: neck_flexion}
+  neck_lower_bending: {joint: cervicalSpine, positive: neck_right_bending, negative: neck_left_bending}
+  neck_lower_rotation: {joint: cervicalSpine, positive: neck_left_rotation, negative: neck_right_rotation}
+  neck_upper_extension: {joint: craniovertebral, positive: head_extension, negative: head_flexion}
+  neck_upper_bending: {joint: craniovertebral, positive: head_right_bending, negative: head_left_bending}
+  neck_upper_rotation: {joint: craniovertebral, positive: head_left_rotation, negative: head_right_rotation}
+  arm_flex_r: {joint: shoulder_r, positive: shoulder_flexion_r, negative: shoulder_extension_r}
+  arm_add_r: {joint: shoulder_r, positive: shoulder_adduction_r, negative: shoulder_abduction_r}
+  arm_rot_r: {joint: shoulder_r, positive: shoulder_internal_rotation_r, negative: shoulder_external_rotation_r}
+  elbow_flex_r: {joint: elbow_r, positive: elbow_flexion_r, negative: elbow_extension_r}
+  pro_sup_r: {joint: radioulnar_r, positive: forearm_pronation_r, negative: forearm_supination_r}
+  wrist_flex_r: {joint: wrist_r, positive: wrist_flexion_r, negative: wrist_extension_r}
+  wrist_dev_r: {joint: wrist_r, positive: wrist_ulnar_deviation_r, negative: wrist_radial_deviation_r}
 
 actions:
   hip_flexion_r: {name: hip flexion, commonName: lifting the thigh forward}
@@ -113,6 +203,38 @@ actions:
   knee_extension_r: {name: knee extension, commonName: straightening the knee}
   ankle_dorsiflexion_r: {name: ankle dorsiflexion, commonName: lifting the toes toward the shin}
   ankle_plantarflexion_r: {name: ankle plantarflexion, commonName: pointing the foot}
+  lumbar_extension: {name: lumbar extension, commonName: arching the lower back}
+  lumbar_flexion: {name: lumbar flexion, commonName: bending the lower back forward}
+  lumbar_right_bending: {name: lumbar lateral flexion to the right, commonName: side-bending the trunk to the right}
+  lumbar_left_bending: {name: lumbar lateral flexion to the left, commonName: side-bending the trunk to the left}
+  lumbar_left_rotation: {name: lumbar rotation to the left, commonName: turning the trunk to the left}
+  lumbar_right_rotation: {name: lumbar rotation to the right, commonName: turning the trunk to the right}
+  neck_extension: {name: neck extension, commonName: tilting the neck back}
+  neck_flexion: {name: neck flexion, commonName: bending the neck forward}
+  neck_right_bending: {name: neck lateral flexion to the right, commonName: tilting the neck to the right}
+  neck_left_bending: {name: neck lateral flexion to the left, commonName: tilting the neck to the left}
+  neck_left_rotation: {name: neck rotation to the left, commonName: turning the neck to the left}
+  neck_right_rotation: {name: neck rotation to the right, commonName: turning the neck to the right}
+  head_extension: {name: head extension, commonName: tipping the chin up}
+  head_flexion: {name: head flexion, commonName: nodding the chin down}
+  head_right_bending: {name: head lateral flexion to the right, commonName: tipping the head to the right}
+  head_left_bending: {name: head lateral flexion to the left, commonName: tipping the head to the left}
+  head_left_rotation: {name: head rotation to the left, commonName: turning the head to the left}
+  head_right_rotation: {name: head rotation to the right, commonName: turning the head to the right}
+  shoulder_flexion_r: {name: shoulder flexion, commonName: swinging the arm forward}
+  shoulder_extension_r: {name: shoulder extension, commonName: swinging the arm back}
+  shoulder_adduction_r: {name: shoulder adduction, commonName: drawing the arm to the side of the body}
+  shoulder_abduction_r: {name: shoulder abduction, commonName: raising the arm out to the side}
+  shoulder_internal_rotation_r: {name: shoulder internal rotation, commonName: turning the arm inward}
+  shoulder_external_rotation_r: {name: shoulder external rotation, commonName: turning the arm outward}
+  elbow_flexion_r: {name: elbow flexion, commonName: bending the elbow}
+  elbow_extension_r: {name: elbow extension, commonName: straightening the elbow}
+  forearm_pronation_r: {name: forearm pronation, commonName: turning the palm down}
+  forearm_supination_r: {name: forearm supination, commonName: turning the palm up}
+  wrist_flexion_r: {name: wrist flexion, commonName: bending the wrist toward the palm}
+  wrist_extension_r: {name: wrist extension, commonName: bending the wrist back}
+  wrist_ulnar_deviation_r: {name: wrist ulnar deviation, commonName: tilting the hand toward the little finger}
+  wrist_radial_deviation_r: {name: wrist radial deviation, commonName: tilting the hand toward the thumb}
 
 groups:
   gluteals_r: {name: gluteal muscles, commonName: glutes, ontologyName: gluteal muscle}
@@ -126,6 +248,44 @@ groups:
   anteriorLeg_r: {name: anterior compartment of the leg, commonName: shin muscles, ontologyName: anterior compartment of leg, fmaName: anterior compartment of right leg}
   lateralLeg_r: {name: lateral compartment of the leg, commonName: outer-shin muscles, ontologyName: lateral compartment of leg, fmaName: set of muscles of lateral compartment of right leg}
   deepPosteriorLeg_r: {name: deep posterior compartment of the leg, commonName: deep calf muscles, ontologyName: deep posterior compartment of leg, fmaName: deep part of posterior compartment of right leg}
+  # Trunk: a group per named muscle gathers its FBLS fascicles.
+  multifidus_r: {name: multifidus, commonName: deep back muscle}
+  longissimus_r: {name: longissimus thoracis, commonName: long back muscle}
+  iliocostalis_r: {name: iliocostalis lumborum, commonName: outer back muscle}
+  erectorSpinae_r: {name: erector spinae, commonName: back straighteners, ontologyName: erector spinae muscle group}
+  transversospinales_r: {name: transversospinales, commonName: deep spine rotators, ontologyName: transversospinales muscle, fmaName: transversospinales muscle group}
+  quadratusLumborum_r: {name: quadratus lumborum, commonName: deep side-of-back muscle}
+  externalOblique_r: {name: external oblique, commonName: outer side abdominal}
+  internalOblique_r: {name: internal oblique, commonName: inner side abdominal}
+  rectusAbdominis_r: {name: rectus abdominis, commonName: six-pack muscle}
+  abdominals_r: {name: muscles of the anterior abdominal wall, commonName: abdominals, ontologyName: anterior abdominal wall muscle}
+  latissimusDorsi_r: {name: latissimus dorsi, commonName: lats}
+  # Arm.
+  deltoidMuscle_r: {name: deltoid, commonName: shoulder cap muscle}
+  rotatorCuff_r: {name: rotator cuff, commonName: rotator cuff}
+  scapulohumeral_r: {name: scapulohumeral muscles, commonName: shoulder-blade-to-arm muscles}
+  pectoralisMajor_r: {name: pectoralis major, commonName: pecs}
+  bicepsBrachii_r: {name: biceps brachii, commonName: biceps}
+  tricepsBrachii_r: {name: triceps brachii, commonName: triceps}
+  anteriorArm_r: {name: anterior compartment of the arm, commonName: front of the upper arm, ontologyName: anterior compartment of arm, fmaName: anterior compartment of right arm}
+  posteriorArm_r: {name: posterior compartment of the arm, commonName: back of the upper arm, ontologyName: posterior compartment of arm, fmaName: posterior compartment of right arm}
+  anteriorForearm_r: {name: anterior compartment of the forearm, commonName: forearm flexors, ontologyName: anterior compartment of forearm, fmaName: anterior compartment of right forearm}
+  posteriorForearm_r: {name: posterior compartment of the forearm, commonName: forearm extensors, ontologyName: posterior compartment of forearm, fmaName: posterior compartment of right forearm}
+  flexorDigitorumSuperficialis_r: {name: flexor digitorum superficialis, commonName: finger curler}
+  flexorDigitorumProfundus_r: {name: flexor digitorum profundus, commonName: deep finger curler}
+  extensorDigitorum_r: {name: extensor digitorum, commonName: finger straightener}
+  # Neck.
+  sternocleidomastoid_r: {name: sternocleidomastoid, commonName: SCM}
+  scalenes_r: {name: scalene muscles, commonName: scalenes, ontologyName: scalene muscle}
+  longusColli_r: {name: longus colli, commonName: deep front neck muscle}
+  prevertebral_r: {name: prevertebral muscles of the neck, commonName: deep front neck muscles, ontologyName: prevertebral muscle}
+  trapezius_r: {name: trapezius, commonName: traps}
+  spleniusCapitis_r: {name: splenius capitis, commonName: neck strap muscle}
+  semispinalisCapitis_r: {name: semispinalis capitis, commonName: deep neck extensor}
+  neckExtensors_r: {name: extensor muscles of the neck, commonName: neck extensors, ontologyName: extensor muscle of neck}
+  suboccipitalMuscles_r: {name: suboccipital muscles, commonName: deep head nodders and turners, ontologyName: suboccipital muscles}
+  suprahyoid_r: {name: suprahyoid muscles, commonName: muscles above the hyoid, ontologyName: suprahyoid muscle}
+  infrahyoid_r: {name: infrahyoid muscles, commonName: strap muscles of the throat, ontologyName: infrahyoid muscle}
 
 nerves:
   femoral_r: {name: femoral nerve}
@@ -139,6 +299,33 @@ nerves:
   infgluteal_r: {name: inferior gluteal nerve}
   nervePiriformis_r: {name: nerve to piriformis}
   lumbarPlexus_r: {name: lumbar plexus, commonName: lower-back nerve network, ontologyName: lumbar nerve plexus}
+  # Trunk.
+  dorsalRami_r: {name: dorsal rami of the spinal nerves, commonName: back branches of the spinal nerves, ontologyName: dorsal ramus of spinal nerve}
+  ventralRami_r: {name: ventral rami of the spinal nerves (T12 to L4), commonName: front branches of the spinal nerves, ontologyName: ventral ramus of spinal nerve}
+  intercostal_r: {name: thoracoabdominal nerves (lower intercostal nerves), commonName: belly-wall nerves, ontologyName: intercostal nerve}
+  thoracodorsal_r: {name: thoracodorsal nerve}
+  # Arm.
+  axillary_r: {name: axillary nerve}
+  suprascapular_r: {name: suprascapular nerve}
+  subscapular_r: {name: subscapular nerves, ontologyName: subscapular nerve}
+  lateralPectoral_r: {name: lateral pectoral nerve}
+  medialPectoral_r: {name: medial pectoral nerve}
+  musculocutaneous_r: {name: musculocutaneous nerve}
+  radial_r: {name: radial nerve}
+  posteriorInterosseous_r: {name: posterior interosseous nerve, commonName: deep branch of the radial nerve}
+  median_r: {name: median nerve}
+  anteriorInterosseous_r: {name: anterior interosseous nerve}
+  ulnar_r: {name: ulnar nerve, commonName: funny-bone nerve}
+  # Neck.
+  accessory_r: {name: spinal accessory nerve, commonName: cranial nerve XI}
+  cervicalDorsalRami_r: {name: dorsal rami of the cervical spinal nerves, commonName: back branches of the neck nerves, ontologyName: dorsal ramus of spinal nerve, fmaName: posterior ramus of cervical spinal nerve}
+  cervicalVentralRami_r: {name: ventral rami of the cervical spinal nerves, commonName: front branches of the neck nerves, ontologyName: ventral ramus of spinal nerve, fmaName: anterior ramus of cervical nerve}
+  suboccipital_r: {name: suboccipital nerve}
+  dorsalScapular_r: {name: dorsal scapular nerve}
+  ansaCervicalis_r: {name: ansa cervicalis, commonName: neck nerve loop}
+  hypoglossal_r: {name: C1 fibres of the hypoglossal nerve, commonName: cranial nerve XII, ontologyName: hypoglossal nerve}
+  mylohyoidNerve_r: {name: nerve to mylohyoid, ontologyName: mylohyoid nerve}
+  facial_r: {name: facial nerve, commonName: cranial nerve VII}
 
 # Ligaments and the joints they stabilise.
 ligaments:
@@ -153,10 +340,32 @@ ligaments:
   atfl_r: {name: anterior talofibular ligament, commonName: ATFL, stabilises: [ankle_r]}
   calcaneofibular_r: {name: calcaneofibular ligament, commonName: CFL, stabilises: [ankle_r, subtalar_r]}
   deltoid_r: {name: deltoid ligament, commonName: inner ankle ligament, stabilises: [ankle_r, subtalar_r], ontologyName: medial ligament of ankle joint, fmaName: medial ligament of ankle joint}
+  # The spine.
+  anteriorLongitudinal: {name: anterior longitudinal ligament, commonName: front spine ligament, stabilises: [lumbarSpine, cervicalSpine]}
+  posteriorLongitudinal: {name: posterior longitudinal ligament, commonName: back spine ligament, stabilises: [lumbarSpine, cervicalSpine]}
+  ligamentaFlava: {name: ligamenta flava, commonName: yellow ligaments, stabilises: [lumbarSpine, cervicalSpine], ontologyName: ligamentum flavum}
+  supraspinous: {name: supraspinous ligament, commonName: ligament over the spine tips, stabilises: [lumbarSpine]}
+  interspinous: {name: interspinous ligaments, commonName: ligaments between the spine tips, stabilises: [lumbarSpine, cervicalSpine], ontologyName: interspinous ligament}
+  iliolumbar_r: {name: iliolumbar ligament, commonName: hip-to-spine ligament, stabilises: [lumbarSpine]}
+  nuchal: {name: nuchal ligament, commonName: neck ligament, stabilises: [cervicalSpine, craniovertebral]}
+  transverseAtlas: {name: transverse ligament of the atlas, commonName: ring ligament of C1, stabilises: [craniovertebral], ontologyName: transverse ligament of atlas}
+  alar: {name: alar ligaments, commonName: check ligaments of the head, stabilises: [craniovertebral], ontologyName: alar ligament}
+  # The arm.
+  coracohumeral_r: {name: coracohumeral ligament, commonName: top shoulder ligament, stabilises: [shoulder_r]}
+  glenohumeralLigaments_r: {name: glenohumeral ligaments, commonName: front shoulder ligaments, stabilises: [shoulder_r], ontologyName: glenohumeral ligament}
+  ulnarCollateralElbow_r: {name: ulnar collateral ligament of the elbow, commonName: inner elbow ligament, stabilises: [elbow_r], ontologyName: ulnar collateral ligament of elbow joint}
+  radialCollateralElbow_r: {name: radial collateral ligament of the elbow, commonName: outer elbow ligament, stabilises: [elbow_r], ontologyName: radial collateral ligament of elbow joint}
+  annular_r: {name: annular ligament of the radius, commonName: ring ligament of the forearm, stabilises: [radioulnar_r, elbow_r], ontologyName: annular ligament of radius}
+  palmarRadiocarpal_r: {name: palmar radiocarpal ligament, commonName: front wrist ligament, stabilises: [wrist_r]}
+  dorsalRadiocarpal_r: {name: dorsal radiocarpal ligament, commonName: back wrist ligament, stabilises: [wrist_r]}
+  ulnarCollateralWrist_r: {name: ulnar collateral ligament of the wrist, commonName: little-finger-side wrist ligament, stabilises: [wrist_r], ontologyName: ulnar collateral ligament of wrist joint}
+  radialCollateralWrist_r: {name: radial collateral ligament of the wrist, commonName: thumb-side wrist ligament, stabilises: [wrist_r], ontologyName: radial collateral ligament of wrist joint}
 
-# Muscles of the right leg by OpenSim name: anatomical name, groups, nerve; optional `origin` /
+# Muscles of the right side by OpenSim name: anatomical name, groups, nerve; optional `origin` /
 # `insertion` bone, which belongs to a body on the muscle's model path (e.g. the quadriceps
-# path runs over the patella to the tibia; the quadriceps tendon inserts on the patella).
+# path runs over the patella to the tibia; the quadriceps tendon inserts on the patella). The
+# source models order some paths from insertion to origin; `origin` and `insertion` here give
+# the anatomical ends.
 muscles:
   addbrev_r: {name: adductor brevis, commonName: short inner-thigh muscle, groups: [adductors_r], nerve: obturator_r}
   addlong_r: {name: adductor longus, commonName: long inner-thigh muscle, groups: [adductors_r], nerve: obturator_r}
@@ -198,3 +407,284 @@ muscles:
   vasint_r: {name: vastus intermedius, commonName: middle quad, groups: [quadriceps_r, anteriorThigh_r], nerve: femoral_r, insertion: patella_r}
   vaslat_r: {name: vastus lateralis, commonName: outer quad, groups: [quadriceps_r, anteriorThigh_r], nerve: femoral_r, insertion: patella_r}
   vasmed_r: {name: vastus medialis, commonName: inner quad, groups: [quadriceps_r, anteriorThigh_r], nerve: femoral_r, insertion: patella_r}
+  # Right trunk (FBLS; the left side mirrors it). Each fascicle names the levels it joins in
+  # the model.
+  rect_abd_r: {name: rectus abdominis, commonName: six-pack muscle, groups: [rectusAbdominis_r, abdominals_r], nerve: intercostal_r, insertion: ribCage}
+  QL_post_I_1-L3_r: {name: 'quadratus lumborum, posterior layer (iliac crest to L3)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: l3}
+  QL_post_I_2-L4_r: {name: 'quadratus lumborum, posterior layer (iliac crest to L4)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: l4}
+  QL_post_I_2-L3_r: {name: 'quadratus lumborum, posterior layer (iliac crest to L3)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: l3}
+  QL_post_I_2-L2_r: {name: 'quadratus lumborum, posterior layer (iliac crest to L2)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: l2}
+  QL_post_I_3-L1_r: {name: 'quadratus lumborum, posterior layer (iliac crest to L1)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: l1}
+  QL_post_I_3-L2_r: {name: 'quadratus lumborum, posterior layer (iliac crest to L2)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: l2}
+  QL_post_I_3-L3_r: {name: 'quadratus lumborum, posterior layer (iliac crest to L3)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: l3}
+  QL_mid_L3-12_3_r: {name: 'quadratus lumborum, middle layer (L3 to rib 12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: l3, insertion: ribCage}
+  QL_mid_L3-12_2_r: {name: 'quadratus lumborum, middle layer (L3 to rib 12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: l3, insertion: ribCage}
+  QL_mid_L3-12_1_r: {name: 'quadratus lumborum, middle layer (L3 to rib 12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: l3, insertion: ribCage}
+  QL_mid_L2-12_1_r: {name: 'quadratus lumborum, middle layer (L2 to rib 12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: l2, insertion: ribCage}
+  QL_mid_L4-12_3_r: {name: 'quadratus lumborum, middle layer (L4 to rib 12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: l4, insertion: ribCage}
+  QL_ant_I_2-T12_r: {name: 'quadratus lumborum, anterior layer (iliac crest to T12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: thoracicSpine}
+  QL_ant_I_3-T12_r: {name: 'quadratus lumborum, anterior layer (iliac crest to T12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: thoracicSpine}
+  QL_ant_I_2-12_1_r: {name: 'quadratus lumborum, anterior layer (iliac crest to rib 12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: ribCage}
+  QL_ant_I_3-12_1_r: {name: 'quadratus lumborum, anterior layer (iliac crest to rib 12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: ribCage}
+  QL_ant_I_3-12_2_r: {name: 'quadratus lumborum, anterior layer (iliac crest to rib 12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: ribCage}
+  QL_ant_I_3-12_3_r: {name: 'quadratus lumborum, anterior layer (iliac crest to rib 12)', commonName: deep side-of-back muscle, ontologyName: quadratus lumborum, groups: [quadratusLumborum_r], nerve: ventralRami_r, origin: pelvis, insertion: ribCage}
+  MF_m1s_r: {name: 'multifidus, fascicle from L4 to L1', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m1t_1_r: {name: 'multifidus, fascicle from L5 to L1', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m1t_2_r: {name: 'multifidus, fascicle from the pelvis to L1', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m1t_3_r: {name: 'multifidus, fascicle from the pelvis to L1', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m2s_r: {name: 'multifidus, fascicle from L5 to L2', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m2t_1_r: {name: 'multifidus, fascicle from the pelvis to L2', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m2t_2_r: {name: 'multifidus, fascicle from the pelvis to L2', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m2t_3_r: {name: 'multifidus, fascicle from the pelvis to L2', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m3s_r: {name: 'multifidus, fascicle from the pelvis to L3', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m3t_1_r: {name: 'multifidus, fascicle from the pelvis to L3', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m3t_2_r: {name: 'multifidus, fascicle from the pelvis to L3', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m3t_3_r: {name: 'multifidus, fascicle from the pelvis to L3', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m4s_r: {name: 'multifidus, fascicle from the pelvis to L4', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m4t_1_r: {name: 'multifidus, fascicle from the pelvis to L4', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m4t_2_r: {name: 'multifidus, fascicle from the pelvis to L4', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m4t_3_r: {name: 'multifidus, fascicle from the pelvis to L4', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m5s_r: {name: 'multifidus, fascicle from the pelvis to L5', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m5t_1_r: {name: 'multifidus, fascicle from the pelvis to L5', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m5t_2_r: {name: 'multifidus, fascicle from the pelvis to L5', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m5t_3_r: {name: 'multifidus, fascicle from the pelvis to L5', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m1_laminar_r: {name: 'multifidus, laminar fascicle from L3 to L1', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m2_laminar_r: {name: 'multifidus, laminar fascicle from L4 to L2', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m3_laminar_r: {name: 'multifidus, laminar fascicle from L5 to L3', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m4_laminar_r: {name: 'multifidus, laminar fascicle from the pelvis to L4', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  MF_m5_laminar_r: {name: 'multifidus, laminar fascicle from the pelvis to L5', commonName: deep back muscle, ontologyName: multifidus, groups: [multifidus_r, transversospinales_r], nerve: dorsalRami_r}
+  IL_L1_r: {name: 'iliocostalis lumborum, lumbar part (to L1)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r}
+  IL_L2_r: {name: 'iliocostalis lumborum, lumbar part (to L2)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r}
+  IL_L3_r: {name: 'iliocostalis lumborum, lumbar part (to L3)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r}
+  IL_L4_r: {name: 'iliocostalis lumborum, lumbar part (to L4)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r}
+  IL_R5_r: {name: 'iliocostalis lumborum, thoracic part (to rib 5)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  IL_R6_r: {name: 'iliocostalis lumborum, thoracic part (to rib 6)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  IL_R7_r: {name: 'iliocostalis lumborum, thoracic part (to rib 7)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  IL_R8_r: {name: 'iliocostalis lumborum, thoracic part (to rib 8)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  IL_R9_r: {name: 'iliocostalis lumborum, thoracic part (to rib 9)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  IL_R10_r: {name: 'iliocostalis lumborum, thoracic part (to rib 10)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  IL_R11_r: {name: 'iliocostalis lumborum, thoracic part (to rib 11)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  IL_R12_r: {name: 'iliocostalis lumborum, thoracic part (to rib 12)', commonName: outer back muscle, ontologyName: iliocostalis lumborum, groups: [iliocostalis_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpT_T1_r: {name: 'longissimus thoracis, thoracic part (to T1)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T2_r: {name: 'longissimus thoracis, thoracic part (to T2)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T3_r: {name: 'longissimus thoracis, thoracic part (to T3)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T4_r: {name: 'longissimus thoracis, thoracic part (to T4)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T5_r: {name: 'longissimus thoracis, thoracic part (to T5)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T6_r: {name: 'longissimus thoracis, thoracic part (to T6)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T7_r: {name: 'longissimus thoracis, thoracic part (to T7)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T8_r: {name: 'longissimus thoracis, thoracic part (to T8)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T9_r: {name: 'longissimus thoracis, thoracic part (to T9)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T10_r: {name: 'longissimus thoracis, thoracic part (to T10)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T11_r: {name: 'longissimus thoracis, thoracic part (to T11)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_T12_r: {name: 'longissimus thoracis, thoracic part (to T12)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpT_R4_r: {name: 'longissimus thoracis, thoracic part (to rib 4)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpT_R5_r: {name: 'longissimus thoracis, thoracic part (to rib 5)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpT_R6_r: {name: 'longissimus thoracis, thoracic part (to rib 6)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpT_R7_r: {name: 'longissimus thoracis, thoracic part (to rib 7)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpT_R8_r: {name: 'longissimus thoracis, thoracic part (to rib 8)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpT_R9_r: {name: 'longissimus thoracis, thoracic part (to rib 9)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpT_R10_r: {name: 'longissimus thoracis, thoracic part (to rib 10)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpT_R11_r: {name: 'longissimus thoracis, thoracic part (to rib 11)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpT_R12_r: {name: 'longissimus thoracis, thoracic part (to rib 12)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r, insertion: ribCage}
+  LTpL_L5_r: {name: 'longissimus thoracis, lumbar part (to L5)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpL_L4_r: {name: 'longissimus thoracis, lumbar part (to L4)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpL_L3_r: {name: 'longissimus thoracis, lumbar part (to L3)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpL_L2_r: {name: 'longissimus thoracis, lumbar part (to L2)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  LTpL_L1_r: {name: 'longissimus thoracis, lumbar part (to L1)', commonName: long back muscle, ontologyName: longissimus thoracis, groups: [longissimus_r, erectorSpinae_r], nerve: dorsalRami_r}
+  EO1_r: {name: 'external oblique, fascicle 1', commonName: outer side abdominal, ontologyName: external oblique, groups: [externalOblique_r, abdominals_r], nerve: intercostal_r, origin: ribCage, insertion: pelvis}
+  EO2_r: {name: 'external oblique, fascicle 2', commonName: outer side abdominal, ontologyName: external oblique, groups: [externalOblique_r, abdominals_r], nerve: intercostal_r, origin: ribCage, insertion: pelvis}
+  EO3_r: {name: 'external oblique, fascicle 3', commonName: outer side abdominal, ontologyName: external oblique, groups: [externalOblique_r, abdominals_r], nerve: intercostal_r, origin: ribCage, insertion: pelvis}
+  EO4_r: {name: 'external oblique, fascicle 4', commonName: outer side abdominal, ontologyName: external oblique, groups: [externalOblique_r, abdominals_r], nerve: intercostal_r, origin: ribCage, insertion: pelvis}
+  EO5_r: {name: 'external oblique, fascicle 5', commonName: outer side abdominal, ontologyName: external oblique, groups: [externalOblique_r, abdominals_r], nerve: intercostal_r, origin: ribCage, insertion: pelvis}
+  EO6_r: {name: 'external oblique, fascicle 6', commonName: outer side abdominal, ontologyName: external oblique, groups: [externalOblique_r, abdominals_r], nerve: intercostal_r, origin: ribCage, insertion: pelvis}
+  IO1_r: {name: 'internal oblique, fascicle 1', commonName: inner side abdominal, ontologyName: internal oblique, groups: [internalOblique_r, abdominals_r], nerve: intercostal_r, origin: pelvis, insertion: ribCage}
+  IO2_r: {name: 'internal oblique, fascicle 2', commonName: inner side abdominal, ontologyName: internal oblique, groups: [internalOblique_r, abdominals_r], nerve: intercostal_r, origin: pelvis, insertion: ribCage}
+  IO3_r: {name: 'internal oblique, fascicle 3', commonName: inner side abdominal, ontologyName: internal oblique, groups: [internalOblique_r, abdominals_r], nerve: intercostal_r, origin: pelvis, insertion: ribCage}
+  IO4_r: {name: 'internal oblique, fascicle 4', commonName: inner side abdominal, ontologyName: internal oblique, groups: [internalOblique_r, abdominals_r], nerve: intercostal_r, origin: pelvis, insertion: ribCage}
+  IO5_r: {name: 'internal oblique, fascicle 5', commonName: inner side abdominal, ontologyName: internal oblique, groups: [internalOblique_r, abdominals_r], nerve: intercostal_r, origin: pelvis, insertion: ribCage}
+  IO6_r: {name: 'internal oblique, fascicle 6', commonName: inner side abdominal, ontologyName: internal oblique, groups: [internalOblique_r, abdominals_r], nerve: intercostal_r, origin: pelvis, insertion: ribCage}
+  LD_L1_r: {name: 'latissimus dorsi, fascicle from L1', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: l1, insertion: humerus_r}
+  LD_L2_r: {name: 'latissimus dorsi, fascicle from L2', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: l2, insertion: humerus_r}
+  LD_L3_r: {name: 'latissimus dorsi, fascicle from L3', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: l3, insertion: humerus_r}
+  LD_L4_r: {name: 'latissimus dorsi, fascicle from L4', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: l4, insertion: humerus_r}
+  LD_L5_r: {name: 'latissimus dorsi, fascicle from L5', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: l5, insertion: humerus_r}
+  LD_T12_r: {name: 'latissimus dorsi, fascicle from T12', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: thoracicSpine, insertion: humerus_r}
+  LD_T11_r: {name: 'latissimus dorsi, fascicle from T11', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: thoracicSpine, insertion: humerus_r}
+  LD_T10_r: {name: 'latissimus dorsi, fascicle from T10', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: thoracicSpine, insertion: humerus_r}
+  LD_T9_r: {name: 'latissimus dorsi, fascicle from T9', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: thoracicSpine, insertion: humerus_r}
+  LD_T8_r: {name: 'latissimus dorsi, fascicle from T8', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: thoracicSpine, insertion: humerus_r}
+  LD_T7_r: {name: 'latissimus dorsi, fascicle from T7', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: thoracicSpine, insertion: humerus_r}
+  LD_R12_r: {name: 'latissimus dorsi, fascicle from rib 12', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: ribCage, insertion: humerus_r}
+  LD_R11_r: {name: 'latissimus dorsi, fascicle from rib 11', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: ribCage, insertion: humerus_r}
+  LD_Il_r: {name: 'latissimus dorsi, fascicle from the iliac crest', commonName: lats, ontologyName: latissimus dorsi, groups: [latissimusDorsi_r], nerve: thoracodorsal_r, origin: pelvis, insertion: humerus_r}
+#TODO DELT1_r ['humerus_r', 'torso']
+#TODO DELT2_r ['humerus_r', 'torso']
+#TODO DELT3_r ['torso', 'humerus_r']
+#TODO SUPSP_r ['humerus_r', 'torso']
+#TODO INFSP_r ['humerus_r', 'torso']
+#TODO SUBSC_r ['humerus_r', 'torso']
+#TODO TMIN_r ['humerus_r', 'torso']
+#TODO TMAJ_r ['humerus_r', 'torso']
+#TODO PECM1_r ['humerus_r', 'torso']
+#TODO PECM2_r ['humerus_r', 'torso']
+#TODO PECM3_r ['humerus_r', 'torso']
+#TODO CORB_r ['torso', 'humerus_r']
+#TODO TRIlong_r ['torso', 'humerus_r', 'ulna_r']
+#TODO TRIlat_r ['humerus_r', 'ulna_r']
+#TODO TRImed_r ['humerus_r', 'ulna_r']
+#TODO ANC_r ['humerus_r', 'ulna_r']
+#TODO SUP_r ['radius_r', 'ulna_r']
+#TODO BIClong_r ['torso', 'humerus_r', 'radius_r']
+#TODO BICshort_r ['torso', 'humerus_r', 'radius_r']
+#TODO BRA_r ['humerus_r', 'ulna_r']
+#TODO BRD_r ['humerus_r', 'radius_r']
+#TODO ECRL_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO ECRB_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO ECU_r ['humerus_r', 'ulna_r', 'radius_r', 'hand_r']
+#TODO FCR_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO FCU_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO PL_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO PT_r ['humerus_r', 'ulna_r', 'radius_r']
+#TODO PQ_r ['radius_r', 'ulna_r']
+#TODO FDSL_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO FDSR_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO FDSM_r ['ulna_r', 'radius_r', 'hand_r']
+#TODO FDSI_r ['ulna_r', 'radius_r', 'hand_r']
+#TODO FDPL_r ['ulna_r', 'radius_r', 'hand_r']
+#TODO FDPR_r ['ulna_r', 'radius_r', 'hand_r']
+#TODO FDPM_r ['ulna_r', 'radius_r', 'hand_r']
+#TODO FDPI_r ['ulna_r', 'radius_r', 'hand_r']
+#TODO EDCL_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO EDCR_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO EDCM_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO EDCI_r ['humerus_r', 'radius_r', 'hand_r']
+#TODO EDM_r ['humerus_r', 'ulna_r', 'radius_r', 'hand_r']
+#TODO EIP_r ['ulna_r', 'radius_r', 'hand_r']
+#TODO EPL_r ['ulna_r', 'radius_r', 'hand_r']
+#TODO EPB_r ['radius_r', 'hand_r']
+#TODO FPL_r ['radius_r', 'hand_r']
+#TODO APL_r ['radius_r', 'hand_r']
+#TODO digastric_post_r ['head', 'cerv3']
+#TODO digastric_ant_r ['head', 'cerv1']
+#TODO Geniohyoid_r ['cerv1', 'head']
+#TODO Mylohyoid_Post_r ['cerv1', 'head']
+#TODO Mylohyoid_Ant_r ['cerv1', 'head']
+#TODO Stylohyoid_Lat_r ['head', 'cerv1']
+#TODO Stylohyoid_Med_r ['head', 'cerv1']
+#TODO Sterno_hyoid_r ['cerv3', 'torso']
+#TODO SternoThyroid_r ['cerv3', 'torso']
+#TODO Omo_hyoid_r ['cerv3', 'torso']
+#TODO stern_mast_r ['torso', 'head']
+#TODO cleid_mast_r ['torso', 'head']
+#TODO cleid_occ_r ['torso', 'head']
+#TODO scalenus_ant_r ['torso', 'cerv4']
+#TODO scalenus_med_r ['torso', 'cerv3']
+#TODO scalenus_post_r ['torso', 'cerv5']
+#TODO long_cap_sklc4_r ['cerv4', 'cerv3', 'cerv2', 'cerv1', 'head']
+#TODO long_col_c1thx_r ['torso', 'cerv7', 'cerv6', 'cerv5', 'cerv4', 'cerv3', 'cerv2', 'cerv1']
+#TODO long_col_c1c5_r ['cerv5', 'cerv4', 'cerv2', 'cerv1']
+#TODO long_col_c5thx_r ['torso', 'cerv7', 'cerv6', 'cerv5']
+#TODO trap_cl_r ['torso', 'head']
+#TODO trap_acr_r ['torso', 'cerv7']
+#TODO splen_cap_sklc6_r ['cerv6', 'head']
+#TODO splen_cap_sklthx_r ['torso', 'head']
+#TODO splen_cerv_c3thx_r ['torso', 'cerv3']
+#TODO semi_cap_sklc5_r ['cerv5', 'head']
+#TODO semi_cap_sklthx_r ['torso', 'head']
+#TODO semi_cerv_c3thx_r ['torso', 'cerv3']
+#TODO levator_scap_r ['torso', 'cerv2']
+#TODO longissi_cap_sklc6_r ['cerv6', 'head']
+#TODO longissi_cerv_c4thx_r ['torso', 'cerv4']
+#TODO iliocost_cerv_c5rib_r ['torso', 'cerv5']
+#TODO rectcap_post_maj_r ['cerv2', 'head']
+#TODO rectcap_post_min_r ['cerv1', 'head']
+#TODO obl_cap_sup_r ['cerv1', 'head']
+#TODO obl_cap_inf_r ['cerv2', 'cerv1']
+  # Right arm (Holzbaur 2005; the left arm mirrors it). Holzbaur's shoulder-girdle points ride on
+  # the torso, so an origin on the scapula or clavicle names that bone of the torso body.
+  DELT1_r: {name: deltoid (anterior part), commonName: front shoulder muscle, ontologyName: deltoid, groups: [deltoidMuscle_r, scapulohumeral_r], nerve: axillary_r, origin: clavicle_r, insertion: humerus_r}
+  DELT2_r: {name: deltoid (middle part), commonName: side shoulder muscle, ontologyName: deltoid, groups: [deltoidMuscle_r, scapulohumeral_r], nerve: axillary_r, origin: scapula_r, insertion: humerus_r}
+  DELT3_r: {name: deltoid (posterior part), commonName: rear shoulder muscle, ontologyName: deltoid, groups: [deltoidMuscle_r, scapulohumeral_r], nerve: axillary_r, origin: scapula_r}
+  SUPSP_r: {name: supraspinatus, commonName: rotator cuff (top), groups: [rotatorCuff_r, scapulohumeral_r], nerve: suprascapular_r, origin: scapula_r, insertion: humerus_r}
+  INFSP_r: {name: infraspinatus, commonName: rotator cuff (back), groups: [rotatorCuff_r, scapulohumeral_r], nerve: suprascapular_r, origin: scapula_r, insertion: humerus_r}
+  SUBSC_r: {name: subscapularis, commonName: rotator cuff (front), groups: [rotatorCuff_r, scapulohumeral_r], nerve: subscapular_r, origin: scapula_r, insertion: humerus_r}
+  TMIN_r: {name: teres minor, commonName: rotator cuff (lower back), groups: [rotatorCuff_r, scapulohumeral_r], nerve: axillary_r, origin: scapula_r, insertion: humerus_r}
+  TMAJ_r: {name: teres major, commonName: lower shoulder-blade muscle, groups: [scapulohumeral_r], nerve: subscapular_r, origin: scapula_r, insertion: humerus_r}
+  PECM1_r: {name: pectoralis major (clavicular head), commonName: upper chest muscle, ontologyName: pectoralis major, groups: [pectoralisMajor_r], nerve: lateralPectoral_r, origin: clavicle_r, insertion: humerus_r}
+  PECM2_r: {name: pectoralis major (sternocostal head), commonName: chest muscle, ontologyName: pectoralis major, groups: [pectoralisMajor_r], nerve: medialPectoral_r, origin: sternum, insertion: humerus_r}
+  PECM3_r: {name: pectoralis major (abdominal part), commonName: lower chest muscle, ontologyName: pectoralis major, groups: [pectoralisMajor_r], nerve: medialPectoral_r, origin: ribCage, insertion: humerus_r}
+  CORB_r: {name: coracobrachialis, commonName: inner upper-arm muscle, groups: [anteriorArm_r], nerve: musculocutaneous_r, origin: scapula_r}
+  TRIlong_r: {name: triceps brachii long head, commonName: triceps (long head), ontologyName: triceps brachii, fmaName: long head of right triceps brachii, groups: [tricepsBrachii_r, posteriorArm_r], nerve: radial_r, origin: scapula_r}
+  TRIlat_r: {name: triceps brachii lateral head, commonName: triceps (outer head), ontologyName: triceps brachii, fmaName: lateral head of right triceps brachii, groups: [tricepsBrachii_r, posteriorArm_r], nerve: radial_r}
+  TRImed_r: {name: triceps brachii medial head, commonName: triceps (inner head), ontologyName: triceps brachii, fmaName: medial head of right triceps brachii, groups: [tricepsBrachii_r, posteriorArm_r], nerve: radial_r}
+  ANC_r: {name: anconeus, commonName: elbow muscle, groups: [posteriorForearm_r], nerve: radial_r}
+  SUP_r: {name: supinator, commonName: forearm turner (palm up), groups: [posteriorForearm_r], nerve: posteriorInterosseous_r, origin: ulna_r, insertion: radius_r}
+  BIClong_r: {name: biceps brachii long head, commonName: biceps (long head), ontologyName: long head of biceps brachii, fmaName: long head of right biceps brachii, groups: [bicepsBrachii_r, anteriorArm_r], nerve: musculocutaneous_r, origin: scapula_r}
+  BICshort_r: {name: biceps brachii short head, commonName: biceps (short head), ontologyName: short head of biceps brachii, fmaName: short head of right biceps brachii, groups: [bicepsBrachii_r, anteriorArm_r], nerve: musculocutaneous_r, origin: scapula_r}
+  BRA_r: {name: brachialis, commonName: deep elbow flexor, groups: [anteriorArm_r], nerve: musculocutaneous_r}
+  BRD_r: {name: brachioradialis, commonName: forearm elbow flexor, groups: [posteriorForearm_r], nerve: radial_r}
+  ECRL_r: {name: extensor carpi radialis longus, commonName: long thumb-side wrist extensor, groups: [posteriorForearm_r], nerve: radial_r}
+  ECRB_r: {name: extensor carpi radialis brevis, commonName: short thumb-side wrist extensor, groups: [posteriorForearm_r], nerve: posteriorInterosseous_r}
+  ECU_r: {name: extensor carpi ulnaris, commonName: little-finger-side wrist extensor, groups: [posteriorForearm_r], nerve: posteriorInterosseous_r}
+  FCR_r: {name: flexor carpi radialis, commonName: thumb-side wrist flexor, groups: [anteriorForearm_r], nerve: median_r}
+  FCU_r: {name: flexor carpi ulnaris, commonName: little-finger-side wrist flexor, groups: [anteriorForearm_r], nerve: ulnar_r, insertion: carpals_r}
+  PL_r: {name: palmaris longus, commonName: palm tensor, groups: [anteriorForearm_r], nerve: median_r}
+  PT_r: {name: pronator teres, commonName: forearm turner (palm down), groups: [anteriorForearm_r], nerve: median_r}
+  PQ_r: {name: pronator quadratus, commonName: square forearm turner, groups: [anteriorForearm_r], nerve: anteriorInterosseous_r, origin: ulna_r, insertion: radius_r}
+  FDSL_r: {name: flexor digitorum superficialis (little finger), commonName: finger curler (little finger), ontologyName: flexor digitorum superficialis, groups: [flexorDigitorumSuperficialis_r, anteriorForearm_r], nerve: median_r, insertion: handPhalanges_r}
+  FDSR_r: {name: flexor digitorum superficialis (ring finger), commonName: finger curler (ring finger), ontologyName: flexor digitorum superficialis, groups: [flexorDigitorumSuperficialis_r, anteriorForearm_r], nerve: median_r, insertion: handPhalanges_r}
+  FDSM_r: {name: flexor digitorum superficialis (middle finger), commonName: finger curler (middle finger), ontologyName: flexor digitorum superficialis, groups: [flexorDigitorumSuperficialis_r, anteriorForearm_r], nerve: median_r, insertion: handPhalanges_r}
+  FDSI_r: {name: flexor digitorum superficialis (index finger), commonName: finger curler (index finger), ontologyName: flexor digitorum superficialis, groups: [flexorDigitorumSuperficialis_r, anteriorForearm_r], nerve: median_r, insertion: handPhalanges_r}
+  FDPL_r: {name: flexor digitorum profundus (little finger), commonName: deep finger curler (little finger), ontologyName: flexor digitorum profundus, groups: [flexorDigitorumProfundus_r, anteriorForearm_r], nerve: ulnar_r, insertion: handPhalanges_r}
+  FDPR_r: {name: flexor digitorum profundus (ring finger), commonName: deep finger curler (ring finger), ontologyName: flexor digitorum profundus, groups: [flexorDigitorumProfundus_r, anteriorForearm_r], nerve: ulnar_r, insertion: handPhalanges_r}
+  FDPM_r: {name: flexor digitorum profundus (middle finger), commonName: deep finger curler (middle finger), ontologyName: flexor digitorum profundus, groups: [flexorDigitorumProfundus_r, anteriorForearm_r], nerve: anteriorInterosseous_r, insertion: handPhalanges_r}
+  FDPI_r: {name: flexor digitorum profundus (index finger), commonName: deep finger curler (index finger), ontologyName: flexor digitorum profundus, groups: [flexorDigitorumProfundus_r, anteriorForearm_r], nerve: anteriorInterosseous_r, insertion: handPhalanges_r}
+  EDCL_r: {name: extensor digitorum (little finger), commonName: finger straightener (little finger), ontologyName: extensor digitorum, groups: [extensorDigitorum_r, posteriorForearm_r], nerve: posteriorInterosseous_r, insertion: handPhalanges_r}
+  EDCR_r: {name: extensor digitorum (ring finger), commonName: finger straightener (ring finger), ontologyName: extensor digitorum, groups: [extensorDigitorum_r, posteriorForearm_r], nerve: posteriorInterosseous_r, insertion: handPhalanges_r}
+  EDCM_r: {name: extensor digitorum (middle finger), commonName: finger straightener (middle finger), ontologyName: extensor digitorum, groups: [extensorDigitorum_r, posteriorForearm_r], nerve: posteriorInterosseous_r, insertion: handPhalanges_r}
+  EDCI_r: {name: extensor digitorum (index finger), commonName: finger straightener (index finger), ontologyName: extensor digitorum, groups: [extensorDigitorum_r, posteriorForearm_r], nerve: posteriorInterosseous_r, insertion: handPhalanges_r}
+  EDM_r: {name: extensor digiti minimi, commonName: little-finger straightener, groups: [posteriorForearm_r], nerve: posteriorInterosseous_r, insertion: handPhalanges_r}
+  EIP_r: {name: extensor indicis, commonName: index-finger straightener, groups: [posteriorForearm_r], nerve: posteriorInterosseous_r, insertion: handPhalanges_r}
+  EPL_r: {name: extensor pollicis longus, commonName: long thumb straightener, groups: [posteriorForearm_r], nerve: posteriorInterosseous_r, insertion: handPhalanges_r}
+  EPB_r: {name: extensor pollicis brevis, commonName: short thumb straightener, groups: [posteriorForearm_r], nerve: posteriorInterosseous_r, insertion: handPhalanges_r}
+  FPL_r: {name: flexor pollicis longus, commonName: thumb curler, groups: [anteriorForearm_r], nerve: anteriorInterosseous_r, insertion: handPhalanges_r}
+  APL_r: {name: abductor pollicis longus, commonName: thumb spreader, groups: [posteriorForearm_r], nerve: posteriorInterosseous_r}
+  # Right neck (Mortensen 2018 HYOID 1.2; the left side mirrors it). The model carries the
+  # hyoid's points on the atlas and C3 bodies (`hyoid` lists both).
+  digastric_post_r: {name: digastric (posterior belly), commonName: jaw-opening muscle (back belly), ontologyName: digastric, groups: [suprahyoid_r], nerve: facial_r, origin: skull, insertion: hyoid}
+  digastric_ant_r: {name: digastric (anterior belly), commonName: jaw-opening muscle (front belly), ontologyName: digastric, groups: [suprahyoid_r], nerve: mylohyoidNerve_r, origin: mandible, insertion: hyoid}
+  Geniohyoid_r: {name: geniohyoid, commonName: chin-to-hyoid muscle, groups: [suprahyoid_r], nerve: hypoglossal_r, origin: mandible, insertion: hyoid}
+  Mylohyoid_Post_r: {name: mylohyoid (posterior part), commonName: mouth-floor muscle, ontologyName: mylohyoid, groups: [suprahyoid_r], nerve: mylohyoidNerve_r, origin: mandible, insertion: hyoid}
+  Mylohyoid_Ant_r: {name: mylohyoid (anterior part), commonName: mouth-floor muscle, ontologyName: mylohyoid, groups: [suprahyoid_r], nerve: mylohyoidNerve_r, origin: mandible, insertion: hyoid}
+  Stylohyoid_Lat_r: {name: stylohyoid (lateral part), commonName: hyoid lifter, ontologyName: stylohyoid muscle, groups: [suprahyoid_r], nerve: facial_r, origin: skull, insertion: hyoid}
+  Stylohyoid_Med_r: {name: stylohyoid (medial part), commonName: hyoid lifter, ontologyName: stylohyoid muscle, groups: [suprahyoid_r], nerve: facial_r, origin: skull, insertion: hyoid}
+  Sterno_hyoid_r: {name: sternohyoid, commonName: hyoid lowerer, ontologyName: sternohyoid muscle, groups: [infrahyoid_r], nerve: ansaCervicalis_r, origin: sternum, insertion: hyoid}
+  # Sternothyroid ends on the thyroid cartilage, whose point the model carries with the hyoid's.
+  SternoThyroid_r: {name: sternothyroid, commonName: larynx lowerer, ontologyName: sternothyroid muscle, groups: [infrahyoid_r], nerve: ansaCervicalis_r, origin: sternum, insertion: hyoid}
+  Omo_hyoid_r: {name: omohyoid, commonName: shoulder-blade-to-hyoid muscle, ontologyName: omohyoid muscle, groups: [infrahyoid_r], nerve: ansaCervicalis_r, origin: scapula_r, insertion: hyoid}
+  stern_mast_r: {name: sternocleidomastoid (sternomastoid part), commonName: SCM (breastbone head), ontologyName: sternocleidomastoid, groups: [sternocleidomastoid_r], nerve: accessory_r, origin: sternum}
+  cleid_mast_r: {name: sternocleidomastoid (cleidomastoid part), commonName: SCM (collarbone head), ontologyName: sternocleidomastoid, groups: [sternocleidomastoid_r], nerve: accessory_r, origin: clavicle_r}
+  cleid_occ_r: {name: sternocleidomastoid (cleido-occipital part), commonName: SCM (collarbone-to-skull part), ontologyName: sternocleidomastoid, groups: [sternocleidomastoid_r], nerve: accessory_r, origin: clavicle_r}
+  scalenus_ant_r: {name: scalenus anterior, commonName: front scalene, ontologyName: scalene muscle, fmaName: anterior scalene, groups: [scalenes_r], nerve: cervicalVentralRami_r, origin: c4, insertion: ribCage}
+  scalenus_med_r: {name: scalenus medius, commonName: middle scalene, groups: [scalenes_r], nerve: cervicalVentralRami_r, origin: c3, insertion: ribCage}
+  scalenus_post_r: {name: scalenus posterior, commonName: back scalene, groups: [scalenes_r], nerve: cervicalVentralRami_r, origin: c5, insertion: ribCage}
+  long_cap_sklc4_r: {name: longus capitis, commonName: deep front neck muscle (to the skull), groups: [prevertebral_r], nerve: cervicalVentralRami_r}
+  long_col_c1thx_r: {name: longus colli (superior oblique part, thorax to atlas), commonName: deep front neck muscle, ontologyName: longus colli, groups: [longusColli_r, prevertebral_r], nerve: cervicalVentralRami_r}
+  long_col_c1c5_r: {name: longus colli (C5 to atlas), commonName: deep front neck muscle, ontologyName: longus colli, groups: [longusColli_r, prevertebral_r], nerve: cervicalVentralRami_r}
+  long_col_c5thx_r: {name: longus colli (thorax to C5), commonName: deep front neck muscle, ontologyName: longus colli, groups: [longusColli_r, prevertebral_r], nerve: cervicalVentralRami_r}
+  trap_cl_r: {name: trapezius (descending part, skull to clavicle), commonName: upper trap, ontologyName: trapezius, groups: [trapezius_r], nerve: accessory_r, origin: skull, insertion: clavicle_r}
+  trap_acr_r: {name: trapezius (descending part, C7 to acromion), commonName: upper trap, ontologyName: trapezius, groups: [trapezius_r], nerve: accessory_r, origin: c7, insertion: scapula_r}
+  splen_cap_sklc6_r: {name: splenius capitis (from C6), commonName: neck strap muscle, ontologyName: splenius capitis, groups: [spleniusCapitis_r, neckExtensors_r], nerve: cervicalDorsalRami_r}
+  splen_cap_sklthx_r: {name: splenius capitis (from the thorax), commonName: neck strap muscle, ontologyName: splenius capitis, groups: [spleniusCapitis_r, neckExtensors_r], nerve: cervicalDorsalRami_r}
+  splen_cerv_c3thx_r: {name: splenius cervicis, commonName: neck strap muscle (to the neck), groups: [neckExtensors_r], nerve: cervicalDorsalRami_r}
+  semi_cap_sklc5_r: {name: semispinalis capitis (from C5), commonName: deep neck extensor, ontologyName: semispinalis capitis, groups: [semispinalisCapitis_r, transversospinales_r, neckExtensors_r], nerve: cervicalDorsalRami_r}
+  semi_cap_sklthx_r: {name: semispinalis capitis (from the thorax), commonName: deep neck extensor, ontologyName: semispinalis capitis, groups: [semispinalisCapitis_r, transversospinales_r, neckExtensors_r], nerve: cervicalDorsalRami_r}
+  semi_cerv_c3thx_r: {name: semispinalis cervicis, commonName: deep neck extensor (to the neck), groups: [transversospinales_r, neckExtensors_r], nerve: cervicalDorsalRami_r}
+  levator_scap_r: {name: levator scapulae, commonName: shoulder-blade lifter, groups: [neckExtensors_r], nerve: dorsalScapular_r, origin: axis, insertion: scapula_r}
+  longissi_cap_sklc6_r: {name: longissimus capitis, commonName: long neck extensor (to the skull), groups: [erectorSpinae_r, neckExtensors_r], nerve: cervicalDorsalRami_r}
+  longissi_cerv_c4thx_r: {name: longissimus cervicis, commonName: long neck extensor, groups: [erectorSpinae_r, neckExtensors_r], nerve: cervicalDorsalRami_r}
+  iliocost_cerv_c5rib_r: {name: iliocostalis cervicis, commonName: rib-to-neck extensor, groups: [erectorSpinae_r, neckExtensors_r], nerve: cervicalDorsalRami_r, origin: ribCage}
+  rectcap_post_maj_r: {name: rectus capitis posterior major, commonName: deep head nodder, groups: [suboccipitalMuscles_r], nerve: suboccipital_r}
+  rectcap_post_min_r: {name: rectus capitis posterior minor, commonName: small deep head nodder, groups: [suboccipitalMuscles_r], nerve: suboccipital_r}
+  obl_cap_sup_r: {name: obliquus capitis superior, commonName: upper head tilter, ontologyName: obliquus capitis superior, groups: [suboccipitalMuscles_r], nerve: suboccipital_r}
+  obl_cap_inf_r: {name: obliquus capitis inferior, commonName: head turner, ontologyName: obliquus capitis inferior, groups: [suboccipitalMuscles_r], nerve: suboccipital_r}

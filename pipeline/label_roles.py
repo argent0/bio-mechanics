@@ -1,15 +1,19 @@
 """Stage `labelRoles`: each muscle's role per gait phase and joint action (decisions D-002, D-006).
 
 Scope. One complete stride of the right leg (stride 0 of `phases.csv`), its seven phases, the
-joint coordinates of `Config.coordinates`, and the muscles of both sides
-(`Config.muscle_suffixes`, `labelled_muscles`) that cross one of those coordinates. A
-coordinate takes the muscles of its own leg (`muscles_of`): those whose name ends in the
-coordinate's suffix, e.g. `vaslat_l` for `knee_angle_l`. A phase spans
+joint coordinates of `Config.coordinates` (legs, lumbar spine, neck and arms of the merged
+model) that the model carries and a labelled muscle spans (`labelled_coordinates`), and the
+muscles of both sides (`Config.muscle_suffixes`, `labelled_muscles`) that cross
+one of those coordinates. A coordinate with a side suffix takes the muscles of its own side
+(`muscles_of`): those whose name ends in the coordinate's suffix, e.g. `vaslat_l` for
+`knee_angle_l`, `DELT3_r` for `arm_flex_r`. A midline coordinate (`lumbar_extension`,
+`neck_lower_bending`, ...) takes the muscles of both sides, e.g. `IL_L3_r` and `IL_L3_l` for
+`lumbar_extension`. A phase spans
 the frames from the event that opens it to the event that closes it, both included, so the
 phases tile the stride; integrals use the trapezoid rule over those frames.
 
-One timeline for both legs (decision D-007). The right leg is the reference leg: its initial
-contacts bound the stride and its seven events bound the phases, and every muscle of either leg
+One timeline for the whole body (decision D-007). The right leg is the reference leg: its initial
+contacts bound the stride and its seven events bound the phases, and every muscle of the body
 takes its roles per phase of this one timeline. The left leg's own phases read off it about half
 a stride later, at the left leg's events, which `phases.csv` carries as the opposite events:
   - left initial contact = `oppositeInitialContact`, which opens the reference pre-swing; so the
@@ -36,7 +40,11 @@ phase is Δq = q(end) − q(start).
     direction of the muscles' net moment over the phase (the direction the muscles hold the
     joint against the load), `direction` = sign(∫ Σ moment dt), +1 when the net moment is zero.
 Sign conventions of the coordinates are OpenSim's (P1, `moment_arms`): positive hip flexion,
-hip adduction, hip internal rotation, knee flexion, ankle dorsiflexion.
+hip adduction, hip internal rotation, knee flexion, ankle dorsiflexion; lumbar and neck
+extension, bending to the right, rotation to the left; shoulder flexion, adduction, internal
+rotation; elbow flexion, forearm pronation, wrist flexion and ulnar deviation (anatomy.yaml
+`coordinates` names the action of each sign). The neck coordinates rest on decision D-010: the
+head holds its standing orientation in space, so the neck angles mirror the trunk's motion.
 
 Moments. A muscle's moment at a frame is a·F·r (D-002): activation a (`activations.csv`), max
 isometric force F (`model.json`), moment arm r about the coordinate (`moment_arms.csv`; r > 0
@@ -80,6 +88,7 @@ coordinate of its leg with |r| ≥ `moment_arm_min_m` somewhere in the stride, t
 
 Output `roles.json`:
   config    the thresholds and settings of `roles.yaml`, as read
+  coordinates  the labelled coordinates (`labelled_coordinates`), in `roles.yaml` order
   stride    {index, start, end} in s
   events    [{event, time, source}] of the stride, closing initial contact included
   phases    [{phase, order, start, end, startPct, endPct, actions}], in stride order; each
@@ -88,7 +97,7 @@ Output `roles.json`:
             meanActivation, peakActivation (over the phase), stridePeakActivation,
             meanVelocity (m/s), activation, momentArm (m)}
   crosses   [{muscle, coordinate, momentArm}]
-  muscles   {name: {maxIsometricForce}} for the labelled muscles of both legs
+  muscles   {name: {maxIsometricForce}} for the labelled muscles of both sides
 
 Run from the repository root: `python -m pipeline.label_roles` (pure Python; any interpreter
 with PyYAML).
@@ -100,7 +109,7 @@ import csv
 import json
 import math
 import sys
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal
@@ -172,6 +181,18 @@ def load_config(path: Path) -> Config:
 def labelled_muscles(names: Sequence[str], cfg: Config) -> list[str]:
     """The muscles of `names` whose name ends in one of `cfg.muscle_suffixes`, in their order."""
     return [m for m in names if m.endswith(cfg.muscle_suffixes)]
+
+
+def labelled_coordinates(coordinates: Sequence[str], moment_arms: Iterable[tuple[str, str]], cfg: Config) -> list[str]:
+    """The coordinates of `cfg.coordinates` that the model carries (`coordinates`, the columns of
+    `kinematics.csv`) and that a labelled muscle of the coordinate's side spans (a pair of
+    `moment_arms`), in `cfg` order. A model without muscles there (the legs-only Rajagopal model
+    has torque-driven lumbar and arm coordinates and no neck) leaves those coordinates out."""
+    have = set(coordinates)
+    spanned: dict[str, list[str]] = {}
+    for m, c in moment_arms:
+        spanned.setdefault(c, []).append(m)
+    return [c for c in cfg.coordinates if c in have and muscles_of(c, labelled_muscles(spanned.get(c, []), cfg), cfg)]
 
 
 def muscles_of(coordinate: str, muscles: Sequence[str], cfg: Config) -> list[str]:
@@ -350,7 +371,8 @@ def r6(x: float, digits: int) -> float:
 def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, Any]:
     """The contents of `roles.json`."""
     t_all = trial.time
-    muscles = [m for m in labelled_muscles(list(trial.activation), cfg) if any((m, c) in trial.moment_arm for c in cfg.coordinates)]
+    coordinates = labelled_coordinates(list(trial.coordinates), trial.moment_arm, cfg)
+    muscles = [m for m in labelled_muscles(list(trial.activation), cfg) if any((m, c) in trial.moment_arm for c in coordinates)]
     bounds = phase_bounds(p, stride)
     s0, s1 = t_all[bounds[0][1]], t_all[bounds[-1][2]]
     stride_peak = {m: max(trial.activation[m][bounds[0][1] : bounds[-1][2] + 1]) for m in muscles}
@@ -358,7 +380,7 @@ def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, An
     for order, (phase, f0, f1) in enumerate(bounds):
         t = t_all[f0 : f1 + 1]
         actions = []
-        for coord in cfg.coordinates:
+        for coord in coordinates:
             q = trial.coordinates[coord]
             change = math.degrees(q[f1] - q[f0])
             crossing = {
@@ -422,7 +444,7 @@ def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, An
     crosses = []
     fs0, fs1 = bounds[0][1], bounds[-1][2]
     for m in muscles:
-        for coord in cfg.coordinates:
+        for coord in coordinates:
             if m not in muscles_of(coord, [m], cfg):
                 continue
             r = trial.moment_arm.get((m, coord))
@@ -437,6 +459,7 @@ def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, An
     ]
     return {
         "config": cfg.as_json(),
+        "coordinates": coordinates,
         "stride": {"index": stride, "start": s0, "end": s1},
         "events": events,
         "phases": phases_out,

@@ -9,8 +9,8 @@ const paths = JSON.parse(readFileSync(new URL("../muscle_paths.json", dir), "utf
 describe("bm-meshes/1", () => {
   const index = parseMeshIndex(raw);
 
-  it("lists the 13 bodies, each with an existing glTF file", () => {
-    expect(index.bodies).toHaveLength(13);
+  it("lists the 23 bodies with meshes, each with an existing glTF file", () => {
+    expect(index.bodies).toHaveLength(23);
     for (const b of index.bodies) {
       expect(existsSync(new URL(b.file, dir))).toBe(true);
       expect(b.triangles).toBeGreaterThan(0);

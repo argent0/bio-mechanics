@@ -9,7 +9,11 @@ Entities. anatomy.yaml lists entities per kind: `bones`, `joints`, `muscles`, `g
 (muscle groups), `ligaments`, `nerves`, `actions` (joint actions), `phases`, `movement`. An
 entity's key gives its node: side `right` for a key ending in `_r`, `left` for a key ending in
 `_l`, `midline` otherwise (`side_of`). `opensimName` is the model element: the muscle's own key,
-a bone's body, a joint's first `opensim` joint.
+a bone's body, a joint's first `opensim` joint. A bone names the model body it belongs to
+(`body`) and, where a source model carries the bone's points on further bodies, those bodies
+(`extraBodies`; `bone_bodies`): Mortensen's neck carries the hyoid's points on the atlas and C3,
+and FBLS's Abdomen body carries the abdominal wall between the rib cage and the pelvis. A
+midline coordinate (lumbar, neck) has midline actions, e.g. `lumbar_right_bending`.
 
 Mirroring (`with_left`). anatomy.yaml holds the right side and the midline; the left side comes
 from mirroring in code, so each fact lives once. Every right entry (key ending in `_r`) of the
@@ -23,17 +27,26 @@ the left twin of every right element under the mirrored name (`hip_l`, `femur_l`
 and the attachment and articulation checks below run on the left entries as on the right ones.
 
 Regions (`regions_of`). anatomy.yaml `regions` maps each OpenSim body, side suffix dropped, to
-its body region. A bone takes its body's region; a joint, the region of its first `opensim`
+its body region. A bone takes its `body`'s region; a joint, the region of its first `opensim`
 joint's child body; a muscle, its insertion bone's region; a joint action, its coordinate's
 joint's region; a muscle group, a nerve, a ligament, the region of its first member muscle,
-first innervated muscle, first stabilised joint. Phases and the movement carry `null`.
+first innervated muscle, first stabilised joint. Phases and the movement carry `null`. Every
+group and nerve of anatomy.yaml serves one of its muscles.
+
+Scope (`scope`). The graph holds the anatomy the model reaches: the labelled muscles
+(`roles.json` `muscles`); their groups and nerves; the joint actions of the labelled coordinates
+(`roles.json` `coordinates`); and the bones, joints and ligaments of the regions the labelled
+muscles attach in or the labelled coordinates' joints lie in, a joint only when the model holds
+its `opensim` joints and a ligament only when its joints stay. On the merged model this is all
+of anatomy.yaml; on the legs-only Rajagopal model (the leg fixtures of `pipeline/tests/`) it is
+the pelvis and the legs.
 
 Attachments. A muscle's origin bone is its `origin` in anatomy.yaml, else the bone that
 `bodies` maps the first body of its model path to (`model.json` `originBody`); its insertion
-likewise from `insertion` or the last body of the path. A curated bone must belong to a body on
-the muscle's model path (`check_attachment`), so the curation refines the model and stays
-consistent with it. A joint's `articulates` bones must belong to the parent or child bodies of
-its `opensim` joints.
+likewise from `insertion` or the last body of the path. A curated bone has one of its bodies
+(`bone_bodies`) on the muscle's model path (`check_attachment`), so the curation refines the
+model and stays consistent with it. A joint's `articulates` bones belong to the parent or child
+bodies of its `opensim` joints.
 
 Ontology identifiers (`Ontology.lookup`). Each entity's lookup term is `fmaName` (FMA only),
 else `ontologyName`, else `name`, compared case-insensitively.
@@ -105,7 +118,7 @@ FMA_NS = "http://purl.org/sig/ont/fma/"
 MIRRORED_SECTIONS = ("bones", "bodies", "joints", "coordinates", "actions", "groups", "nerves", "ligaments", "muscles")
 """anatomy.yaml sections whose right entries gain a left twin (`with_left`)."""
 
-REFERENCE_FIELDS = ("body", "opensim", "articulates", "joint", "positive", "negative", "stabilises", "groups", "nerve", "origin", "insertion")
+REFERENCE_FIELDS = ("body", "extraBodies", "opensim", "articulates", "joint", "positive", "negative", "stabilises", "groups", "nerve", "origin", "insertion")
 """Entry fields that name other entries or model elements, mirrored with the entry."""
 
 
@@ -349,10 +362,17 @@ def body_region(anatomy: dict[str, Any], body: str) -> str:
 
 
 def regions_of(anatomy: dict[str, Any], model: dict[str, Any]) -> dict[str, dict[str, str]]:
-    """{kind: {key: region}} for every regional entity of anatomy.yaml (module docstring)."""
+    """{kind: {key: region}} for the regional entities of anatomy.yaml that `model` reaches
+    (module docstring): a joint whose model joints the model holds, a muscle of the model, an
+    action of such a joint's coordinate, a group or nerve with a muscle of the model, a ligament
+    with such a joint."""
     bones = {k: body_region(anatomy, e["body"]) for k, e in anatomy["bones"].items()}
     joints_model = {j["name"]: j for j in model["joints"]}
-    joints = {k: body_region(anatomy, joints_model[e["opensim"][0]]["child"]) for k, e in anatomy["joints"].items()}
+    joints = {
+        k: body_region(anatomy, joints_model[e["opensim"][0]]["child"])
+        for k, e in anatomy["joints"].items()
+        if all(j in joints_model for j in e["opensim"])
+    }
     muscles_model = {m["name"]: m for m in model["muscles"]}
     muscles: dict[str, str] = {}
     for k, e in anatomy["muscles"].items():
@@ -361,28 +381,59 @@ def regions_of(anatomy: dict[str, Any], model: dict[str, Any]) -> dict[str, dict
     actions: dict[str, str] = {}
     for c in anatomy["coordinates"].values():
         for d in ("positive", "negative"):
-            actions[c[d]] = joints[c["joint"]]
+            if c["joint"] in joints:
+                actions[c[d]] = joints[c["joint"]]
 
-    def first(keys: Iterable[str], table: dict[str, str], what: str) -> str:
-        for k in keys:
-            if k in table:
-                return table[k]
-        raise ValueError(f"{what}: no member with a region")
+    def first(keys: Iterable[str], table: dict[str, str]) -> str | None:
+        return next((table[k] for k in keys if k in table), None)
 
     ms = anatomy["muscles"]
-    groups = {k: first((m for m, e in ms.items() if k in e["groups"]), muscles, f"group {k}") for k in anatomy["groups"]}
-    nerves = {k: first((m for m, e in ms.items() if e["nerve"] == k), muscles, f"nerve {k}") for k in anatomy["nerves"]}
-    ligaments = {k: first(e["stabilises"], joints, f"ligament {k}") for k, e in anatomy["ligaments"].items()}
-    missing = sorted(set(anatomy["actions"]) - set(actions))
+    groups = {k: first((m for m, e in ms.items() if k in e["groups"]), muscles) for k in anatomy["groups"]}
+    nerves = {k: first((m for m, e in ms.items() if e["nerve"] == k), muscles) for k in anatomy["nerves"]}
+    ligaments = {k: first(e["stabilises"], joints) for k, e in anatomy["ligaments"].items()}
+    used = {g for e in ms.values() for g in e["groups"]}
+    unused = sorted(set(anatomy["groups"]) - used) + sorted(set(anatomy["nerves"]) - {e["nerve"] for e in ms.values()})
+    if unused:
+        raise ValueError(f"anatomy.yaml groups and nerves without a muscle: {unused}")
+    missing = sorted(set(anatomy["actions"]) - {c[d] for c in anatomy["coordinates"].values() for d in ("positive", "negative")})
     if missing:
         raise ValueError(f"anatomy.yaml actions outside every coordinate: {missing}")
-    return {"bone": bones, "joint": joints, "muscle": muscles, "muscleGroup": groups, "ligament": ligaments, "nerve": nerves, "jointAction": actions}
+
+    def known(table: dict[str, str | None]) -> dict[str, str]:
+        return {k: v for k, v in table.items() if v is not None}
+
+    return {"bone": bones, "joint": joints, "muscle": muscles, "muscleGroup": known(groups), "ligament": known(ligaments), "nerve": known(nerves), "jointAction": actions}
+
+
+def scope(anatomy: dict[str, Any], regions: dict[str, dict[str, str]], muscles: dict[str, Any], coordinates: Sequence[str]) -> dict[str, set[str]]:
+    """{kind: keys} of the entities the graph holds (module docstring, Scope): `muscles` are the
+    labelled muscles with their attachments, `coordinates` the labelled coordinates; `anatomy`
+    holds both sides."""
+    reached = {regions["bone"][a[k]] for a in muscles.values() for k in ("origin", "insertion")}
+    reached |= {regions["joint"][anatomy["coordinates"][c]["joint"]] for c in coordinates}
+    joints = {k for k, r in regions["joint"].items() if r in reached}
+    return {
+        "muscle": set(muscles),
+        "bone": {k for k, r in regions["bone"].items() if r in reached},
+        "joint": joints,
+        "ligament": {k for k, r in regions["ligament"].items() if r in reached and set(anatomy["ligaments"][k]["stabilises"]) <= joints},
+        "jointAction": {anatomy["coordinates"][c][d] for c in coordinates for d in ("positive", "negative")},
+        "muscleGroup": {g for a in muscles.values() for g in a["groups"]},
+        "nerve": {a["nerve"] for a in muscles.values()},
+        "phase": set(anatomy["phases"]),
+        "movement": set(anatomy["movement"]),
+    }
+
+
+def bone_bodies(entry: dict[str, Any]) -> list[str]:
+    """The model bodies that carry a bone's points: its `body`, then its `extraBodies`."""
+    return [str(entry["body"]), *(str(b) for b in entry.get("extraBodies", []))]
 
 
 def check_attachment(muscle: str, role: str, bone: str, bones: dict[str, Any], path_bodies: Sequence[str]) -> None:
-    body = bones[bone]["body"]
-    if body not in path_bodies:
-        raise ValueError(f"{muscle}: {role} bone {bone} belongs to {body}, off the model path {list(path_bodies)}")
+    bodies = bone_bodies(bones[bone])
+    if not set(bodies) & set(path_bodies):
+        raise ValueError(f"{muscle}: {role} bone {bone} belongs to {bodies}, off the model path {list(path_bodies)}")
 
 
 def enrich(roles: dict[str, Any], model: dict[str, Any], anatomy: dict[str, Any], uberon: Ontology, fma: Ontology) -> dict[str, Any]:
@@ -393,12 +444,43 @@ def enrich(roles: dict[str, Any], model: dict[str, Any], anatomy: dict[str, Any]
     muscles_model = {m["name"]: m for m in model["muscles"]}
     joints_model = {j["name"]: j for j in model["joints"]}
     regions = regions_of(anatomy, model)
+    missing = sorted(set(roles["muscles"]) - set(anatomy["muscles"]))
+    if missing:
+        raise ValueError(f"anatomy.yaml lacks muscles {missing}")
+    muscles: dict[str, Any] = {}
+    for key in roles["muscles"]:
+        entry = anatomy["muscles"][key]
+        mm = muscles_model[key]
+        origin = entry.get("origin", anatomy["bodies"][mm["originBody"]])
+        insertion = entry.get("insertion", anatomy["bodies"][mm["insertionBody"]])
+        check_attachment(key, "origin", origin, bones, mm["pathBodies"])
+        check_attachment(key, "insertion", insertion, bones, mm["pathBodies"])
+        for g in entry["groups"]:
+            if g not in anatomy["groups"]:
+                raise ValueError(f"{key}: unknown group {g}")
+        if entry["nerve"] not in anatomy["nerves"]:
+            raise ValueError(f"{key}: unknown nerve {entry['nerve']}")
+        muscles[key] = {"origin": origin, "insertion": insertion, "groups": list(entry["groups"]), "nerve": entry["nerve"]}
+
+    labelled = list(roles["coordinates"])
+    for coord in labelled:
+        entry = anatomy["coordinates"].get(coord)
+        if entry is None:
+            raise ValueError(f"anatomy.yaml lacks coordinate {coord}")
+        for k in ("positive", "negative"):
+            if entry[k] not in anatomy["actions"]:
+                raise ValueError(f"coordinate {coord}: unknown action {entry[k]}")
+    for key, entry in anatomy["ligaments"].items():
+        for j in entry["stabilises"]:
+            if j not in anatomy["joints"]:
+                raise ValueError(f"ligament {key}: unknown joint {j}")
+    kept = scope(anatomy, regions, muscles, labelled)
     unresolved: list[dict[str, str]] = []
     entities: dict[str, dict[str, Any]] = {}
     for section, kind in SECTIONS.items():
         out: dict[str, Any] = {}
         for key, entry in anatomy[section].items():
-            if kind == "muscle" and key not in roles["muscles"]:
+            if key not in kept[kind]:
                 continue
             uid = fid = None
             if kind in ONTOLOGY_KINDS:
@@ -427,26 +509,10 @@ def enrich(roles: dict[str, Any], model: dict[str, Any], anatomy: dict[str, Any]
             }
         entities[kind] = out
 
-    missing = sorted(set(roles["muscles"]) - set(anatomy["muscles"]))
-    if missing:
-        raise ValueError(f"anatomy.yaml lacks muscles {missing}")
-    muscles: dict[str, Any] = {}
-    for key in roles["muscles"]:
-        entry = anatomy["muscles"][key]
-        mm = muscles_model[key]
-        origin = entry.get("origin", anatomy["bodies"][mm["originBody"]])
-        insertion = entry.get("insertion", anatomy["bodies"][mm["insertionBody"]])
-        check_attachment(key, "origin", origin, bones, mm["pathBodies"])
-        check_attachment(key, "insertion", insertion, bones, mm["pathBodies"])
-        for g in entry["groups"]:
-            if g not in anatomy["groups"]:
-                raise ValueError(f"{key}: unknown group {g}")
-        if entry["nerve"] not in anatomy["nerves"]:
-            raise ValueError(f"{key}: unknown nerve {entry['nerve']}")
-        muscles[key] = {"origin": origin, "insertion": insertion, "groups": list(entry["groups"]), "nerve": entry["nerve"]}
-
     joints: dict[str, Any] = {}
     for key, entry in anatomy["joints"].items():
+        if key not in kept["joint"]:
+            continue
         bodies = set()
         for j in entry["opensim"]:
             bodies |= {joints_model[j]["parent"], joints_model[j]["child"]}
@@ -457,19 +523,13 @@ def enrich(roles: dict[str, Any], model: dict[str, Any], anatomy: dict[str, Any]
 
     ligaments: dict[str, Any] = {}
     for key, entry in anatomy["ligaments"].items():
-        for j in entry["stabilises"]:
-            if j not in anatomy["joints"]:
-                raise ValueError(f"ligament {key}: unknown joint {j}")
+        if key not in kept["ligament"]:
+            continue
         ligaments[key] = {"stabilises": list(entry["stabilises"])}
 
     coordinates: dict[str, Any] = {}
-    for coord in roles["config"]["coordinates"]:
-        entry = anatomy["coordinates"].get(coord)
-        if entry is None:
-            raise ValueError(f"anatomy.yaml lacks coordinate {coord}")
-        for k in ("positive", "negative"):
-            if entry[k] not in anatomy["actions"]:
-                raise ValueError(f"coordinate {coord}: unknown action {entry[k]}")
+    for coord in labelled:
+        entry = anatomy["coordinates"][coord]
         coordinates[coord] = {"joint": entry["joint"], "positive": entry["positive"], "negative": entry["negative"]}
 
     return {

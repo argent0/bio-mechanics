@@ -51,22 +51,6 @@
    "triangles": 265
   },
   {
-   "body": "patella_r",
-   "file": "patella_r.gltf",
-   "meshes": [
-    {
-     "file": "r_patella.vtp",
-     "scaleFactors": [
-      0.958,
-      0.958,
-      0.958
-     ]
-    }
-   ],
-   "vertices": 72,
-   "triangles": 140
-  },
-  {
    "body": "tibia_r",
    "file": "tibia_r.gltf",
    "meshes": [
@@ -89,6 +73,22 @@
    ],
    "vertices": 308,
    "triangles": 630
+  },
+  {
+   "body": "patella_r",
+   "file": "patella_r.gltf",
+   "meshes": [
+    {
+     "file": "r_patella.vtp",
+     "scaleFactors": [
+      0.958,
+      0.958,
+      0.958
+     ]
+    }
+   ],
+   "vertices": 72,
+   "triangles": 140
   },
   {
    "body": "talus_r",
@@ -155,22 +155,6 @@
    "triangles": 908
   },
   {
-   "body": "patella_l",
-   "file": "patella_l.gltf",
-   "meshes": [
-    {
-     "file": "l_patella.vtp",
-     "scaleFactors": [
-      0.958,
-      0.958,
-      0.958
-     ]
-    }
-   ],
-   "vertices": 72,
-   "triangles": 140
-  },
-  {
    "body": "tibia_l",
    "file": "tibia_l.gltf",
    "meshes": [
@@ -193,6 +177,22 @@
    ],
    "vertices": 308,
    "triangles": 630
+  },
+  {
+   "body": "patella_l",
+   "file": "patella_l.gltf",
+   "meshes": [
+    {
+     "file": "l_patella.vtp",
+     "scaleFactors": [
+      0.958,
+      0.958,
+      0.958
+     ]
+    }
+   ],
+   "vertices": 72,
+   "triangles": 140
   },
   {
    "body": "talus_l",
@@ -241,6 +241,656 @@
    ],
    "vertices": 958,
    "triangles": 1860
+  },
+  {
+   "body": "torso",
+   "file": "torso.gltf",
+   "meshes": [
+    {
+     "file": "hat_spine.vtp",
+     "scaleFactors": [
+      1.21013,
+      1.17781,
+      1.21013
+     ]
+    },
+    {
+     "file": "hat_ribs_scap.vtp",
+     "scaleFactors": [
+      1.21013,
+      1.17781,
+      1.21013
+     ]
+    }
+   ],
+   "vertices": 10325,
+   "triangles": 20418
+  },
+  {
+   "body": "humerus_r",
+   "file": "humerus_r.gltf",
+   "meshes": [
+    {
+     "file": "humerus_rv.vtp",
+     "scaleFactors": [
+      1.09817,
+      1.09817,
+      1.09817
+     ]
+    }
+   ],
+   "vertices": 340,
+   "triangles": 676
+  },
+  {
+   "body": "ulna_r",
+   "file": "ulna_r.gltf",
+   "meshes": [
+    {
+     "file": "ulna_rv.vtp",
+     "scaleFactors": [
+      1.01397,
+      1.01397,
+      1.01397
+     ]
+    }
+   ],
+   "vertices": 198,
+   "triangles": 392
+  },
+  {
+   "body": "radius_r",
+   "file": "radius_r.gltf",
+   "meshes": [
+    {
+     "file": "radius_rv.vtp",
+     "scaleFactors": [
+      1.01397,
+      1.01397,
+      1.01397
+     ]
+    }
+   ],
+   "vertices": 194,
+   "triangles": 384
+  },
+  {
+   "body": "hand_r",
+   "file": "hand_r.gltf",
+   "meshes": [
+    {
+     "file": "pisiform_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "lunate_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "scaphoid_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "triquetrum_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "hamate_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "capitate_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "trapezoid_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "trapezium_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal2_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "index_proximal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "index_medial_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "index_distal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal3_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "middle_proximal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "middle_medial_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "middle_distal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal4_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "ring_proximal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "ring_medial_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "ring_distal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal5_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "little_proximal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "little_medial_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "little_distal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal1_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "thumb_proximal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "thumb_distal_rvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    }
+   ],
+   "vertices": 4150,
+   "triangles": 8199
+  },
+  {
+   "body": "humerus_l",
+   "file": "humerus_l.gltf",
+   "meshes": [
+    {
+     "file": "humerus_lv.vtp",
+     "scaleFactors": [
+      1.09817,
+      1.09817,
+      1.09817
+     ]
+    }
+   ],
+   "vertices": 340,
+   "triangles": 676
+  },
+  {
+   "body": "ulna_l",
+   "file": "ulna_l.gltf",
+   "meshes": [
+    {
+     "file": "ulna_lv.vtp",
+     "scaleFactors": [
+      1.01397,
+      1.01397,
+      1.01397
+     ]
+    }
+   ],
+   "vertices": 198,
+   "triangles": 392
+  },
+  {
+   "body": "radius_l",
+   "file": "radius_l.gltf",
+   "meshes": [
+    {
+     "file": "radius_lv.vtp",
+     "scaleFactors": [
+      1.01397,
+      1.01397,
+      1.01397
+     ]
+    }
+   ],
+   "vertices": 194,
+   "triangles": 384
+  },
+  {
+   "body": "hand_l",
+   "file": "hand_l.gltf",
+   "meshes": [
+    {
+     "file": "pisiform_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "lunate_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "scaphoid_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "triquetrum_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "hamate_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "capitate_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "trapezoid_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "trapezium_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal2_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "index_proximal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "index_medial_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "index_distal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal3_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "middle_proximal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "middle_medial_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "middle_distal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal4_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "ring_proximal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "ring_medial_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "ring_distal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal5_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "little_proximal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "little_medial_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "little_distal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "metacarpal1_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "thumb_proximal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    },
+    {
+     "file": "thumb_distal_lvs.vtp",
+     "scaleFactors": [
+      0.85,
+      0.85,
+      0.85
+     ]
+    }
+   ],
+   "vertices": 4150,
+   "triangles": 8199
+  },
+  {
+   "body": "head",
+   "file": "head.gltf",
+   "meshes": [
+    {
+     "file": "hat_jaw.vtp",
+     "scaleFactors": [
+      1.21013,
+      1.17781,
+      1.21013
+     ]
+    },
+    {
+     "file": "hat_skull.vtp",
+     "scaleFactors": [
+      1.21013,
+      1.17781,
+      1.21013
+     ]
+    }
+   ],
+   "vertices": 4764,
+   "triangles": 9533
+  }
+ ],
+ "unmeshed": [
+  {
+   "body": "lumbar5",
+   "reason": "FBLS lumbar vertebra: its source holds no vertebra meshes"
+  },
+  {
+   "body": "lumbar4",
+   "reason": "FBLS lumbar vertebra: its source holds no vertebra meshes"
+  },
+  {
+   "body": "lumbar3",
+   "reason": "FBLS lumbar vertebra: its source holds no vertebra meshes"
+  },
+  {
+   "body": "lumbar2",
+   "reason": "FBLS lumbar vertebra: its source holds no vertebra meshes"
+  },
+  {
+   "body": "lumbar1",
+   "reason": "FBLS lumbar vertebra: its source holds no vertebra meshes"
+  },
+  {
+   "body": "Abdomen",
+   "reason": "FBLS wrapping body (abdominal wall)"
+  },
+  {
+   "body": "LB_wrap",
+   "reason": "FBLS wrapping body (lower back)"
+  },
+  {
+   "body": "cerv7",
+   "reason": "Mortensen cervical vertebra: the merged model attaches no mesh"
+  },
+  {
+   "body": "cerv6",
+   "reason": "Mortensen cervical vertebra: the merged model attaches no mesh"
+  },
+  {
+   "body": "cerv5",
+   "reason": "Mortensen cervical vertebra: the merged model attaches no mesh"
+  },
+  {
+   "body": "cerv4",
+   "reason": "Mortensen cervical vertebra: the merged model attaches no mesh"
+  },
+  {
+   "body": "cerv3",
+   "reason": "Mortensen cervical vertebra: the merged model attaches no mesh"
+  },
+  {
+   "body": "cerv2",
+   "reason": "Mortensen cervical vertebra: the merged model attaches no mesh"
+  },
+  {
+   "body": "cerv1",
+   "reason": "Mortensen cervical vertebra: the merged model attaches no mesh"
   }
  ],
  "transforms": {

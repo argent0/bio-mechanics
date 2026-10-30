@@ -72,8 +72,8 @@ def out(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Out]:
         fma.write_text(EMPTY_OWL)
     assert enrich_anatomy.main(["--roles", w["roles.json"], "--model", w["model.json"], "--uberon", str(uberon), "--fma", str(fma), "--out", w["enriched.json"]]) == 0
     assert export_graph.main(["--enriched", w["enriched.json"], "--out", w["graph.json"]]) == 0
-    assert export_meshes.main(["--model", w["model.json"], "--out", str(d / "meshes" / "index.json")]) == 0
-    assert export_muscle_paths.main([*common, "--kinematics", w["kinematics.csv"], "--phases", w["phases.csv"], "--out", w["muscle_paths.json"]]) == 0
+    assert export_meshes.main(["--model", w["model.json"], "--osim", str(REPO / paths.SCALED_MODEL), "--out", str(d / "meshes" / "index.json")]) == 0
+    assert export_muscle_paths.main([*LEG_MODEL, *common, "--kinematics", w["kinematics.csv"], "--phases", w["phases.csv"], "--out", w["muscle_paths.json"]]) == 0
     assert export_dynamics.main([*common, "--moment-arms", w["moment_arms.csv"], "--phases", w["phases.csv"], "--kinematics", w["kinematics.csv"], "--model", w["model.json"], "--out", w["dynamics.json"]]) == 0
     yield Out(d)
 
@@ -179,7 +179,7 @@ def test_graph_is_well_typed(out: Out) -> None:
 
 def test_meshes_are_scaled_gltf(out: Out) -> None:
     idx = out.meshes
-    assert idx["format"] == "bm-meshes/1" and len(idx["bodies"]) == 13
+    assert idx["format"] == "bm-meshes/1" and len(idx["bodies"]) == 22  # every Rajagopal body
     pelvis = idx["bodies"][0]
     assert pelvis["body"] == "pelvis" and pelvis["meshes"][0]["scaleFactors"] != [1.0, 1.0, 1.0]
     for b in idx["bodies"]:
@@ -205,7 +205,7 @@ def test_muscle_paths_match_opensim_lengths(out: Out) -> None:
             poly = sum(math.dist(pts[i], pts[i + 1]) for i in range(len(pts) - 1))
             assert poly == pytest.approx(lengths[m][round(p["time"][k], 6)], rel=0.02), m
     kin = read_csv(out.dir / "kinematics.csv")
-    assert len(p["time"]) == math.ceil(len(kin.time) / 2)
+    assert len(p["time"]) == math.ceil(len(kin.time) / 4)
 
 
 def test_dynamics_share_the_clip_and_hold_the_pelvis_level_in_mid_stance(out: Out) -> None:
