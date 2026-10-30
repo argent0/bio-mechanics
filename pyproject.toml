@@ -1,0 +1,9 @@
+# Python tooling for the whole repository. Generated modules live in generated/py.
+[tool.mypy]
+strict = true
+mypy_path = "generated/py"
+explicit_package_bases = true
+
+[tool.pytest.ini_options]
+pythonpath = ["generated/py", "."]
+testpaths = ["tests", "pipeline/tests", "tools"]

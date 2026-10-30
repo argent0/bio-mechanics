@@ -1,0 +1,14 @@
+# Lean
+spec/.lake/
+# Python
+__pycache__/
+*.pyc
+.mypy_cache/
+.venv/
+# Node
+node_modules/
+web/dist/
+# Data: large raw downloads stay local
+data/raw/**/*.mot
+data/raw/**/*.trc
+data/raw/**/*.vtp
