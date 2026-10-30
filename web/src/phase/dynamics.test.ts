@@ -19,7 +19,7 @@ const real = new QueryEngine(new GraphStore(GRAPH));
 describe("parseDynamics", () => {
   it("reads the pipeline's file on the clip's frames", () => {
     expect(Array.from(dyn.time)).toEqual(Array.from(clip.time));
-    expect(dyn.coordinates.map((c) => c.coordinate)).toEqual(["hip_flexion_r", "hip_adduction_r", "hip_rotation_r", "knee_angle_r", "ankle_angle_r"]);
+    expect(dyn.coordinates.map((c) => c.coordinate)).toEqual(["hip_flexion_r", "hip_adduction_r", "hip_rotation_r", "knee_angle_r", "ankle_angle_r", "hip_flexion_l", "hip_adduction_l", "hip_rotation_l", "knee_angle_l", "ankle_angle_l"]);
     const knee = dyn.coordinates[3]!;
     expect([knee.joint, knee.positive, knee.negative]).toEqual(["joint:knee_r", "action:knee_flexion_r", "action:knee_extension_r"]);
     for (const id of [knee.joint, knee.positive, knee.negative, ...knee.moments.keys()]) expect(real.node(id)).toBeDefined();

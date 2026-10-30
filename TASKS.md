@@ -122,11 +122,21 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Branch | Inputs | Outputs | Acceptance |
 |---|---|---|---|---|---|---|---|---|---|
-| S | Lean spec additions | opus / xhigh | `a19ea05ec567d708b` | 0 | running | `ws/S` | C1, D-008 | stage `buildModel` before `loadModel`; component `RegionFilter`; region emitters | acyclicity and layering theorems; zero `sorry`; `ninja -n -f generated/pipeline.ninja` |
-| L | Left leg | opus / high | `a3bc0e6b1242c20ea` | 0 | running | `ws/L` | C1–C3, D-007 | both legs on the reference timeline; left anatomy by mirroring; left meshes, paths, dynamics | 40 left-leg muscles; `compare_graph.py --within-committed` passes; mirrored teaching examples; `checkGraph` |
-| D2 | Upper-body data | sonnet / high | — | 0 | todo | `ws/D2` | D-008, K19 picks | fetch script, `SHA256SUMS`, `SOURCES.md` section | `check_env.py` loads the model in OpenSim 4.6 |
-| W1 | Web, whole-body views | sonnet / high | `a208befd13ed6f3b2` | 0 | review (waits on S: boundary test) | `ws/W1` | C2, C3 | whole-skeleton framing; region and side filter; panels grouped by region and side; search across regions | `tsc`; web tests; boundary test with `RegionFilter` once S merges |
+| S | Lean spec additions | opus / xhigh | `a19ea05ec567d708b` | 0 | merged | `ws/S` | C1, D-008 | stage `buildModel` before `loadModel`; component `RegionFilter`; region emitters | acyclicity and layering theorems; zero `sorry`; `ninja -n -f generated/pipeline.ninja` |
+| L | Left leg | opus / high | `a3bc0e6b1242c20ea` | 0 | merged | `ws/L` | C1–C3, D-007 | both legs on the reference timeline; left anatomy by mirroring; left meshes, paths, dynamics | 40 left-leg muscles; `compare_graph.py --within-committed` passes; mirrored teaching examples; `checkGraph` |
+| D2 | Upper-body data | sonnet / high | `a25da4ada23abbe0a` | 0 | running (arm, neck; trunk waits on the director) | `ws/D2` | D-008, K19 picks | fetch script, `SHA256SUMS`, `SOURCES.md` section | `check_env.py` loads the model in OpenSim 4.6 |
+| W1 | Web, whole-body views | sonnet / high | `a208befd13ed6f3b2` | 0 | merged | `ws/W1` | C2, C3 | whole-skeleton framing; region and side filter; panels grouped by region and side; search across regions | `tsc`; web tests; boundary test with `RegionFilter` once S merges |
 | G2 | CI | sonnet / medium | — | 0 | todo | `ws/G2` | D2 | CI fetches and caches the upper-body model; every stage runs | CI green on `main`; pipeline job under 15 minutes |
+
+| Task | State | Detail |
+|---|---|---|
+| K20 Pass-through `pipeline/build_model.py`, empty `pipeline/config/model.yaml` (M's paths, before M starts) | merged | ninja needs both; pipeline output byte-identical |
+| K21 App wires `RegionFilter` (`web/src/main.ts`, `web/index.html`) | merged | search, GraphView, PhasePanel, DynamicsPanel, Viewer3D share one filter |
+| K22 Stage scripts default to `paths.MERGED_MODEL`, `paths.IK_FULL` (the reads ninja declares) | todo | M: `load_model.py`, `static_opt.py`, `moment_arms.py`, `segment_phases.py`; P4: export scripts |
+| K23 `buildModel` reads the upper-body model files once D2 fixes their paths | todo | S follow-up |
+| K24 L's web-test line (ten coordinates in `dynamics.json`); left-aware FMA subset on main | merged | graph 207 nodes, 1096 edges; reproduces on main |
+
+L findings: left vasti brake left knee flexion in reference pre-swing (left loading response); lateral gastrocnemius_l stays under the D-006 floor early in left mid-stance (mean 0.027), while soleus_l and gasmed_l brake. Left foot on a force plate 0.84–1.59 s; left events at 0.45 s and 1.97 s come from markers. Five left entities share a side-neutral FMA id (`mtp`, `gluteals`, `hamstrings`, `deltoid`, `nervePiriformis`).
 
 ## Wave 2
 

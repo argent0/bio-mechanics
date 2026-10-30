@@ -179,7 +179,7 @@ The director starts the coordinator on Opus 5.5 (`claude --model opus`, effort `
 | Merged muscles leave large reserves | M tunes path points and optimal fibre lengths within the source model's ranges; past two rounds the coordinator opens an investigation (K20) and asks the director. |
 | Static optimisation shows arm swing as nearly passive | That is a known feature of walking; P4 records it in a test and the app shows it as a teaching example. |
 | The trial has head markers for zero frames, so neck angles rest on D-010's assumption | M pins the assumption in `pipeline/config/model.yaml` and its code comments; the app labels neck roles as resting on it. |
-| The left foot leaves the force plates outside 0.40–1.98 s | L takes left events from markers there, as today, and pins the method in code comments. |
+| The left foot stands on a force plate from 0.84 s to 1.59 s only | L takes the left events outside that window from markers and pins the method in code comments (done). |
 | Many more tubes slow the viewer | W2 merges tube geometry per region and measures frame rate in its acceptance test. |
 | Right-leg roles drift through the merged model | Principle 6: `compare_graph.py` gates every merge into `main`. |
 | Token spend grows with the workstream count | Web, CI and data work run on Sonnet 5.5; lookups on Haiku 5.5; Fable 5.1 only on escalation. |

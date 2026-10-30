@@ -20,7 +20,7 @@ Open work only. The code holds everything built so far; `README.md` points into 
 
 ## Known limits
 
-- One subject, one trial. The left foot is off the force plates before 0.40 s and after 1.98 s, so left-leg events there come from markers.
-- The graph covers the right lower limb and pelvis; the viewer draws every model muscle and selects the right-leg ones.
+- One subject, one trial. The left foot stands on a force plate from 0.84 s to 1.59 s; the left toe-off at 0.45 s and the left initial contact at 1.97 s come from markers (`pipeline/label_roles.py`).
+- The graph covers both lower limbs and the pelvis; trunk, arms and neck follow with the model merge (`plan.md`, `TASKS.md` Whole body).
 - Solver drift across machines changes a small share of edges (`scripts/compare_graph.py` sets the tolerance). Three roles sit within 10 % of a threshold: gluteus maximus 1 as a mid-stance stabiliser of hip abduction, and gluteus medius 1 and semitendinosus near the helper share in loading-response hip extension.
 - Some anatomy entities have no Uberon or FMA identifier.
