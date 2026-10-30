@@ -1,7 +1,9 @@
 import cytoscape from "cytoscape";
 import type { Edge, Kind, Period } from "@gen/types";
 import type { QueryEngine } from "../query/QueryEngine";
+import type { RegionFilter } from "../region";
 import { COLOURS, kindIcon } from "./icons";
+import { placeLabel } from "./search";
 
 /** Spacing of the selection ring: centre-to-centre distance between
  * neighbours on the ring, and the ring's smallest radius (px). */
@@ -65,6 +67,7 @@ export class GraphView {
   /** SVG layer under the graph canvas that draws `bands`. */
   private readonly bandLayer: SVGSVGElement;
   private bands: Bands | null = null;
+  private filter: RegionFilter | null = null;
 
   constructor(container: HTMLElement, private readonly query: QueryEngine, private readonly details: HTMLElement) {
     this.bandLayer = document.createElementNS(SVG_NS, "svg");
@@ -91,6 +94,22 @@ export class GraphView {
     this.cy.on("tap", "node", (ev) => this.focus(ev.target.id() as string));
     this.cy.on("tap", (ev) => { if (ev.target === this.cy) this.clear(); });
     this.cy.on("render", () => this.drawBands());
+  }
+
+  /** Show only the nodes that pass `filter` (a movement or phase always passes), and follow its changes. */
+  setFilter(filter: RegionFilter): () => void {
+    this.filter = filter;
+    this.applyFilter();
+    return filter.onChange(() => this.applyFilter());
+  }
+
+  private applyFilter(): void {
+    this.cy.batch(() => {
+      this.cy.nodes().forEach((n) => {
+        const node = this.query.node(n.id());
+        n.style("display", !this.filter || !node || this.filter.passes(node) ? "element" : "none");
+      });
+    });
   }
 
   /** A `precedes` edge from a phase of one period to a phase of the other. */
@@ -285,6 +304,6 @@ export class GraphView {
     heading.prepend(kindIcon(n.kind));
     const span = this.query.phaseCycle(id)?.phases.find((p) => p.phase.id === id);
     const where = span ? [el("p", `${span.startPct.toFixed(0)}–${span.endPct.toFixed(0)} % of the cycle, phase ${span.order + 1}`)] : [];
-    this.details.replaceChildren(heading, names, el("p", `kind: ${n.kind}, side: ${n.side}`), ...where, el("h4", "Neighbours"), list);
+    this.details.replaceChildren(heading, names, el("p", `kind: ${n.kind}, place: ${placeLabel(n)}`), ...where, el("h4", "Neighbours"), list);
   }
 }

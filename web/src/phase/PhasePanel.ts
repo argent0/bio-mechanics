@@ -2,18 +2,21 @@
  * PhasePanel: the current phase of the Timeline with its joint actions and, per action, the
  * muscles with role and work type (model in `model.ts`). A muscle row opens its activation curve
  * (inline SVG); a click on the row selects the muscle through the Timeline, which the viewer
- * highlights.
+ * highlights. Actions sit under one heading per region and side ("Lower limb, right"), regions
+ * in `REGION` order, sides right, left, midline; an optional `RegionFilter` narrows the groups.
  */
 import type { QueryEngine } from "../query/QueryEngine";
 import type { Timeline } from "../timeline/Timeline";
-import { phasePanelModel, ROLE_HINT, type MuscleRow, type PhaseModel } from "./model";
+import type { RegionFilter } from "../region";
+import { phasePanelModel, ROLE_HINT, type ActionRow, type MuscleRow, type PhaseModel } from "./model";
 
 const CSS = `
 .bm-pp { font: 13px/1.4 system-ui, sans-serif; padding: 12px; overflow: auto; }
 .bm-pp h2 { margin: 0; font-size: 18px; }
 .bm-pp h2 small { display: block; font-weight: 400; font-size: 13px; color: #555; }
-.bm-pp h3 { margin: 14px 0 4px; font-size: 14px; }
-.bm-pp h3 small { font-weight: 400; color: #555; }
+.bm-pp h3.group { margin: 18px 0 0; padding: 2px 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; background: #e8edf3; color: #333; }
+.bm-pp h4 { margin: 10px 0 4px; font-size: 14px; }
+.bm-pp h4 small { font-weight: 400; color: #555; }
 .bm-pp ul { list-style: none; margin: 0; padding: 0; }
 .bm-pp li { border-top: 1px solid #e3e6ea; }
 .bm-pp .row { display: grid; grid-template-columns: 5.6em 1fr auto auto; gap: 8px; align-items: baseline; padding: 4px 4px; cursor: pointer; }
@@ -53,13 +56,14 @@ export class PhasePanel {
   private model: PhaseModel | undefined;
   private readonly offs: (() => void)[] = [];
 
-  constructor(private readonly el: HTMLElement, private readonly opts: { query: QueryEngine; timeline: Timeline }) {
+  constructor(private readonly el: HTMLElement, private readonly opts: { query: QueryEngine; timeline: Timeline; filter?: RegionFilter }) {
     if (!el.ownerDocument.getElementById("bm-pp-style")) {
       el.ownerDocument.head.append(Object.assign(el.ownerDocument.createElement("style"), { id: "bm-pp-style", textContent: CSS }));
     }
     el.classList.add("bm-pp");
     this.offs.push(opts.timeline.onPhase((band) => this.show(band.id)));
     this.offs.push(opts.timeline.onSelect(() => this.markSelection()));
+    if (opts.filter) this.offs.push(opts.filter.onChange(() => this.show(this.opts.timeline.phase.id)));
     el.addEventListener("click", (e) => this.onClick(e));
     this.show(opts.timeline.phase.id);
   }
@@ -70,19 +74,23 @@ export class PhasePanel {
   }
 
   private show(phaseId: string): void {
-    this.model = phasePanelModel(this.opts.query, phaseId);
+    this.model = phasePanelModel(this.opts.query, phaseId, this.opts.filter?.selection);
     this.el.innerHTML = this.model ? this.render(this.model) : "";
   }
 
   private render(m: PhaseModel): string {
     const band = this.opts.timeline.phase;
-    const actions = m.actions
+    const actions = m.groups
       .map(
-        (a) => `<h3>${esc(a.commonName ?? a.name)} <small>(${esc(a.name)}, ${a.rangeDeg.toFixed(0)}&deg;)</small></h3>
-        <ul>${a.muscles.map((r) => this.muscleLi(a.id, r)).join("") || "<li><em>no muscle labelled in this phase</em></li>"}</ul>`,
+        (g) => `<h3 class="group" data-region="${g.region ?? ""}" data-side="${g.side}">${esc(g.heading)}</h3>${g.items.map((a) => this.actionHtml(a)).join("")}`,
       )
       .join("");
     return `<h2>${esc(m.commonName ?? m.name)}<small>${esc(m.name)}, ${band.startPct.toFixed(0)}-${band.endPct.toFixed(0)} % of the stride</small></h2>${actions}`;
+  }
+
+  private actionHtml(a: ActionRow): string {
+    return `<h4>${esc(a.commonName ?? a.name)} <small>(${esc(a.name)}, ${a.rangeDeg.toFixed(0)}&deg;)</small></h4>
+      <ul>${a.muscles.map((r) => this.muscleLi(a.id, r)).join("") || "<li><em>no muscle labelled in this phase</em></li>"}</ul>`;
   }
 
   private muscleLi(actionId: string, r: MuscleRow): string {

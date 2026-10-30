@@ -13,14 +13,19 @@
  * colour scale (`viewer/colour.ts`). The marker under the bar is the net moment, and the action
  * the joint is moving toward is set in bold.
  *
+ * Both views sit under one heading per region and side ("Lower limb, right"), regions in
+ * `REGION` order, sides right, left, midline (`region/`); a tug-of-war bar belongs to its joint.
+ * An optional `RegionFilter` narrows the groups.
+ *
  * A click on a row or segment selects the muscle through the Timeline.
  */
 import type { QueryEngine } from "../query/QueryEngine";
 import type { MusclePaths } from "../timeline/clip";
 import type { Timeline } from "../timeline/Timeline";
+import { groupByRegionSide, type Placed, type RegionFilter } from "../region";
 import { HUE, SATURATION, WORK_LABEL, type WorkType } from "../viewer/colour";
 import { momentScale, tugOfWarAt, type Dynamics, type Segment, type TugOfWar } from "./dynamics";
-import { sequenceModel, type SequenceRow } from "./sequence";
+import { sequenceGroups, sequenceModel, type SequenceRow } from "./sequence";
 
 const CSS = `
 .bm-dp { font: 13px/1.4 system-ui, sans-serif; padding: 12px; overflow: auto; }
@@ -28,6 +33,7 @@ const CSS = `
 .bm-dp h2 small { font-weight: 400; font-size: 12px; color: #555; }
 .bm-dp p.hint { margin: 0 0 6px; color: #555; font-size: 12px; }
 .bm-dp section + section { margin-top: 18px; }
+.bm-dp h3.group { margin: 12px 0 4px; padding: 2px 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; background: #e8edf3; color: #333; }
 .bm-dp svg { display: block; width: 100%; }
 .bm-dp [data-muscle] { cursor: pointer; }
 .bm-dp .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: #444; margin-top: 6px; }
@@ -64,7 +70,7 @@ export class DynamicsPanel {
 
   constructor(
     private readonly el: HTMLElement,
-    private readonly opts: { query: QueryEngine; timeline: Timeline; clip: MusclePaths; dynamics: Dynamics },
+    private readonly opts: { query: QueryEngine; timeline: Timeline; clip: MusclePaths; dynamics: Dynamics; filter?: RegionFilter },
   ) {
     const doc = el.ownerDocument;
     if (!doc.getElementById("bm-dp-style")) doc.head.append(Object.assign(doc.createElement("style"), { id: "bm-dp-style", textContent: CSS }));
@@ -76,6 +82,7 @@ export class DynamicsPanel {
     this.offs.push(opts.timeline.onPhase(() => this.showPhase()));
     this.offs.push(opts.timeline.onTime(() => this.tick()));
     this.offs.push(opts.timeline.onSelect(() => this.tick()));
+    if (opts.filter) this.offs.push(opts.filter.onChange(() => this.showPhase()));
     el.addEventListener("click", (e) => {
       const hit = (e.target as Element).closest<Element>("[data-muscle]");
       const id = hit?.getAttribute("data-muscle");
@@ -91,7 +98,7 @@ export class DynamicsPanel {
 
   private showPhase(): void {
     const band = this.opts.timeline.phase;
-    this.rows = sequenceModel(this.opts.query, band.id);
+    this.rows = sequenceModel(this.opts.query, band.id, this.opts.filter?.selection);
     this.tick();
   }
 
@@ -114,13 +121,26 @@ export class DynamicsPanel {
 
   private sequence(): string {
     const { timeline } = this.opts;
+    const band = timeline.phase;
+    const groups = sequenceGroups(this.rows).map((g) => `<h3 class="group">${esc(g.heading)}</h3>${this.sequenceSvg(g.items)}`).join("");
+    return `<h2>Sequence <small>${esc(band.plainName)}, ${band.startPct.toFixed(0)}-${band.endPct.toFixed(0)} % of the stride</small></h2>
+      <p class="hint">Activation across the phase, darker is harder; muscles in the order they peak.</p>${groups || this.none()}`;
+  }
+
+  private none(): string {
+    return `<p class="hint"><em>nothing on the selected regions and sides</em></p>`;
+  }
+
+  /** One group's strip chart: its rows, the playhead, and the phase axis. */
+  private sequenceSvg(rows: SequenceRow[]): string {
+    const { timeline } = this.opts;
     const labels = this.rowLabels();
     const band = timeline.phase;
     const sel = timeline.selectedId;
-    const cols = this.rows[0]?.activation.length ?? 0;
+    const cols = rows[0]?.activation.length ?? 0;
     const cw = cols > 0 ? (W - LABEL_W) / cols : 0;
-    const h = this.rows.length * CELL_H + 16;
-    const rows = this.rows
+    const h = rows.length * CELL_H + 16;
+    const body = rows
       .map((r, k) => {
         const y = k * CELL_H;
         const cells = r.activation
@@ -136,18 +156,25 @@ export class DynamicsPanel {
     const cx = LABEL_W + Math.min(1, Math.max(0, x)) * (W - LABEL_W);
     const axis = `<text x="${LABEL_W}" y="${h - 3}" font-size="10" fill="#666">start</text><text x="${W}" y="${h - 3}" font-size="10" fill="#666" text-anchor="end">end of phase</text>`;
     const cursor = `<line x1="${cx.toFixed(1)}" x2="${cx.toFixed(1)}" y1="0" y2="${h - 14}" stroke="#111" stroke-width="1.5"/>`;
-    return `<h2>Sequence <small>${esc(band.plainName)}, ${band.startPct.toFixed(0)}-${band.endPct.toFixed(0)} % of the stride</small></h2>
-      <p class="hint">Activation across the phase, darker is harder; muscles in the order they peak.</p>
-      <svg viewBox="0 0 ${W} ${h}" role="img" aria-label="Muscle activation across the phase">${rows}${cursor}${axis}</svg>`;
+    return `<svg viewBox="0 0 ${W} ${h}" role="img" aria-label="Muscle activation across the phase">${body}${cursor}${axis}</svg>`;
   }
 
-  private tugOfWar(bars: TugOfWar[]): string {
-    const h = bars.length * ROW_H;
-    const body = bars.map((b, k) => this.bar(b, k * ROW_H)).join("");
+  /** Where a bar sits on the body: its joint's region and side. */
+  private placed(b: TugOfWar): Placed {
+    const joint = this.opts.query.node(b.joint);
+    return { region: joint?.region ?? null, side: joint?.side ?? "midline" };
+  }
+
+  private tugOfWar(all: TugOfWar[]): string {
+    const filter = this.opts.filter;
+    const bars = filter ? all.filter((b) => filter.passes(this.placed(b))) : all;
+    const body = groupByRegionSide(bars, (b) => this.placed(b))
+      .map((g) => `<h3 class="group">${esc(g.heading)}</h3><svg viewBox="0 0 ${W} ${g.items.length * ROW_H}" role="img" aria-label="Muscle moments about the joints of ${esc(g.heading)} at the playhead">${g.items.map((b, k) => this.bar(b, k * ROW_H)).join("")}</svg>`)
+      .join("");
     const legend = (Object.keys(WORK_LABEL) as WorkType[]).map((w) => `<span><i style="background:${workFill(w)}"></i>${esc(WORK_LABEL[w])}</span>`).join("");
     return `<h2>Tug of war <small>muscle moments at the playhead</small></h2>
       <p class="hint">Left pushes toward the left action, right toward the right one; the marker is the net. Each bar spans its joint's largest push in the stride. Bold: where the joint is heading.</p>
-      <svg viewBox="0 0 ${W} ${h}" role="img" aria-label="Muscle moments about each joint at the playhead">${body}</svg>
+      ${body || this.none()}
       <div class="legend">${legend}</div>`;
   }
 
