@@ -130,7 +130,8 @@ def pipelineJson (p : PipelineSpec) : J :=
     ("stages", .arr (p.stages.map fun s => .obj [("name", .str s.name), ("doc", .ofOpt s.doc),
       ("script", .str s.script), ("module", .str (pyModuleOf s.script)),
       ("reads", J.strs s.reads), ("writes", J.strs s.writes),
-      ("inputs", J.strs s.inputs), ("outputs", J.strs s.outputs)])),
+      ("inputs", J.strs s.inputs), ("outputs", J.strs s.outputs),
+      ("imports", J.strs s.imports), ("codeInputs", J.strs s.codeInputs)])),
     ("edges", .arr (p.edges.map fun (a, b) =>
       .obj [("source", .str a), ("target", .str b), ("artefacts", J.strs (p.passed a b))])),
     ("topoOrder", J.strs p.topoOrder),

@@ -14,7 +14,7 @@ python = $$HOME/.local/share/bm-opensim/bin/python
 rule buildModel
   command = $python -m pipeline.build_model
   description = buildModel: Merge the trunk, arm, and neck muscles of the upper-body models onto the scaled Rajagopal model, give the head its own body behind a neck joint, and add the neck angles that hold the head level in space to the joint angles (D-008, D-009, D-010).
-build data/work/model.osim data/work/ik_full.mot: buildModel data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot pipeline/config/model.yaml data/raw/rajagopal/walk_pipeline/Scale/scaleSet_applied_walk.xml data/raw/rajagopal/walk_pipeline/Scale/scale_output_walk.mot data/raw/fbls/FBLSmodel.osim data/raw/holzbaur/Stanford_VA_Upper_Limb_original.osim data/raw/mortensen/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim data/raw/mortensen/Geometry/skull.vtp data/raw/rajagopal/Geometry | pipeline/build_model.py
+build data/work/model.osim data/work/ik_full.mot: buildModel data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/raw/rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot pipeline/config/model.yaml data/raw/rajagopal/walk_pipeline/Scale/scaleSet_applied_walk.xml data/raw/rajagopal/walk_pipeline/Scale/scale_output_walk.mot data/raw/fbls/FBLSmodel.osim data/raw/holzbaur/Stanford_VA_Upper_Limb_original.osim data/raw/mortensen/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim data/raw/mortensen/Geometry/skull.vtp data/raw/rajagopal/Geometry | pipeline/build_model.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py pipeline/export_meshes.py
 build buildModel: phony data/work/model.osim data/work/ik_full.mot
 
 # Load the merged model and the walking trial with the OpenSim API.
@@ -28,7 +28,7 @@ build loadModel: phony data/work/model.json data/work/kinematics.csv data/work/g
 rule runStaticOpt
   command = $python -m pipeline.static_opt
   description = runStaticOpt: Static optimisation: muscle activations per frame.
-build data/work/activations.csv: runStaticOpt data/work/model.osim data/raw/rajagopal/walk_pipeline/ID/grf_walk.xml data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot data/work/kinematics.csv | pipeline/static_opt.py
+build data/work/activations.csv: runStaticOpt data/work/model.osim data/raw/rajagopal/walk_pipeline/ID/grf_walk.xml data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot data/work/kinematics.csv | pipeline/static_opt.py pipeline/load_model.py
 build runStaticOpt: phony data/work/activations.csv
 
 # Moment arm and muscle-tendon length per muscle, coordinate, and frame;
@@ -36,7 +36,7 @@ build runStaticOpt: phony data/work/activations.csv
 rule computeMomentArms
   command = $python -m pipeline.moment_arms
   description = computeMomentArms: Moment arm and muscle-tendon length per muscle, coordinate, and frame; length velocity gives concentric or eccentric work.
-build data/work/moment_arms.csv data/work/mt_lengths.csv: computeMomentArms data/work/model.osim data/work/kinematics.csv | pipeline/moment_arms.py
+build data/work/moment_arms.csv data/work/mt_lengths.csv: computeMomentArms data/work/model.osim data/work/kinematics.csv | pipeline/moment_arms.py pipeline/load_model.py
 build computeMomentArms: phony data/work/moment_arms.csv data/work/mt_lengths.csv
 
 # Detect gait events and drive the generated gait FSM to label each frame
@@ -44,7 +44,7 @@ build computeMomentArms: phony data/work/moment_arms.csv data/work/mt_lengths.cs
 rule segmentPhases
   command = $python -m pipeline.segment_phases
   description = segmentPhases: Detect gait events and drive the generated gait FSM to label each frame with its phase.
-build data/work/phases.csv: segmentPhases data/work/model.osim data/work/kinematics.csv data/work/grf.csv | pipeline/segment_phases.py
+build data/work/phases.csv: segmentPhases data/work/model.osim data/work/kinematics.csv data/work/grf.csv | pipeline/segment_phases.py pipeline/load_model.py pipeline/moment_arms.py
 build segmentPhases: phony data/work/phases.csv
 
 # Classify each muscle per phase and joint action as main mover, helper,
@@ -52,21 +52,21 @@ build segmentPhases: phony data/work/phases.csv
 rule labelRoles
   command = $python -m pipeline.label_roles
   description = labelRoles: Classify each muscle per phase and joint action as main mover, helper, stabiliser, or antagonist.
-build data/work/roles.json: labelRoles data/work/model.json data/work/activations.csv data/work/moment_arms.csv data/work/mt_lengths.csv data/work/phases.csv data/work/kinematics.csv pipeline/config/roles.yaml | pipeline/label_roles.py
+build data/work/roles.json: labelRoles data/work/model.json data/work/activations.csv data/work/moment_arms.csv data/work/mt_lengths.csv data/work/phases.csv data/work/kinematics.csv pipeline/config/roles.yaml | pipeline/label_roles.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py
 build labelRoles: phony data/work/roles.json
 
 # Add common names, ontology identifiers, attachments, and innervation.
 rule enrichAnatomy
   command = $python -m pipeline.enrich_anatomy
   description = enrichAnatomy: Add common names, ontology identifiers, attachments, and innervation.
-build data/work/enriched.json: enrichAnatomy data/work/roles.json data/work/model.json data/raw/ontology/uberon.obo data/raw/ontology/fma.owl data/curated/anatomy.yaml | pipeline/enrich_anatomy.py
+build data/work/enriched.json: enrichAnatomy data/work/roles.json data/work/model.json data/raw/ontology/uberon.obo data/raw/ontology/fma.owl data/curated/anatomy.yaml | pipeline/enrich_anatomy.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py
 build enrichAnatomy: phony data/work/enriched.json
 
 # Write the knowledge graph `data/out/graph.json` (contract C3).
 rule exportGraph
   command = $python -m pipeline.export_graph
   description = exportGraph: Write the knowledge graph `data/out/graph.json` (contract C3).
-build data/out/graph.json: exportGraph data/work/enriched.json | pipeline/export_graph.py
+build data/out/graph.json: exportGraph data/work/enriched.json | pipeline/export_graph.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py
 build exportGraph: phony data/out/graph.json
 
 # Convert the model's bone geometry to glTF, each mesh multiplied by its
@@ -74,7 +74,7 @@ build exportGraph: phony data/out/graph.json
 rule exportMeshes
   command = $python -m pipeline.export_meshes
   description = exportMeshes: Convert the model's bone geometry to glTF, each mesh multiplied by its scale factors from the merged model.
-build data/out/meshes/index.json: exportMeshes data/work/model.osim data/work/model.json data/raw/rajagopal/Geometry | pipeline/export_meshes.py
+build data/out/meshes/index.json: exportMeshes data/work/model.osim data/work/model.json data/raw/rajagopal/Geometry | pipeline/export_meshes.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py
 build exportMeshes: phony data/out/meshes/index.json
 
 # Write muscle path points per frame for the tube renderer, with the
@@ -82,7 +82,7 @@ build exportMeshes: phony data/out/meshes/index.json
 rule exportMusclePaths
   command = $python -m pipeline.export_muscle_paths
   description = exportMusclePaths: Write muscle path points per frame for the tube renderer, with the bounds of the stride the knowledge graph describes.
-build data/out/muscle_paths.json: exportMusclePaths data/work/model.osim data/work/kinematics.csv data/work/activations.csv data/work/mt_lengths.csv data/work/phases.csv | pipeline/export_muscle_paths.py
+build data/out/muscle_paths.json: exportMusclePaths data/work/model.osim data/work/kinematics.csv data/work/activations.csv data/work/mt_lengths.csv data/work/phases.csv | pipeline/export_muscle_paths.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py pipeline/label_roles.py pipeline/export_meshes.py
 build exportMusclePaths: phony data/out/muscle_paths.json
 
 # Write each muscle's moment about each joint coordinate, and the
@@ -90,5 +90,5 @@ build exportMusclePaths: phony data/out/muscle_paths.json
 rule exportDynamics
   command = $python -m pipeline.export_dynamics
   description = exportDynamics: Write each muscle's moment about each joint coordinate, and the coordinate's angle, per frame, for the dynamics panel.
-build data/out/dynamics.json: exportDynamics data/work/model.json data/work/kinematics.csv data/work/activations.csv data/work/moment_arms.csv data/work/mt_lengths.csv data/work/phases.csv pipeline/config/roles.yaml data/curated/anatomy.yaml | pipeline/export_dynamics.py
+build data/out/dynamics.json: exportDynamics data/work/model.json data/work/kinematics.csv data/work/activations.csv data/work/moment_arms.csv data/work/mt_lengths.csv data/work/phases.csv pipeline/config/roles.yaml data/curated/anatomy.yaml | pipeline/export_dynamics.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py pipeline/label_roles.py pipeline/enrich_anatomy.py pipeline/export_graph.py pipeline/export_meshes.py pipeline/export_muscle_paths.py
 build exportDynamics: phony data/out/dynamics.json

@@ -9,13 +9,20 @@ import BioMech.Acyclic
   muscles of the upper-body models attached to its bodies (D-008).
 * *Merge recipe*: the source models, the Rajagopal body each source body maps
   onto, and the neck assumption (D-010), in `pipeline/config/model.yaml`.
+* *Code dependency* of a stage: another stage whose script the stage's script
+  imports, directly or through further imports; its code runs inside the
+  importing stage (`Stage.codeDeps`).
+* *Implicit dependency*: a ninja input listed after `|`; a change to it
+  reruns the build statement.
 
 The offline data pipeline is a digraph of stages: an edge `a → b` means stage
 `b` runs after stage `a`. Each stage is one Python script under `pipeline/`
 that reads and writes the files listed here. Workstream C emits
 `generated/pipeline.ninja` from this file: one build edge per stage, in
-`topoOrder`, with `Stage.inputs` as dependencies and `Stage.outputs` as
-targets.
+`topoOrder`, with `Stage.inputs` as dependencies, `Stage.outputs` as targets,
+and `Stage.codeInputs` (the stage's script and the scripts of its code
+dependencies) as implicit dependencies, so an edited script reruns every stage
+that runs its code.
 
 Files fall into three groups, by directory (`Dir`):
 * sources, maintained outside the pipeline: `data/raw/` (downloads and the
@@ -43,7 +50,8 @@ it; every input of a stage is a source or an output of a stage upstream of it;
 each derived file has exactly one writer; `buildModel` runs upstream of every
 other stage and is the one stage that reads the scaled model, the
 inverse-kinematics motion, the merge recipe, and the files the recipe names
-(the meshes of `geometry` aside, which `exportMeshes` reads too).
+(the meshes of `geometry` aside, which `exportMeshes` reads too); every
+stage runs the code of `pipeline/load_model.py`.
 -/
 
 namespace BioMech.Pipeline
@@ -444,5 +452,59 @@ theorem merge_sources_feed_buildModel : ∀ s : Stage, ∀ a ∈ [Artefact.merge
     .scaleSet, .staticPose, .fblsModel, .holzbaurModel, .mortensenModel, .mortensenSkull],
     a ∈ s.reads ↔ s = .buildModel := by
   decide
+
+/-! ## Code -/
+
+/-- The stages whose scripts a stage's script imports, as `import pipeline.…`
+or `from pipeline.… import …` anywhere in the file, function bodies included.
+Every module of `pipeline/` a stage script imports is another stage's script;
+`tests/test_stage_imports.py` checks this list against the scripts. -/
+def Stage.imports : Stage → List Stage
+  | .buildModel => [.loadModel, .segmentPhases, .exportMeshes]
+  | .loadModel => []
+  | .runStaticOpt => [.loadModel]
+  | .computeMomentArms => [.loadModel]
+  | .segmentPhases => [.loadModel, .computeMomentArms]
+  | .labelRoles => [.loadModel, .segmentPhases]
+  | .enrichAnatomy => [.loadModel, .segmentPhases]
+  | .exportGraph => [.loadModel, .segmentPhases]
+  | .exportMeshes => [.loadModel, .segmentPhases]
+  | .exportMusclePaths => [.loadModel, .computeMomentArms, .segmentPhases, .labelRoles,
+      .exportMeshes]
+  | .exportDynamics => [.loadModel, .segmentPhases, .labelRoles, .enrichAnatomy, .exportGraph,
+      .exportMusclePaths]
+
+/-- Import edges between stage scripts: `(a, b)` when `a`'s script imports
+`b`'s. -/
+def importEdges : List (Stage × Stage) :=
+  Stage.all.flatMap fun s => s.imports.map (s, ·)
+
+/-- The import digraph of the stage scripts. -/
+abbrev importGraph : Digraph Stage := ofEdges importEdges
+
+/-- A stage's code dependencies: the stages it reaches along `importEdges`,
+itself aside, in `Stage.all` order. -/
+def Stage.codeDeps (s : Stage) : List Stage :=
+  let r := reachable importEdges s
+  Stage.all.filter fun t => decide (t ≠ s ∧ t ∈ r)
+
+/-- The scripts whose code a stage runs: its own script, then the scripts of
+its code dependencies. `generated/pipeline.ninja` lists them as the stage's
+implicit dependencies. -/
+def Stage.codeInputs (s : Stage) : List String := s.script :: s.codeDeps.map Stage.script
+
+/-- `codeDeps` is the transitive closure of the imports, the stage itself
+aside. -/
+theorem codeDeps_iff : ∀ s t : Stage,
+    t ∈ s.codeDeps ↔ t ≠ s ∧ Relation.TransGen importGraph.Adj s t := by
+  decide
+
+/-- Every stage besides `loadModel` runs the code of `pipeline/load_model.py`,
+so an edit there reruns the whole pipeline. -/
+theorem loadModel_code_everywhere : ∀ s : Stage, s ≠ .loadModel → .loadModel ∈ s.codeDeps := by
+  decide
+
+/-- The scripts import each other without cycles. -/
+theorem importGraph_acyclic : Acyclic importGraph := by decide
 
 end BioMech.Pipeline

@@ -23,6 +23,8 @@ class Stage(NamedTuple):
     """Paths the stage reads (`Stage.inputs`)."""
     outputs: tuple[str, ...]
     """Paths the stage writes (`Stage.outputs`)."""
+    imports: tuple[str, ...]
+    """Modules of other stages the stage's script imports (`Stage.imports`), e.g. `pipeline.load_model`."""
 
 
 SCALED_MODEL: Final = "data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim"
@@ -165,6 +167,7 @@ BUILD_MODEL: Final = Stage(
     module="pipeline.build_model",
     inputs=(SCALED_MODEL, IK_MOTION, MERGE_RECIPE, SCALE_SET, STATIC_POSE, FBLS_MODEL, HOLZBAUR_MODEL, MORTENSEN_MODEL, MORTENSEN_SKULL, GEOMETRY),
     outputs=(MERGED_MODEL, IK_FULL),
+    imports=("pipeline.load_model", "pipeline.segment_phases", "pipeline.export_meshes"),
 )
 """Merge the trunk, arm, and neck muscles of the upper-body models onto the
 scaled Rajagopal model, give the head its own body behind a neck joint, and
@@ -178,6 +181,7 @@ LOAD_MODEL: Final = Stage(
     module="pipeline.load_model",
     inputs=(MERGED_MODEL, IK_FULL, GRF_MOTION),
     outputs=(MODEL, KINEMATICS, GRF),
+    imports=(),
 )
 """Load the merged model and the walking trial with the OpenSim API."""
 
@@ -187,6 +191,7 @@ RUN_STATIC_OPT: Final = Stage(
     module="pipeline.static_opt",
     inputs=(MERGED_MODEL, EXTERNAL_LOADS, GRF_MOTION, KINEMATICS),
     outputs=(ACTIVATIONS,),
+    imports=("pipeline.load_model",),
 )
 """Static optimisation: muscle activations per frame."""
 
@@ -196,6 +201,7 @@ COMPUTE_MOMENT_ARMS: Final = Stage(
     module="pipeline.moment_arms",
     inputs=(MERGED_MODEL, KINEMATICS),
     outputs=(MOMENT_ARMS, MT_LENGTHS),
+    imports=("pipeline.load_model",),
 )
 """Moment arm and muscle-tendon length per muscle, coordinate, and frame;
 length velocity gives concentric or eccentric work.
@@ -207,6 +213,7 @@ SEGMENT_PHASES: Final = Stage(
     module="pipeline.segment_phases",
     inputs=(MERGED_MODEL, KINEMATICS, GRF),
     outputs=(PHASES,),
+    imports=("pipeline.load_model", "pipeline.moment_arms"),
 )
 """Detect gait events and drive the generated gait FSM to label each frame
 with its phase.
@@ -218,6 +225,7 @@ LABEL_ROLES: Final = Stage(
     module="pipeline.label_roles",
     inputs=(MODEL, ACTIVATIONS, MOMENT_ARMS, MT_LENGTHS, PHASES, KINEMATICS, ROLE_THRESHOLDS),
     outputs=(ROLES,),
+    imports=("pipeline.load_model", "pipeline.segment_phases"),
 )
 """Classify each muscle per phase and joint action as main mover, helper,
 stabiliser, or antagonist.
@@ -229,6 +237,7 @@ ENRICH_ANATOMY: Final = Stage(
     module="pipeline.enrich_anatomy",
     inputs=(ROLES, MODEL, UBERON, FMA, CURATED_ANATOMY),
     outputs=(ENRICHED,),
+    imports=("pipeline.load_model", "pipeline.segment_phases"),
 )
 """Add common names, ontology identifiers, attachments, and innervation."""
 
@@ -238,6 +247,7 @@ EXPORT_GRAPH: Final = Stage(
     module="pipeline.export_graph",
     inputs=(ENRICHED,),
     outputs=(KNOWLEDGE_GRAPH,),
+    imports=("pipeline.load_model", "pipeline.segment_phases"),
 )
 """Write the knowledge graph `data/out/graph.json` (contract C3)."""
 
@@ -247,6 +257,7 @@ EXPORT_MESHES: Final = Stage(
     module="pipeline.export_meshes",
     inputs=(MERGED_MODEL, MODEL, GEOMETRY),
     outputs=(MESHES,),
+    imports=("pipeline.load_model", "pipeline.segment_phases"),
 )
 """Convert the model's bone geometry to glTF, each mesh multiplied by its
 scale factors from the merged model.
@@ -258,6 +269,7 @@ EXPORT_MUSCLE_PATHS: Final = Stage(
     module="pipeline.export_muscle_paths",
     inputs=(MERGED_MODEL, KINEMATICS, ACTIVATIONS, MT_LENGTHS, PHASES),
     outputs=(MUSCLE_PATHS,),
+    imports=("pipeline.load_model", "pipeline.moment_arms", "pipeline.segment_phases", "pipeline.label_roles", "pipeline.export_meshes"),
 )
 """Write muscle path points per frame for the tube renderer, with the
 bounds of the stride the knowledge graph describes.
@@ -269,6 +281,7 @@ EXPORT_DYNAMICS: Final = Stage(
     module="pipeline.export_dynamics",
     inputs=(MODEL, KINEMATICS, ACTIVATIONS, MOMENT_ARMS, MT_LENGTHS, PHASES, ROLE_THRESHOLDS, CURATED_ANATOMY),
     outputs=(DYNAMICS,),
+    imports=("pipeline.load_model", "pipeline.segment_phases", "pipeline.label_roles", "pipeline.enrich_anatomy", "pipeline.export_graph", "pipeline.export_muscle_paths"),
 )
 """Write each muscle's moment about each joint coordinate, and the
 coordinate's angle, per frame, for the dynamics panel.

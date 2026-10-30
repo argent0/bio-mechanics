@@ -6,16 +6,17 @@ import BioMech.Gen.Model
 `pipeline.ninja` holds one `rule` per stage, running `$python -m <module>` with
 the module named by `Stage.script`, and one `build` statement per stage, in
 `topoOrder`: targets from `Stage.outputs`, explicit dependencies from
-`Stage.inputs`, and the stage's script as an implicit dependency, so an edited
-script reruns its stage. A phony target named after each stage builds that
+`Stage.inputs`, and implicit dependencies from `Stage.codeInputs` (the stage's
+script and the scripts its code imports), so an edited script reruns every
+stage that runs its code. A phony target named after each stage builds that
 stage and its upstream stages, e.g. `ninja -f generated/pipeline.ninja
 loadModel`. A directory artefact (a path with a trailing `/`)
 appears without the slash, so ninja tracks the directory itself. Run it from the
 repository root: `ninja -f generated/pipeline.ninja`.
 
 `pipeline_paths.py` holds one constant per artefact (its path) and one `Stage`
-record per stage (script, module, inputs, outputs), so stage scripts take their
-default paths from the Lean data.
+record per stage (script, module, inputs, outputs, imported modules), so stage
+scripts take their default paths from the Lean data.
 
 ## Terms
 
@@ -44,7 +45,7 @@ def ninjaFile (p : PipelineSpec) : String :=
     [s!"rule {s.name}",
      s!"  command = $python -m {pyModuleOf s.script}",
      s!"  description = {ninjaValue s.name}: {ninjaValue (docSummary (s.doc.getD s.name))}",
-     s!"build {" ".intercalate (s.outputs.map ninjaPath)}: {s.name} {" ".intercalate (s.inputs.map ninjaPath)} | {ninjaPath s.script}",
+     s!"build {" ".intercalate (s.outputs.map ninjaPath)}: {s.name} {" ".intercalate (s.inputs.map ninjaPath)} | {" ".intercalate (s.codeInputs.map ninjaPath)}",
      s!"build {s.name}: phony {" ".intercalate (s.outputs.map ninjaPath)}"]
   let lines :=
     [s!"# {headerText p.loc.file}",
@@ -85,6 +86,7 @@ def pipelinePaths (p : PipelineSpec) : Except String String := do
      s!"    module={jsonQuote (pyModuleOf s.script)},",
      s!"    inputs={pyStrTuple (s.reads.map artConst)},",
      s!"    outputs={pyStrTuple (s.writes.map artConst)},",
+     s!"    imports={pyStrTuple (s.imports.filterMap fun n => (p.stage? n).map (jsonQuote <| pyModuleOf ·.script))},",
      ")"] ++ pyDocstring "" s.doc ++ [""]
   let lines :=
     [s!"# {headerText p.loc.file}",
@@ -102,6 +104,8 @@ def pipelinePaths (p : PipelineSpec) : Except String String := do
      "    module: str", "    \"\"\"The module `python -m` runs, e.g. `pipeline.load_model`.\"\"\"",
      "    inputs: tuple[str, ...]", "    \"\"\"Paths the stage reads (`Stage.inputs`).\"\"\"",
      "    outputs: tuple[str, ...]", "    \"\"\"Paths the stage writes (`Stage.outputs`).\"\"\"",
+     "    imports: tuple[str, ...]",
+     "    \"\"\"Modules of other stages the stage's script imports (`Stage.imports`), e.g. `pipeline.load_model`.\"\"\"",
      "", ""] ++
     p.artefacts.flatMap artLines ++ [""] ++
     p.stages.flatMap stageLines ++ [""] ++
