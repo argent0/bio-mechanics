@@ -124,16 +124,38 @@ def test_tibialis_anterior_is_no_mover_in_mid_stance(out: Out) -> None:
     assert roles.get("tibant_r") not in ("mainMover", "helper"), roles
 
 
+def test_adductor_magnus_has_no_role_in_mid_stance_hip_abduction(out: Out) -> None:
+    """The adductor magnus parts sit near 0.01 activation in mid-stance: inactive (D-006)."""
+    act = out.action("midStance", "hip_adduction_r")
+    roles = {m["muscle"] for m in act["muscles"]}
+    assert not roles & {"addmagDist_r", "addmagIsch_r", "addmagMid_r", "addmagProx_r"}, roles
+
+
+def test_calf_brakes_ankle_dorsiflexion_in_mid_stance(out: Out) -> None:
+    """Mid-stance: the tibia rolls forward over the planted foot (the ankle dorsiflexes) while
+    soleus and the gastrocnemius heads lengthen and resist it (eccentric antagonists)."""
+    act = out.action("midStance", "ankle_angle_r")
+    assert act["direction"] == 1 and not act["stabilised"]
+    roles = {m["muscle"]: (m["role"], m["contraction"]) for m in act["muscles"]}
+    for m in ("soleus_r", "gasmed_r", "gaslat_r"):
+        assert roles.get(m) == ("antagonist", "eccentric"), (m, roles)
+
+
 def test_roles_record_the_thresholds(out: Out) -> None:
     c = out.roles["config"]
     assert (c["momentArmMinM"], c["mainMoverMinShare"], c["helperMinShare"], c["antagonistMinShare"], c["stabiliserMinActivation"], c["stabiliserMaxChangeDeg"]) == (0.005, 0.25, 0.05, 0.05, 0.1, 5.0)
-    assert c["roleMinPeakFraction"] == 0.25
+    assert (c["roleMinActivation"], c["roleClearActivation"], c["roleMinPeakFraction"]) == (0.015, 0.05, 0.25)
     for p in out.roles["phases"]:
         for a in p["actions"]:
             for m in a["muscles"]:
                 assert len(m["activation"]) == len(m["momentArm"]) == c["samplesPerPhase"]
-                floor = c["stabiliserMinActivation"] if m["role"] == "stabiliser" else c["roleMinPeakFraction"] * m["stridePeakActivation"]
-                assert m["meanActivation"] >= floor - 1e-4, (p["phase"], a["coordinate"], m["muscle"])
+                where = (p["phase"], a["coordinate"], m["muscle"])
+                mean = m["meanActivation"] + 1e-4  # rounding in roles.json
+                if m["role"] == "stabiliser":
+                    assert mean >= c["stabiliserMinActivation"], where
+                else:
+                    assert mean >= c["roleMinActivation"], where
+                    assert mean >= min(c["roleClearActivation"], c["roleMinPeakFraction"] * m["stridePeakActivation"]), where
 
 
 def test_graph_is_well_typed(out: Out) -> None:

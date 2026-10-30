@@ -170,26 +170,35 @@ def test_classify_by_moment_share() -> None:
     assert stab["small"] is not None and stab["small"][0] == "helper"  # activation 0.06
 
 
-def test_inactive_muscles_earn_no_role() -> None:
-    """D-005: a share-dominant muscle whose phase mean (0.01) sits under 25 % of its own stride
-    peak (0.5) gets no role; a weak muscle near its own peak keeps its role."""
+def test_activity_floor_clauses() -> None:
+    """D-006: ā ≥ 0.015 and (ā ≥ 0.05 or ā ≥ 0.25 × own stride peak)."""
     c = config()
-    assert c.role_min_peak_fraction == 0.25
+    assert (c.role_min_activation, c.role_clear_activation, c.role_min_peak_fraction) == (0.015, 0.05, 0.25)
+    assert not label_roles.active(0.01, 0.011, c)  # near silent, even at its own peak
+    assert label_roles.active(0.06, 0.9, c)  # clear of 0.05, though 7 % of its peak
+    assert label_roles.active(0.03, 0.1, c)  # under 0.05, 30 % of its peak
+    assert not label_roles.active(0.03, 0.5, c)  # under 0.05, 6 % of its peak
+    assert label_roles.active(0.015, 0.05, c) and not label_roles.active(0.0149, 0.02, c)
+
+
+def test_inactive_muscles_earn_no_role() -> None:
+    """A share-dominant inactive muscle gets no role; an active one with a small share does."""
+    c = config()
     ms = {
-        "quiet": muscle(0.01, 0.05, f=100000.0, peak=0.5),
-        "busy": muscle(0.06, 0.006, f=10000.0, peak=0.2),  # 0.06 ≥ 0.25 × 0.2
-        "anta": muscle(0.01, -0.05, peak=0.1),
-        "low": muscle(0.01, -0.05, f=1000.0, peak=0.03),  # a small activation, a third of its peak
+        "quiet": muscle(0.01, 0.05, f=100000.0, peak=0.011),  # under 0.015
+        "relative": muscle(0.03, 0.05, f=100000.0, peak=0.5),  # 6 % of its peak
+        "busy": muscle(0.06, 0.006, f=100000.0, peak=0.9),  # clear of 0.05
+        "own": muscle(0.03, -0.05, peak=0.1),  # 30 % of its own peak
     }
     shares = {k: label_roles.moment_integrals(T, m, 1, c.moment_arm_min_m) for k, m in ms.items()}
     total = label_roles.Shares(sum(s.agonist for s in shares.values()), sum(s.opposing for s in shares.values()))
-    assert shares["quiet"].agonist / total.agonist > 0.9
+    assert shares["quiet"].agonist / total.agonist > 0.2 and shares["relative"].agonist / total.agonist > 0.6
     assert label_roles.classify(T, ms["quiet"], shares["quiet"], total, False, c) is None
-    assert label_roles.classify(T, ms["anta"], shares["anta"], total, False, c) is None
+    assert label_roles.classify(T, ms["relative"], shares["relative"], total, False, c) is None
     busy = label_roles.classify(T, ms["busy"], shares["busy"], total, False, c)
     assert busy is not None and busy[0] == "helper"
-    low = label_roles.classify(T, ms["low"], shares["low"], total, False, c)
-    assert low is not None and low[0] == "antagonist"
+    own = label_roles.classify(T, ms["own"], shares["own"], total, False, c)
+    assert own is not None and own[0] == "antagonist"
 
 
 def test_moment_arm_sign_change_splits_the_integrals() -> None:
