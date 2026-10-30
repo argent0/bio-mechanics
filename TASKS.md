@@ -44,7 +44,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K3 `data/raw/ontology/` moves from D to P2 | merged | P2 fetches Uberon/FMA subsets |
 | K5 Wire ArchitectureView into App at `#/architecture` | merged | `web/src/main.ts`, `web/index.html` |
 | K6 App calls `highlightState` from `recorder.onStep` in dev mode | todo | with E3 |
-| K7 Enable the deploy job (D-003) and set `SOURCE_BASE_URL` | running | deploy job merged; SOURCE_BASE_URL pending |
+| K7 Enable the deploy job (D-003) and set `SOURCE_BASE_URL` | merged | live at https://argent0.github.io/bio-mechanics/ |
 | K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | todo | after P2 merges |
 
 ## Wave 3
@@ -72,5 +72,4 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 
 ## Open items for the director
 
-1. GitHub repository URL (for D-003: push, CI run, Pages deploy, source links).
-2. Order of later movements (Wave 4).
+1. Order of later movements (Wave 4).
