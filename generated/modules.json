@@ -56,7 +56,7 @@
    "acceptance":
    ["cd spec && lake build",
     "! grep -n sorry spec/BioMech/Pipeline.lean spec/BioMech/Components.lean spec/BioMech/Acyclic.lean"]},
-  {"state": "running",
+  {"state": "merged",
    "produces": ["C2"],
    "paths": ["spec/BioMech/Gen/"],
    "name": "Emitters",
@@ -92,7 +92,7 @@
    ["cd web && npx tsc --noEmit",
     "cd web && npm test",
     "cd web && npm run build"]},
-  {"state": "planned",
+  {"state": "running",
    "produces": [],
    "paths": ["web/src/architecture/"],
    "name": "ArchitectureView",
@@ -124,7 +124,7 @@
    "acceptance":
    ["cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json",
     "cd spec && lake exe conform ../data/fixtures/trace.sample.json"]},
-  {"state": "planned",
+  {"state": "running",
    "produces": [],
    "paths": [".github/workflows/", "web/src/trace/"],
    "name": "CI and traces",
@@ -164,7 +164,7 @@
    "acceptance":
    ["mypy pipeline",
     "~/.local/share/bm-opensim/bin/python -m pytest pipeline/tests -k p1"]},
-  {"state": "planned",
+  {"state": "running",
    "produces": ["C3"],
    "paths":
    ["pipeline/segment_phases.py",
@@ -174,7 +174,8 @@
     "pipeline/config/",
     "pipeline/tests/test_p2_*.py",
     "data/curated/",
-    "data/out/"],
+    "data/out/",
+    "data/raw/ontology/"],
    "name": "Pipeline stages 4-7",
    "model": "opus",
    "layer": 3,

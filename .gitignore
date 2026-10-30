@@ -14,3 +14,7 @@ data/raw/**/*.trc
 data/raw/**/*.vtp
 data/raw/**/*.sto
 data/work/
+# Ontology downloads: re-fetched by data/raw/ontology/ scripts
+data/raw/ontology/*.obo
+data/raw/ontology/*.owl
+data/raw/ontology/*.json.gz
