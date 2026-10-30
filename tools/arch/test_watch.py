@@ -5,6 +5,7 @@ import threading
 import time
 from pathlib import Path
 
+from tools.arch.model import load_map
 from tools.arch.watch import (
     KEY_TAB, Screen, WatchApp, draw, run_loop,
 )
@@ -66,35 +67,40 @@ def test_fake_screen_is_a_screen() -> None:
 def test_redraw_after_map_edit(tmp_path: Path) -> None:
     path = tmp_path / "modules.json"
     path.write_text(REAL_MAP.read_text(encoding="utf-8"), encoding="utf-8")
+    arch = load_map(path)
+    h = arch.module("H")
+    old = f"{h.lang} · {h.model} · {h.state}"
+    new_state = "review" if h.state != "review" else "planned"
+    new = f"{h.lang} · {h.model} · {new_state}"
     screen = FakeScreen()
     app = WatchApp(path, detail=2)
     thread = threading.Thread(target=run_loop, args=(screen, app, ATTRS), daemon=True)
     thread.start()
     try:
         deadline = time.monotonic() + 2
-        while "Python · sonnet · running" not in screen.text() and time.monotonic() < deadline:
+        while old not in screen.text() and time.monotonic() < deadline:
             time.sleep(0.02)
-        assert "Python · sonnet · running" in screen.text()
+        assert old in screen.text()
         before = screen.text()
         data = json.loads(path.read_text(encoding="utf-8"))
         for m in data["modules"]:
             if m["id"] == "H":
-                m["state"] = "merged"
+                m["state"] = new_state
         edited = json.dumps(data, indent=2)
         time.sleep(0.05)
         t0 = time.monotonic()
         path.write_text(edited, encoding="utf-8")
-        while "Python · sonnet · merged" not in screen.text() and time.monotonic() - t0 < 2:
+        while new not in screen.text() and time.monotonic() - t0 < 2:
             time.sleep(0.02)
         elapsed = time.monotonic() - t0
-        assert "Python · sonnet · merged" in screen.text(), "no redraw within 2 s"
+        assert new in screen.text(), "no redraw within 2 s"
         assert elapsed < 1.5
         assert screen.text() != before
         path.write_text("{broken", encoding="utf-8")
         t0 = time.monotonic()
         while "ERROR" not in screen.text() and time.monotonic() - t0 < 2:
             time.sleep(0.02)
-        assert "ERROR" in screen.text() and "Python · sonnet · merged" in screen.text()
+        assert "ERROR" in screen.text() and new in screen.text()
     finally:
         screen.stop.set()
         thread.join(timeout=2)
@@ -127,8 +133,9 @@ def test_keys_zoom_select_scroll() -> None:
 def test_selection_is_drawn_with_attributes() -> None:
     screen = FakeScreen()
     app = WatchApp(REAL_MAP, detail=1)
-    app.selected = "P2"
+    sel = next(m.id for m in load_map(REAL_MAP).modules if m.produces and m.consumes)
+    app.selected = sel
     draw(screen, app, ATTRS)
     attrs = {a for _, a in screen.cells.values()}
     assert {1, 2, 4, 8} <= attrs
-    assert "detail 1" in screen.text().splitlines()[-1] and "selected P2" in screen.text()
+    assert "detail 1" in screen.text().splitlines()[-1] and f"selected {sel}" in screen.text()
