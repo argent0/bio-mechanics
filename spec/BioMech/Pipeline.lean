@@ -469,8 +469,7 @@ def Stage.imports : Stage → List Stage
   | .enrichAnatomy => [.loadModel, .segmentPhases]
   | .exportGraph => [.loadModel, .segmentPhases]
   | .exportMeshes => [.loadModel, .segmentPhases]
-  | .exportMusclePaths => [.loadModel, .computeMomentArms, .segmentPhases, .labelRoles,
-      .exportMeshes]
+  | .exportMusclePaths => [.loadModel, .computeMomentArms, .segmentPhases, .labelRoles]
   | .exportDynamics => [.loadModel, .segmentPhases, .labelRoles, .enrichAnatomy, .exportGraph,
       .exportMusclePaths]
 

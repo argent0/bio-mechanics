@@ -269,7 +269,7 @@ EXPORT_MUSCLE_PATHS: Final = Stage(
     module="pipeline.export_muscle_paths",
     inputs=(MERGED_MODEL, KINEMATICS, ACTIVATIONS, MT_LENGTHS, PHASES),
     outputs=(MUSCLE_PATHS,),
-    imports=("pipeline.load_model", "pipeline.moment_arms", "pipeline.segment_phases", "pipeline.label_roles", "pipeline.export_meshes"),
+    imports=("pipeline.load_model", "pipeline.moment_arms", "pipeline.segment_phases", "pipeline.label_roles"),
 )
 """Write muscle path points per frame for the tube renderer, with the
 bounds of the stride the knowledge graph describes.

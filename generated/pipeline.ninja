@@ -82,7 +82,7 @@ build exportMeshes: phony data/out/meshes/index.json
 rule exportMusclePaths
   command = $python -m pipeline.export_muscle_paths
   description = exportMusclePaths: Write muscle path points per frame for the tube renderer, with the bounds of the stride the knowledge graph describes.
-build data/out/muscle_paths.json: exportMusclePaths data/work/model.osim data/work/kinematics.csv data/work/activations.csv data/work/mt_lengths.csv data/work/phases.csv | pipeline/export_muscle_paths.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py pipeline/label_roles.py pipeline/export_meshes.py
+build data/out/muscle_paths.json: exportMusclePaths data/work/model.osim data/work/kinematics.csv data/work/activations.csv data/work/mt_lengths.csv data/work/phases.csv | pipeline/export_muscle_paths.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py pipeline/label_roles.py
 build exportMusclePaths: phony data/out/muscle_paths.json
 
 # Write each muscle's moment about each joint coordinate, and the
@@ -90,5 +90,5 @@ build exportMusclePaths: phony data/out/muscle_paths.json
 rule exportDynamics
   command = $python -m pipeline.export_dynamics
   description = exportDynamics: Write each muscle's moment about each joint coordinate, and the coordinate's angle, per frame, for the dynamics panel.
-build data/out/dynamics.json: exportDynamics data/work/model.json data/work/kinematics.csv data/work/activations.csv data/work/moment_arms.csv data/work/mt_lengths.csv data/work/phases.csv pipeline/config/roles.yaml data/curated/anatomy.yaml | pipeline/export_dynamics.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py pipeline/label_roles.py pipeline/enrich_anatomy.py pipeline/export_graph.py pipeline/export_meshes.py pipeline/export_muscle_paths.py
+build data/out/dynamics.json: exportDynamics data/work/model.json data/work/kinematics.csv data/work/activations.csv data/work/moment_arms.csv data/work/mt_lengths.csv data/work/phases.csv pipeline/config/roles.yaml data/curated/anatomy.yaml | pipeline/export_dynamics.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py pipeline/label_roles.py pipeline/enrich_anatomy.py pipeline/export_graph.py pipeline/export_muscle_paths.py
 build exportDynamics: phony data/out/dynamics.json

@@ -499,8 +499,8 @@
         "writes": ["musclePaths"],
         "inputs": ["data/work/model.osim", "data/work/kinematics.csv", "data/work/activations.csv", "data/work/mt_lengths.csv", "data/work/phases.csv"],
         "outputs": ["data/out/muscle_paths.json"],
-        "imports": ["loadModel", "computeMomentArms", "segmentPhases", "labelRoles", "exportMeshes"],
-        "codeInputs": ["pipeline/export_muscle_paths.py", "pipeline/load_model.py", "pipeline/moment_arms.py", "pipeline/segment_phases.py", "pipeline/label_roles.py", "pipeline/export_meshes.py"]
+        "imports": ["loadModel", "computeMomentArms", "segmentPhases", "labelRoles"],
+        "codeInputs": ["pipeline/export_muscle_paths.py", "pipeline/load_model.py", "pipeline/moment_arms.py", "pipeline/segment_phases.py", "pipeline/label_roles.py"]
       },
       {
         "name": "exportDynamics",
@@ -512,7 +512,7 @@
         "inputs": ["data/work/model.json", "data/work/kinematics.csv", "data/work/activations.csv", "data/work/moment_arms.csv", "data/work/mt_lengths.csv", "data/work/phases.csv", "pipeline/config/roles.yaml", "data/curated/anatomy.yaml"],
         "outputs": ["data/out/dynamics.json"],
         "imports": ["loadModel", "segmentPhases", "labelRoles", "enrichAnatomy", "exportGraph", "exportMusclePaths"],
-        "codeInputs": ["pipeline/export_dynamics.py", "pipeline/load_model.py", "pipeline/moment_arms.py", "pipeline/segment_phases.py", "pipeline/label_roles.py", "pipeline/enrich_anatomy.py", "pipeline/export_graph.py", "pipeline/export_meshes.py", "pipeline/export_muscle_paths.py"]
+        "codeInputs": ["pipeline/export_dynamics.py", "pipeline/load_model.py", "pipeline/moment_arms.py", "pipeline/segment_phases.py", "pipeline/label_roles.py", "pipeline/enrich_anatomy.py", "pipeline/export_graph.py", "pipeline/export_muscle_paths.py"]
       }
     ],
     "edges": [
@@ -1729,9 +1729,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 498,
-        "startLine": 496,
-        "endLine": 500
+        "line": 497,
+        "startLine": 495,
+        "endLine": 499
       }
     },
     {
@@ -1742,9 +1742,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 504,
-        "startLine": 502,
-        "endLine": 505
+        "line": 503,
+        "startLine": 501,
+        "endLine": 504
       }
     },
     {
@@ -1755,9 +1755,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 508,
-        "startLine": 507,
-        "endLine": 508
+        "line": 507,
+        "startLine": 506,
+        "endLine": 507
       }
     },
     {
