@@ -45,7 +45,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K5 Wire ArchitectureView into App at `#/architecture` | merged | `web/src/main.ts`, `web/index.html` |
 | K6 App calls `highlightState` from `recorder.onStep` in dev mode | todo | with E3 |
 | K7 Enable the deploy job (D-003) and set `SOURCE_BASE_URL` | merged | live at https://argent0.github.io/bio-mechanics/ |
-X
+| K8 Declare missing stage inputs in `Pipeline.lean` (segmentPhases, labelRoles, exportMeshes) | running | B's worker `a54604c9ec4fc8fac` |
 | K9 Commit Uberon subset; ignore ninja state | merged | FMA subset stays local (licence) |
 | K10 Import boundaries checked by `tests/test_boundaries.py` from `generated/eslint-boundaries.json` | merged | typescript-eslint supports TypeScript < 6.1; the app uses 7 |
 | K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | todo | after P2 merges |
