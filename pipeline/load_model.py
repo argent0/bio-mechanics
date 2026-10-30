@@ -340,7 +340,8 @@ def coordinate_infos(model: Any, state: Any) -> list[CoordinateInfo]:
 def model_summary(osim: Any, model: Any, state: Any) -> dict[str, Any]:
     """The compact model description written to `model.json`.
 
-    - `bodies`: name, `geometry` (mesh files attached to the body, `.vtp`).
+    - `totalMass`: the model's mass (kg), for moments per kilogram.
+    - `bodies`: name, `mass` (kg), `geometry` (mesh files attached to the body, `.vtp`).
     - `joints`: name, `parent` and `child` body.
     - `coordinates`: name, `joint`, `motionType` (rotational | translational | coupled),
       `range` [min, max] (rad or m), `locked` and `constrained` (coupled to another coordinate)
@@ -349,7 +350,7 @@ def model_summary(osim: Any, model: Any, state: Any) -> dict[str, Any]:
       `tendonSlackLength` (m), `originBody` and `insertionBody` (bodies of the first and last
       path point), `pathBodies` (bodies of all path points in order, repeats collapsed).
     """
-    bodies = []
+    bodies: list[dict[str, Any]] = []
     bs = model.getBodySet()
     for i in range(bs.getSize()):
         b = bs.get(i)
@@ -358,7 +359,7 @@ def model_summary(osim: Any, model: Any, state: Any) -> dict[str, Any]:
             mesh = osim.Mesh.safeDownCast(b.get_attached_geometry(g))
             if mesh is not None:
                 meshes.append(str(mesh.get_mesh_file()))
-        bodies.append({"name": b.getName(), "geometry": meshes})
+        bodies.append({"name": b.getName(), "mass": float(b.getMass()), "geometry": meshes})
 
     js = model.getJointSet()
     joints = [
@@ -403,7 +404,8 @@ def model_summary(osim: Any, model: Any, state: Any) -> dict[str, Any]:
                 "pathBodies": path_bodies,
             }
         )
-    return {"name": model.getName(), "bodies": bodies, "joints": joints, "coordinates": coordinates, "muscles": muscles}
+    total = sum(float(b["mass"]) for b in bodies)
+    return {"name": model.getName(), "totalMass": total, "bodies": bodies, "joints": joints, "coordinates": coordinates, "muscles": muscles}
 
 
 def rel(path: Path) -> str:
