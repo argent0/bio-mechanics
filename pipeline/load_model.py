@@ -1,9 +1,10 @@
-"""Stage `loadModel`: summarise the scaled model and put the walking trial on one time base.
+"""Stage `loadModel`: summarise the merged model and put the walking trial on one time base.
 
-Inputs (defaults under `data/raw/rajagopal/walk_pipeline/`, read-only):
-  --model   Scale/subject_scaled_walk.osim        scaled Rajagopal model, 80 muscles, 39 coordinates
-  --ik      IK/results_walk/ik_output_walk.mot     inverse-kinematics coordinates, 100 Hz
-  --grf     ExpData/grf_walk.mot                   ground reaction forces, 2000 Hz
+Inputs (defaults: the reads `generated/pipeline.ninja` declares for the stage):
+  --model   data/work/model.osim (`pipeline_paths.MERGED_MODEL`)   merged model from `buildModel`
+  --ik      data/work/ik_full.mot (`pipeline_paths.IK_FULL`)       joint coordinates with the neck
+                                                                   angles, 100 Hz, radians
+  --grf     data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot  ground reaction forces, 2000 Hz
 Outputs (defaults under `data/work/`):
   --out-model       model.json       bodies, joints, coordinates, muscles, trial; see `model_summary`
   --out-kinematics  kinematics.csv   `time`, then `<coordinate>` for every model coordinate in model
@@ -11,9 +12,9 @@ Outputs (defaults under `data/work/`):
   --out-grf         grf.csv          `time`, then per foot (`_r`, `_l`) the columns of `GRF_COLUMNS`
 
 Kinematics. Units are SI: rotational coordinates in rad, translational in m, speeds in rad/s or
-m/s. The IK file stores rotational coordinates in degrees (`inDegrees=yes`); only coordinates of
-motion type `Rotational` are converted, as OpenSim does (the coupled `knee_angle_*_beta` is
-stored in radians already). Every coordinate is low-pass filtered with a zero-lag Butterworth
+m/s. A coordinate file with `inDegrees=yes` (the raw inverse kinematics) has its coordinates of
+motion type `Rotational` converted, as OpenSim does (the coupled `knee_angle_*_beta` is stored in
+radians already); `ik_full.mot` stores every coordinate in radians (`inDegrees=no`). Every coordinate is low-pass filtered with a zero-lag Butterworth
 filter (`zero_lag_lowpass`: second-order section run forward then backward, i.e. 4th-order
 zero-lag, cutoff 6 Hz per pass), the usual choice for walking kinematics and the cutoff of the
 upstream Rajagopal external-loads setup. Speeds are central differences of the filtered values
@@ -47,8 +48,13 @@ REPO = Path(__file__).resolve().parents[1]
 RAW = REPO / "data" / "raw" / "rajagopal" / "walk_pipeline"
 WORK = REPO / "data" / "work"
 
-DEFAULT_MODEL = RAW / "Scale" / "subject_scaled_walk.osim"
-DEFAULT_IK = RAW / "IK" / "results_walk" / "ik_output_walk.mot"
+_GENERATED = REPO / "generated" / "py"
+if str(_GENERATED) not in sys.path:
+    sys.path.insert(0, str(_GENERATED))
+import pipeline_paths as _paths  # noqa: E402
+
+DEFAULT_MODEL = REPO / _paths.MERGED_MODEL
+DEFAULT_IK = REPO / _paths.IK_FULL
 DEFAULT_GRF = RAW / "ExpData" / "grf_walk.mot"
 
 KINEMATICS_CUTOFF_HZ = 6.0
@@ -447,8 +453,8 @@ def run(model_path: Path, ik_path: Path, grf_path: Path, out_model: Path, out_ki
 
 def main(argv: Sequence[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m pipeline.load_model", description=__doc__.split("\n")[0])
-    p.add_argument("--model", type=Path, default=DEFAULT_MODEL, help="scaled OpenSim model (.osim)")
-    p.add_argument("--ik", type=Path, default=DEFAULT_IK, help="inverse-kinematics coordinates (.mot)")
+    p.add_argument("--model", type=Path, default=DEFAULT_MODEL, help="merged OpenSim model (.osim)")
+    p.add_argument("--ik", type=Path, default=DEFAULT_IK, help="joint coordinates with the neck angles (.mot)")
     p.add_argument("--grf", type=Path, default=DEFAULT_GRF, help="ground reaction forces (.mot)")
     p.add_argument("--out-model", type=Path, default=WORK / "model.json")
     p.add_argument("--out-kinematics", type=Path, default=WORK / "kinematics.csv")
