@@ -50,8 +50,8 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K9 Commit Uberon subset; ignore ninja state | merged | FMA subset stays local (licence) |
 | K10 Import boundaries checked by `tests/test_boundaries.py` from `generated/eslint-boundaries.json` | merged | typescript-eslint supports TypeScript < 6.1; the app uses 7 |
 | K11 D-004 activation floor in labelRoles | merged | graph.json 543 edges |
-| K12 Investigate low vasti activation in loading response (static optimisation) | running | P1 worker `aa1666b96d68aaa97` |
-| K14 `exportMusclePaths` reads `phases` (edge `segmentPhases → exportMusclePaths`) | running | B's worker |
+| K12 Investigate low vasti activation in loading response (static optimisation) | merged | no defect in stages 1–3; D-004's whole-phase floor hides the braking; evidence test in `test_p1_stages.py` |
+| K14 `exportMusclePaths` reads `phases` (edge `segmentPhases → exportMusclePaths`) | merged | B's worker |
 | K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | todo | after P2 merges |
 
 ## Wave 3
