@@ -173,6 +173,17 @@ export class GraphView {
     this.details.textContent = "Click a node.";
   }
 
+  /** What tells parallel edges apart in the neighbour list: the coordinate of
+   * `crosses`, the phase of `drivenBy`, the gait event of `precedes`. */
+  private qualifier(e: Edge): string[] {
+    switch (e.relation) {
+      case "crosses": return [e.coordinate.replace(/_[lr]$/, "").replaceAll("_", " ")];
+      case "drivenBy": { const p = this.query.node(e.phase); return [p?.commonName ?? p?.name ?? e.phase]; }
+      case "precedes": return [`at ${words(e.event)}`];
+      default: return [];
+    }
+  }
+
   private showDetails(id: string): void {
     const n = this.query.node(id);
     if (!n) return;
@@ -185,14 +196,15 @@ export class GraphView {
     names.append(anat, common);
     const list = el("ul", "");
     list.className = "neighbours";
-    for (const nb of this.query.neighbours(id)) {
+    for (const nb of this.query.groupedNeighbours(id)) {
       const a = el("a", `${nb.node.commonName ?? nb.node.name} (${nb.node.name})`) as HTMLAnchorElement;
       a.href = "#";
       a.onclick = (ev) => { ev.preventDefault(); this.focus(nb.node.id); };
-      const li = el("li", nb.direction === "out" ? `${nb.edge.relation} → ` : `${nb.edge.relation} ← `);
+      const li = el("li", nb.direction === "out" ? `${nb.relation} → ` : `${nb.relation} ← `);
       li.prepend(kindIcon(nb.node.kind));
       li.append(a);
-      if (nb.edge.relation === "precedes") li.append(` at ${words(nb.edge.event)}`);
+      const what = [...new Set(nb.edges.flatMap((e) => this.qualifier(e)))];
+      if (what.length) li.append(` · ${what.join(", ")}`);
       list.append(li);
     }
     const heading = el("h3", n.id);

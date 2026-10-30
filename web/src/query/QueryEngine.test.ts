@@ -20,6 +20,13 @@ describe("QueryEngine over the fixture", () => {
     expect(ids).toContain("action:knee_flexion_r");
   });
 
+  it("groupedNeighbours puts parallel edges on one entry", () => {
+    const groups = q.groupedNeighbours("joint:knee_r");
+    const keys = groups.map((g) => `${g.direction} ${g.relation} ${g.node.id}`);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(groups.reduce((n, g) => n + g.edges.length, 0)).toBe(q.neighbours("joint:knee_r").length);
+  });
+
   it("phaseCycle orders the phases of the movement, from a movement or a phase", () => {
     const fromMovement = q.phaseCycle("movement:walking");
     expect(fromMovement?.phases.map((p) => p.phase.id)).toEqual(["phase:loadingResponse", "phase:midStance"]);

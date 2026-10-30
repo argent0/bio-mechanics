@@ -12,6 +12,15 @@ export interface Neighbour {
   direction: "out" | "in";
 }
 
+/** A node next to the queried node with every edge that links the two in one
+ * direction under one relation, e.g. one `crosses` edge per coordinate. */
+export interface NeighbourGroup {
+  node: Node;
+  relation: Relation;
+  direction: "out" | "in";
+  edges: Edge[];
+}
+
 export interface MuscleRole {
   muscle: Node;
   jointAction: Node;
@@ -84,6 +93,18 @@ export class QueryEngine {
       if (node) out.push({ node, edge, direction: "in" });
     }
     return out;
+  }
+
+  /** `neighbours`, one entry per (direction, relation, node), in first-seen order. */
+  groupedNeighbours(id: string): NeighbourGroup[] {
+    const groups = new Map<string, NeighbourGroup>();
+    for (const { node, edge, direction } of this.neighbours(id)) {
+      const key = `${direction} ${edge.relation} ${node.id}`;
+      const g = groups.get(key);
+      if (g) g.edges.push(edge);
+      else groups.set(key, { node, relation: edge.relation, direction, edges: [edge] });
+    }
+    return [...groups.values()];
   }
 
   /** Free-text lookup over anatomical and common names and ids. */
