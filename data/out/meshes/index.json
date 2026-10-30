@@ -1,0 +1,250 @@
+{
+ "format": "bm-meshes/1",
+ "units": "m",
+ "bodies": [
+  {
+   "body": "pelvis",
+   "file": "pelvis.gltf",
+   "meshes": [
+    {
+     "file": "r_pelvis.vtp",
+     "scaleFactors": [
+      1.2446319356391389,
+      1.0016674577239326,
+      1.1973582015456916
+     ]
+    },
+    {
+     "file": "l_pelvis.vtp",
+     "scaleFactors": [
+      1.2446319356391389,
+      1.0016674577239326,
+      1.1973582015456916
+     ]
+    },
+    {
+     "file": "sacrum.vtp",
+     "scaleFactors": [
+      1.2446319356391389,
+      1.0016674577239326,
+      1.1973582015456916
+     ]
+    }
+   ],
+   "vertices": 442,
+   "triangles": 864
+  },
+  {
+   "body": "femur_r",
+   "file": "femur_r.gltf",
+   "meshes": [
+    {
+     "file": "r_femur.vtp",
+     "scaleFactors": [
+      0.958,
+      0.958,
+      0.958
+     ]
+    }
+   ],
+   "vertices": 132,
+   "triangles": 265
+  },
+  {
+   "body": "patella_r",
+   "file": "patella_r.gltf",
+   "meshes": [
+    {
+     "file": "r_patella.vtp",
+     "scaleFactors": [
+      0.958,
+      0.958,
+      0.958
+     ]
+    }
+   ],
+   "vertices": 72,
+   "triangles": 140
+  },
+  {
+   "body": "tibia_r",
+   "file": "tibia_r.gltf",
+   "meshes": [
+    {
+     "file": "r_tibia.vtp",
+     "scaleFactors": [
+      1.149,
+      1.149,
+      1.149
+     ]
+    },
+    {
+     "file": "r_fibula.vtp",
+     "scaleFactors": [
+      1.149,
+      1.149,
+      1.149
+     ]
+    }
+   ],
+   "vertices": 308,
+   "triangles": 630
+  },
+  {
+   "body": "talus_r",
+   "file": "talus_r.gltf",
+   "meshes": [
+    {
+     "file": "r_talus.vtp",
+     "scaleFactors": [
+      1.1431554756616296,
+      1.660760892717684,
+      1.4975279291395354
+     ]
+    }
+   ],
+   "vertices": 99,
+   "triangles": 194
+  },
+  {
+   "body": "calcn_r",
+   "file": "calcn_r.gltf",
+   "meshes": [
+    {
+     "file": "r_foot.vtp",
+     "scaleFactors": [
+      1.1431554756616296,
+      1.660760892717684,
+      1.4975279291395354
+     ]
+    }
+   ],
+   "vertices": 1000,
+   "triangles": 1955
+  },
+  {
+   "body": "toes_r",
+   "file": "toes_r.gltf",
+   "meshes": [
+    {
+     "file": "r_bofoot.vtp",
+     "scaleFactors": [
+      1.1431554756616296,
+      1.660760892717684,
+      1.4975279291395354
+     ]
+    }
+   ],
+   "vertices": 958,
+   "triangles": 1860
+  },
+  {
+   "body": "femur_l",
+   "file": "femur_l.gltf",
+   "meshes": [
+    {
+     "file": "l_femur.vtp",
+     "scaleFactors": [
+      0.958,
+      0.958,
+      0.958
+     ]
+    }
+   ],
+   "vertices": 456,
+   "triangles": 908
+  },
+  {
+   "body": "patella_l",
+   "file": "patella_l.gltf",
+   "meshes": [
+    {
+     "file": "l_patella.vtp",
+     "scaleFactors": [
+      0.958,
+      0.958,
+      0.958
+     ]
+    }
+   ],
+   "vertices": 72,
+   "triangles": 140
+  },
+  {
+   "body": "tibia_l",
+   "file": "tibia_l.gltf",
+   "meshes": [
+    {
+     "file": "l_tibia.vtp",
+     "scaleFactors": [
+      1.149,
+      1.149,
+      1.149
+     ]
+    },
+    {
+     "file": "l_fibula.vtp",
+     "scaleFactors": [
+      1.149,
+      1.149,
+      1.149
+     ]
+    }
+   ],
+   "vertices": 308,
+   "triangles": 630
+  },
+  {
+   "body": "talus_l",
+   "file": "talus_l.gltf",
+   "meshes": [
+    {
+     "file": "l_talus.vtp",
+     "scaleFactors": [
+      1.1431554756616296,
+      1.660760892717684,
+      1.4975279291395354
+     ]
+    }
+   ],
+   "vertices": 99,
+   "triangles": 194
+  },
+  {
+   "body": "calcn_l",
+   "file": "calcn_l.gltf",
+   "meshes": [
+    {
+     "file": "l_foot.vtp",
+     "scaleFactors": [
+      1.1431554756616296,
+      1.660760892717684,
+      1.4975279291395354
+     ]
+    }
+   ],
+   "vertices": 1000,
+   "triangles": 1955
+  },
+  {
+   "body": "toes_l",
+   "file": "toes_l.gltf",
+   "meshes": [
+    {
+     "file": "l_bofoot.vtp",
+     "scaleFactors": [
+      1.1431554756616296,
+      1.660760892717684,
+      1.4975279291395354
+     ]
+    }
+   ],
+   "vertices": 958,
+   "triangles": 1860
+  }
+ ],
+ "transforms": {
+  "file": "../muscle_paths.json",
+  "key": "bodies"
+ }
+}
