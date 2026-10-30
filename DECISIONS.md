@@ -20,3 +20,10 @@
 **Terms:** *GitHub Pages* — GitHub's free static hosting, fed here by the Actions "deploy-pages" flow. *Static site* — HTML, JavaScript, JSON and glTF files served as they are; the browser answers every graph query in memory.
 **Why:** Unstated by the director, who chose the coordinator's recommended option. The recommendation's reason: the CI workflow already runs on GitHub Actions, the build uses relative paths (`base: './'`), and the deploy job is a placeholder waiting to be enabled.
 **Code:** `.github/workflows/ci.yml` (the commented deploy job, workstream G); `web/src/architecture/config.ts` `SOURCE_BASE_URL` takes the repository URL once it exists.
+
+## D-004 — Roles need a minimum activation (2026-10-29)
+
+**Decision:** Refines D-002. A muscle earns the role *main mover*, *helper* or *antagonist* for a joint action in a phase only when its mean activation over the phase is ≥ 0.05; below that floor it is *inactive* for that action and phase, and the knowledge graph carries no `drivenBy` edge for it. The *stabiliser* role keeps its own floor of activation ≥ 0.1 from D-002. The floor lives in `pipeline/config/roles.yaml` beside the D-002 thresholds, and the output records it.
+**Terms:** *Mean activation over the phase* — the average of the muscle's activation (0–1) across the frames of the phase. *Inactive* — present in the model, with too little activation in the phase to count for the action. *`drivenBy` edge* — the knowledge-graph edge from a joint action to a muscle that carries the muscle's role in one phase.
+**Why:** Unstated by the director, who chose the coordinator's recommended option. The recommendation's reason: under pure moment share, a near-silent muscle (tibialis anterior at mean activation 0.01 in mid-stance) became "main mover" of ankle dorsiflexion because the total moment was near zero, and the audience reads roles as effort.
+**Code:** `pipeline/label_roles.py` and `pipeline/config/roles.yaml` (workstream P2); outputs `data/work/roles.json` and `data/out/graph.json`.

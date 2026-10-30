@@ -141,7 +141,7 @@ def test_classify_by_moment_share() -> None:
     ms = {
         "big": muscle(0.5, 0.04),  # moment 20 N·m: 20/26 of the agonist moment
         "mid": muscle(0.1, 0.04),  # 4 N·m: 15 %
-        "small": muscle(0.05, 0.04),  # 2 N·m: 7.7 %
+        "small": muscle(0.06, 0.04),  # 2.4 N·m: 9 %
         "tiny": muscle(0.01, 0.01),  # 0.1 N·m, under 5 % of 26.1
         "short": muscle(0.9, 0.004),  # moment arm under 5 mm: counts nowhere
         "anta": muscle(0.3, -0.02),  # opposing, 6 N·m: 100 % of the opposing moment
@@ -159,7 +159,21 @@ def test_classify_by_moment_share() -> None:
     assert stab["big"] is not None and stab["big"][0] == "stabiliser"
     assert stab["anta"] is not None and stab["anta"][0] == "stabiliser"
     assert stab["short"] is None  # moment arm under 5 mm throughout
-    assert stab["small"] is not None and stab["small"][0] == "helper"  # activation 0.05
+    assert stab["small"] is not None and stab["small"][0] == "helper"  # activation 0.06
+
+
+def test_inactive_muscles_earn_no_role() -> None:
+    """D-004: a share-dominant muscle at mean activation 0.01 gets no role."""
+    c = config()
+    assert c.role_min_activation == 0.05
+    ms = {"quiet": muscle(0.01, 0.05, f=100000.0), "busy": muscle(0.06, 0.006, f=10000.0), "anta": muscle(0.01, -0.05)}
+    shares = {k: label_roles.moment_integrals(T, m, 1, c.moment_arm_min_m) for k, m in ms.items()}
+    total = label_roles.Shares(sum(s.agonist for s in shares.values()), sum(s.opposing for s in shares.values()))
+    assert shares["quiet"].agonist / total.agonist > 0.9
+    assert label_roles.classify(T, ms["quiet"], shares["quiet"], total, False, c) is None
+    assert label_roles.classify(T, ms["anta"], shares["anta"], total, False, c) is None
+    busy = label_roles.classify(T, ms["busy"], shares["busy"], total, False, c)
+    assert busy is not None and busy[0] == "helper"
 
 
 def test_moment_arm_sign_change_splits_the_integrals() -> None:

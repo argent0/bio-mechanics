@@ -102,19 +102,35 @@ def test_gluteus_medius_works_in_single_leg_stance(out: Out) -> None:
 
 
 def test_quadriceps_brake_knee_flexion_in_loading_response(out: Out) -> None:
+    """The knee flexes in loading response while the quadriceps lengthen (eccentric braking).
+    A quadriceps muscle with a role there is an eccentric antagonist. In this trial static
+    optimisation keeps every quadriceps muscle under the D-004 activation floor (0.05) in
+    loading response (vastus lateralis 0.046), so the roles may list none of them."""
     act = out.action("loadingResponse", "knee_angle_r")
     assert act["direction"] == 1 and not act["stabilised"]  # the knee flexes
-    quads = [m for m in act["muscles"] if m["muscle"] in QUADRICEPS]
-    assert quads and all(m["role"] == "antagonist" and m["contraction"] == "eccentric" for m in quads)
+    ph = out.phase("loadingResponse")
+    velocity: dict[str, list[float]] = {}
+    with (out.dir / "mt_lengths.csv").open() as f:
+        for row in csv.DictReader(f):
+            if row["muscle"] in QUADRICEPS and ph["start"] - 1e-9 <= float(row["time"]) <= ph["end"] + 1e-9:
+                velocity.setdefault(row["muscle"], []).append(float(row["velocity"]))
+    for m in ("vaslat_r", "vasmed_r", "vasint_r"):
+        assert sum(velocity[m]) / len(velocity[m]) > 0.0, m  # lengthening
+    for m in act["muscles"]:
+        if m["muscle"] in QUADRICEPS:
+            assert m["role"] == "antagonist" and m["contraction"] == "eccentric", m["muscle"]
 
 
 def test_roles_record_the_thresholds(out: Out) -> None:
     c = out.roles["config"]
     assert (c["momentArmMinM"], c["mainMoverMinShare"], c["helperMinShare"], c["antagonistMinShare"], c["stabiliserMinActivation"], c["stabiliserMaxChangeDeg"]) == (0.005, 0.25, 0.05, 0.05, 0.1, 5.0)
+    assert c["roleMinActivation"] == 0.05
     for p in out.roles["phases"]:
         for a in p["actions"]:
             for m in a["muscles"]:
                 assert len(m["activation"]) == len(m["momentArm"]) == c["samplesPerPhase"]
+                floor = c["stabiliserMinActivation"] if m["role"] == "stabiliser" else c["roleMinActivation"]
+                assert m["meanActivation"] >= floor - 1e-4, (p["phase"], a["coordinate"], m["muscle"])
 
 
 def test_graph_is_well_typed(out: Out) -> None:

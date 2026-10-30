@@ -52,8 +52,8 @@ inductive Stage
   | enrichAnatomy
   /-- Write the knowledge graph `data/out/graph.json` (contract C3). -/
   | exportGraph
-  /-- Convert the model's bone geometry to glTF, scaled by each body's scale
-  factors from `model.json`. -/
+  /-- Convert the model's bone geometry to glTF, each mesh multiplied by its
+  scale factors from the scaled model. -/
   | exportMeshes
   /-- Write muscle path points per frame for the tube renderer. -/
   | exportMusclePaths
@@ -160,8 +160,8 @@ inductive Artefact
   | curatedAnatomy
   /-- Role-classification thresholds. -/
   | roleThresholds
-  /-- Bodies, joints, coordinates, and muscles of the model, with OpenSim
-  names and each body's scale factors. -/
+  /-- Bodies (with their mesh files), joints, coordinates, and muscles (with
+  maximum isometric forces) of the model, under their OpenSim names. -/
   | model
   /-- Joint coordinate values and speeds per frame. -/
   | kinematics
@@ -249,17 +249,26 @@ def Artefact.isSource (a : Artefact) : Bool := a.dir.isSource
 /-- Distinct artefacts have distinct paths. -/
 theorem Artefact.nodup_paths : (Artefact.all.map Artefact.path).Nodup := by decide
 
-/-- The files a stage reads. -/
+/-- The files a stage reads. Every file a stage's script opens appears here,
+so ninja reruns the stage whenever one of them changes. Reads whose reason is
+less evident from the stage's purpose:
+* `segmentPhases` reads `scaledModel`: OpenSim poses the model at each frame
+  of `kinematics` and reports the foot and leg marker positions that locate
+  the gait events.
+* `labelRoles` reads `model`: each muscle's maximum isometric force scales its
+  activation into a force, and so into a joint moment.
+* `exportMeshes` reads `scaledModel`: each mesh's scale factors live there,
+  and `model` lists the mesh files only. -/
 def Stage.reads : Stage → List Artefact
   | .loadModel => [.scaledModel, .ikMotion, .grfMotion]
   | .runStaticOpt => [.scaledModel, .externalLoads, .grfMotion, .kinematics]
   | .computeMomentArms => [.scaledModel, .kinematics]
-  | .segmentPhases => [.kinematics, .grf]
-  | .labelRoles => [.activations, .momentArms, .mtLengths, .phases, .kinematics,
+  | .segmentPhases => [.scaledModel, .kinematics, .grf]
+  | .labelRoles => [.model, .activations, .momentArms, .mtLengths, .phases, .kinematics,
       .roleThresholds]
   | .enrichAnatomy => [.roles, .model, .uberon, .fma, .curatedAnatomy]
   | .exportGraph => [.enriched]
-  | .exportMeshes => [.model, .geometry]
+  | .exportMeshes => [.scaledModel, .model, .geometry]
   | .exportMusclePaths => [.scaledModel, .kinematics, .activations, .mtLengths]
 
 /-- The files a stage writes. -/

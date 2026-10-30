@@ -45,9 +45,11 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K5 Wire ArchitectureView into App at `#/architecture` | merged | `web/src/main.ts`, `web/index.html` |
 | K6 App calls `highlightState` from `recorder.onStep` in dev mode | todo | with E3 |
 | K7 Enable the deploy job (D-003) and set `SOURCE_BASE_URL` | merged | live at https://argent0.github.io/bio-mechanics/ |
-| K8 Declare missing stage inputs in `Pipeline.lean` (segmentPhases, labelRoles, exportMeshes) | todo | P2 report; via B's worker |
+| K8 Declare missing stage inputs in `Pipeline.lean` (segmentPhases, labelRoles, exportMeshes) | merged | B's worker `a54604c9ec4fc8fac` |
 | K9 Commit Uberon subset; ignore ninja state | merged | FMA subset stays local (licence) |
 | K10 Import boundaries checked by `tests/test_boundaries.py` from `generated/eslint-boundaries.json` | merged | typescript-eslint supports TypeScript < 6.1; the app uses 7 |
+| K11 D-004 activation floor in labelRoles | merged | graph.json 543 edges |
+| K12 Investigate low vasti activation in loading response (static optimisation) | running | P1 worker `aa1666b96d68aaa97` |
 | K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | todo | after P2 merges |
 
 ## Wave 3
@@ -55,7 +57,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Inputs | Acceptance |
 |---|---|---|---|---|---|---|---|
 | P2 | Pipeline stages 4–7 | opus / high | `ab4d531a834c2a987` | 0 | merged | P1, C, D-002 | `ninja`; `lake exe checkGraph data/out/graph.json` |
-| E3 | Movement views | sonnet / high | — | 0 | todo | C, P2 | `tsc`; `tests/test_boundaries.py`; walking plays and scrubs |
+| E3 | Movement views | sonnet / high | `af7d5ed9f2a5e08a4` | 0 | running | C, P2 | `tsc`; `tests/test_boundaries.py`; walking plays and scrubs |
 | G | CI and traces | sonnet / medium | `a9065076c8beaed8a` | 1 | merged | F, C | CI green on `main` |
 
 ## Wave 4 — Integration (coordinator)
