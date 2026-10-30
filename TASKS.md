@@ -52,7 +52,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K11 D-004 activation floor in labelRoles | merged | graph.json 543 edges |
 | K12 Investigate low vasti activation in loading response (static optimisation) | merged | no defect in stages 1–3; D-004's whole-phase floor hides the braking; evidence test in `test_p1_stages.py` |
 | K14 `exportMusclePaths` reads `phases` (edge `segmentPhases → exportMusclePaths`) | merged | B's worker |
-| K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | merged | CI pipeline-smoke green |
+| K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | merged | CI pipeline job (then `pipeline-smoke`) green |
 | K16 CI `python` job installs `types-PyYAML` | merged | coordinator fix in `ci.yml` (G's file), one package |
 | K17 CI compares regenerated graph.json structurally (`scripts/compare_graph.py`) | merged | IK and SO drift across machines; ≤ 5 % of edges may differ, all listed |
 | K18 D-006 combined role floor | merged | all teaching tests pass; 550 edges |
@@ -112,7 +112,7 @@ K19 picks (each muscle-driven, merged onto Rajagopal bodies: consistent with D-0
 
 | Region | Pick | Licence | Source | OpenSim 4.6 load |
 |---|---|---|---|---|
-| Trunk | Christophy 2012 lumbar model (Lumbar_C_210), 210–238 muscles | MIT (UC Berkeley 2010) | simtk.org group 567, login needed | to test (OpenSim 2 format) |
+| Trunk | FBLS, Raabe & Chaudhari 2016 (D-011; replaces the Christophy pick, simtk.org down) | academic, no redistribution: git-ignored | `rocketheat/multifidus_atrophy@15f5de3` | pass (format 40500) |
 | Arm | Holzbaur 2005 Stanford-VA upper limb, 50 muscles | BSD-3 (Stanford, VA Palo Alto 2005) | `mitkof6/OpenSimDatabase@0911687…` `upper_limb/complex/Stanford_VA_upper_limb/Stanford_VA_Upper_Limb_original.osim` | pass |
 | Neck | Mortensen 2018 HYOID 1.2, 72 muscles | MIT (2018) | `MyoHub/myoconverter@cadf380…` `models/osim/Neck6D/HYOID_1.2_ScaledStrenght_UpdatedInertia.osim` | pass |
 
@@ -126,7 +126,7 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 | L | Left leg | opus / high | `a3bc0e6b1242c20ea` | 0 | merged | `ws/L` | C1–C3, D-007 | both legs on the reference timeline; left anatomy by mirroring; left meshes, paths, dynamics | 40 left-leg muscles; `compare_graph.py --within-committed` passes; mirrored teaching examples; `checkGraph` |
 | D2 | Upper-body data | sonnet / high | `a25da4ada23abbe0a` | 0 | merged (arm 50, neck 72 muscles load; trunk waits on the director's download) | `ws/D2` | D-008, K19 picks | fetch script, `SHA256SUMS`, `SOURCES.md` section | `check_env.py` loads the model in OpenSim 4.6 |
 | W1 | Web, whole-body views | sonnet / high | `a208befd13ed6f3b2` | 0 | merged | `ws/W1` | C2, C3 | whole-skeleton framing; region and side filter; panels grouped by region and side; search across regions | `tsc`; web tests; boundary test with `RegionFilter` once S merges |
-| G2 | CI | sonnet / medium | `a975d8edca84b9c28` | 0 | running | `ws/G2` | D2 | CI fetches and caches the upper-body model; every stage runs | CI green on `main`; pipeline job under 15 minutes |
+| G2 | CI | sonnet / medium | `a975d8edca84b9c28` | 0 | merged (CI run on GitHub pending a push) | `ws/G2` | D2 | CI fetches and caches the upper-body model; every stage runs | CI green on `main`; pipeline job under 15 minutes |
 
 | Task | State | Detail |
 |---|---|---|
@@ -134,6 +134,7 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 | K21 App wires `RegionFilter` (`web/src/main.ts`, `web/index.html`) | merged | search, GraphView, PhasePanel, DynamicsPanel, Viewer3D share one filter |
 | K22 Stage scripts default to `paths.MERGED_MODEL`, `paths.IK_FULL` (the reads ninja declares) | todo | M: `load_model.py`, `static_opt.py`, `moment_arms.py`, `segment_phases.py`; P4: export scripts |
 | K23 `buildModel` reads the upper-body model files once D2 fixes their paths | todo | S follow-up |
+| K25 D2: fetch FBLS from its pinned mirror, git-ignored, checksummed (D-011) | running | D2 worker resumed |
 | K24 L's web-test line (ten coordinates in `dynamics.json`); left-aware FMA subset on main | merged | graph 207 nodes, 1096 edges; reproduces on main |
 
 L findings: left vasti brake left knee flexion in reference pre-swing (left loading response); lateral gastrocnemius_l stays under the D-006 floor early in left mid-stance (mean 0.027), while soleus_l and gasmed_l brake. Left foot on a force plate 0.84–1.59 s; left events at 0.45 s and 1.97 s come from markers. Five left entities share a side-neutral FMA id (`mtp`, `gluteals`, `hamstrings`, `deltoid`, `nervePiriformis`).
@@ -142,7 +143,7 @@ L findings: left vasti brake left knee flexion in reference pre-swing (left load
 
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Branch | Inputs | Outputs | Acceptance |
 |---|---|---|---|---|---|---|---|---|---|
-| M | Model merge | opus / xhigh | `ac5f4d49260d0cc4a` | 0 | running (arm, neck; trunk after the download) | `ws/M` | D2, S, D-008–D-010 | merged model, head split, neck angles holding the head level, reserves | static optimisation over the stride; reserves RMS < 10 N·m lumbar, < 2 N·m arm, < 1 N·m neck; leg activations within 0.02 RMS of today |
+| M | Model merge | opus / xhigh | `ac5f4d49260d0cc4a` | 0 | running (arm, neck; trunk from FBLS, D-011) | `ws/M` | D2, S, D-008–D-010 | merged model, head split, neck angles holding the head level, reserves | static optimisation over the stride; reserves RMS < 10 N·m lumbar, < 2 N·m arm, < 1 N·m neck; leg activations within 0.02 RMS of today |
 | P4 | Trunk and arm stages | opus / high | — | 0 | todo | `ws/P4` | M, L, D-009 | roles for neck, lumbar, shoulder, elbow, forearm, wrist; curated anatomy; meshes | erector spinae two bursts per stride; posterior deltoid in backward swing; neck extensors stabilising; D-006 floor test; `checkGraph` |
 | W2 | Web, real output | sonnet / medium | — | 0 | todo | `ws/W2` | P4, S | real graph wired in; tubes for every muscle | ≥ 30 fps with every muscle; `data/out/` < 8 MB; recorded trace conforms |
 
