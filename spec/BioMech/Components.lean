@@ -5,7 +5,7 @@ import BioMech.Acyclic
 
 The web app's modules form a digraph of allowed imports: an edge `a → b` means
 code in `a` may import code in `b`. Workstream C emits
-`generated/eslint-boundaries.json` from `edges` and `Component.dir`, so an
+`generated/eslint-boundaries.json` from `edges` and `Component.paths`, so an
 import outside this graph fails the lint.
 
 Every component may also import the generated types and FSM tables under
@@ -26,7 +26,8 @@ namespace BioMech.Components
 
 open BioMech
 
-/-- Front-end modules, each a directory (or, for `App`, a file) under `web/src/`. -/
+/-- Front-end modules, each owning paths under `web/src/`: one directory per
+component, two files for `App`. -/
 inductive Component
   /-- Loads `graph.json` and holds its nodes and edges. -/
   | GraphStore
@@ -44,7 +45,8 @@ inductive Component
   | ArchitectureView
   /-- Dev-mode recorder of FSM event traces to `trace.json`. -/
   | TraceRecorder
-  /-- Entry point: builds the store and engine and mounts the UI components. -/
+  /-- Entry point: loads the graph source (`config.ts`), builds the store and
+  engine, and mounts the UI components. -/
   | App
   deriving DecidableEq, Repr, Inhabited
 
@@ -75,20 +77,21 @@ def Component.name : Component → String
   | .App => "App"
 
 /-- Where the component's code lives, relative to the repository root. A
-trailing `/` marks a directory; `App` is a single file. -/
-def Component.dir : Component → String
-  | .GraphStore => "web/src/store/"
-  | .QueryEngine => "web/src/query/"
-  | .Timeline => "web/src/timeline/"
-  | .Viewer3D => "web/src/viewer/"
-  | .PhasePanel => "web/src/phase/"
-  | .GraphView => "web/src/graphview/"
-  | .ArchitectureView => "web/src/architecture/"
-  | .TraceRecorder => "web/src/trace/"
-  | .App => "web/src/main.ts"
+trailing `/` marks a directory; any other path names one file. Each component
+owns one directory, and `App` owns the two files of the entry point. -/
+def Component.paths : Component → List String
+  | .GraphStore => ["web/src/store/"]
+  | .QueryEngine => ["web/src/query/"]
+  | .Timeline => ["web/src/timeline/"]
+  | .Viewer3D => ["web/src/viewer/"]
+  | .PhasePanel => ["web/src/phase/"]
+  | .GraphView => ["web/src/graphview/"]
+  | .ArchitectureView => ["web/src/architecture/"]
+  | .TraceRecorder => ["web/src/trace/"]
+  | .App => ["web/src/main.ts", "web/src/config.ts"]
 
-/-- Distinct components live at distinct paths. -/
-theorem Component.nodup_dirs : (Component.all.map Component.dir).Nodup := by decide
+/-- Each path belongs to exactly one component. -/
+theorem Component.nodup_paths : (Component.all.flatMap Component.paths).Nodup := by decide
 
 /-- Paths every component may import, outside the component graph: the
 generated types and FSM tables. -/

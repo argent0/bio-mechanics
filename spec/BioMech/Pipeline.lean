@@ -11,10 +11,19 @@ that reads and writes the files listed here. Workstream C emits
 targets.
 
 Files fall into three groups, by directory (`Dir`):
-* sources, maintained outside the pipeline: `data/raw/` (downloads),
-  `data/curated/` (hand-written anatomy), `pipeline/config/` (thresholds);
+* sources, maintained outside the pipeline: `data/raw/` (downloads and the
+  subject-specific model and trial that `pipeline/env/make_trial.py` derives
+  from them), `data/curated/` (hand-written anatomy), `pipeline/config/`
+  (thresholds);
 * intermediate results in `data/work/`;
 * outputs the web app loads, in `data/out/`.
+
+The pipeline consumes one model: the Rajagopal model scaled to the walking
+subject (`Artefact.scaledModel`). The joint angles come from inverse kinematics
+on that same scaled model, so activations, moment arms, muscle paths, and bone
+meshes all share the subject's segment lengths. The generic model
+`data/raw/rajagopal/Rajagopal2016.osim` stays the input of the scaling step in
+`pipeline/env/`.
 
 Theorems: the stage graph is acyclic and `topoOrder` is a topological order of
 it; every input of a stage is a source or an output of a stage upstream of it;
@@ -25,7 +34,8 @@ namespace BioMech.Pipeline
 
 /-- Pipeline stages, in handover order. -/
 inductive Stage
-  /-- Load the Rajagopal model and the walking trial with the OpenSim API. -/
+  /-- Load the scaled Rajagopal model and the walking trial with the OpenSim
+  API. -/
   | loadModel
   /-- Static optimisation: muscle activations per frame. -/
   | runStaticOpt
@@ -42,7 +52,8 @@ inductive Stage
   | enrichAnatomy
   /-- Write the knowledge graph `data/out/graph.json` (contract C3). -/
   | exportGraph
-  /-- Convert the model's bone geometry to glTF. -/
+  /-- Convert the model's bone geometry to glTF, scaled by each body's scale
+  factors from `model.json`. -/
   | exportMeshes
   /-- Write muscle path points per frame for the tube renderer. -/
   | exportMusclePaths
@@ -100,7 +111,8 @@ abbrev graph : Digraph Stage := ofEdges edges
 
 /-- The directory a pipeline file lives in. -/
 inductive Dir
-  /-- Downloads: the OpenSim model, the walking trial, ontology subsets. -/
+  /-- Downloads (OpenSim model, walking trial, ontology subsets) and the scaled
+  model and joint angles derived from them in `pipeline/env/`. -/
   | raw
   /-- Hand-written anatomy facts. -/
   | curated
@@ -127,15 +139,18 @@ def Dir.isSource : Dir → Bool
 
 /-- Every file the pipeline reads or writes. -/
 inductive Artefact
-  /-- The Rajagopal full-body OpenSim model. -/
-  | osimModel
-  /-- The bone surface meshes (`.vtp`) the model refers to. -/
+  /-- The Rajagopal full-body model scaled to the walking subject: the one
+  model every stage loads. -/
+  | scaledModel
+  /-- The bone surface meshes (`.vtp`) the model refers to, at generic size. -/
   | geometry
-  /-- Joint coordinates per frame of the walking trial (inverse kinematics). -/
+  /-- Joint coordinates per frame of the walking trial, from inverse kinematics
+  on `scaledModel`. -/
   | ikMotion
   /-- Ground reaction forces and centres of pressure per frame of the trial. -/
   | grfMotion
-  /-- OpenSim external-loads setup: which body each ground reaction force acts on. -/
+  /-- OpenSim external loads: each foot's ground reaction force on `calcn_r`
+  and `calcn_l`, read from `grfMotion`. -/
   | externalLoads
   /-- Uberon subset: anatomy terms and part-of relations. -/
   | uberon
@@ -145,7 +160,8 @@ inductive Artefact
   | curatedAnatomy
   /-- Role-classification thresholds. -/
   | roleThresholds
-  /-- Bodies, joints, coordinates, and muscles of the model, with OpenSim names. -/
+  /-- Bodies, joints, coordinates, and muscles of the model, with OpenSim
+  names and each body's scale factors. -/
   | model
   /-- Joint coordinate values and speeds per frame. -/
   | kinematics
@@ -175,7 +191,7 @@ inductive Artefact
 
 /-- Every artefact, in declaration order. -/
 def Artefact.all : List Artefact :=
-  [.osimModel, .geometry, .ikMotion, .grfMotion, .externalLoads, .uberon, .fma,
+  [.scaledModel, .geometry, .ikMotion, .grfMotion, .externalLoads, .uberon, .fma,
    .curatedAnatomy, .roleThresholds,
    .model, .kinematics, .grf, .activations, .momentArms, .mtLengths, .phases,
    .roles, .enriched,
@@ -192,7 +208,7 @@ instance : Fintype Artefact :=
 
 /-- The directory an artefact lives in. -/
 def Artefact.dir : Artefact → Dir
-  | .osimModel | .geometry | .ikMotion | .grfMotion | .externalLoads
+  | .scaledModel | .geometry | .ikMotion | .grfMotion | .externalLoads
   | .uberon | .fma => .raw
   | .curatedAnatomy => .curated
   | .roleThresholds => .config
@@ -202,11 +218,11 @@ def Artefact.dir : Artefact → Dir
 
 /-- The artefact's path inside its directory. A trailing `/` marks a directory. -/
 def Artefact.file : Artefact → String
-  | .osimModel => "Rajagopal2015.osim"
-  | .geometry => "Geometry/"
-  | .ikMotion => "walk/ik.mot"
-  | .grfMotion => "walk/grf.mot"
-  | .externalLoads => "walk/external_loads.xml"
+  | .scaledModel => "rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim"
+  | .geometry => "rajagopal/Geometry/"
+  | .ikMotion => "rajagopal/walk_pipeline/IK/results_walk/ik_output_walk.mot"
+  | .grfMotion => "rajagopal/walk_pipeline/ExpData/grf_walk.mot"
+  | .externalLoads => "rajagopal/walk_pipeline/ID/grf_walk.xml"
   | .uberon => "ontology/uberon.obo"
   | .fma => "ontology/fma.owl"
   | .curatedAnatomy => "anatomy.yaml"
@@ -235,16 +251,16 @@ theorem Artefact.nodup_paths : (Artefact.all.map Artefact.path).Nodup := by deci
 
 /-- The files a stage reads. -/
 def Stage.reads : Stage → List Artefact
-  | .loadModel => [.osimModel, .ikMotion, .grfMotion]
-  | .runStaticOpt => [.osimModel, .externalLoads, .grfMotion, .kinematics]
-  | .computeMomentArms => [.osimModel, .kinematics]
+  | .loadModel => [.scaledModel, .ikMotion, .grfMotion]
+  | .runStaticOpt => [.scaledModel, .externalLoads, .grfMotion, .kinematics]
+  | .computeMomentArms => [.scaledModel, .kinematics]
   | .segmentPhases => [.kinematics, .grf]
   | .labelRoles => [.activations, .momentArms, .mtLengths, .phases, .kinematics,
       .roleThresholds]
   | .enrichAnatomy => [.roles, .model, .uberon, .fma, .curatedAnatomy]
   | .exportGraph => [.enriched]
   | .exportMeshes => [.model, .geometry]
-  | .exportMusclePaths => [.osimModel, .kinematics, .activations, .mtLengths]
+  | .exportMusclePaths => [.scaledModel, .kinematics, .activations, .mtLengths]
 
 /-- The files a stage writes. -/
 def Stage.writes : Stage → List Artefact
