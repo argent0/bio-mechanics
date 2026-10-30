@@ -124,7 +124,7 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 |---|---|---|---|---|---|---|---|---|---|
 | S | Lean spec additions | opus / xhigh | `a19ea05ec567d708b` | 0 | merged | `ws/S` | C1, D-008 | stage `buildModel` before `loadModel`; component `RegionFilter`; region emitters | acyclicity and layering theorems; zero `sorry`; `ninja -n -f generated/pipeline.ninja` |
 | L | Left leg | opus / high | `a3bc0e6b1242c20ea` | 0 | merged | `ws/L` | C1–C3, D-007 | both legs on the reference timeline; left anatomy by mirroring; left meshes, paths, dynamics | 40 left-leg muscles; `compare_graph.py --within-committed` passes; mirrored teaching examples; `checkGraph` |
-| D2 | Upper-body data | sonnet / high | `a25da4ada23abbe0a` | 0 | running (arm, neck; trunk waits on the director) | `ws/D2` | D-008, K19 picks | fetch script, `SHA256SUMS`, `SOURCES.md` section | `check_env.py` loads the model in OpenSim 4.6 |
+| D2 | Upper-body data | sonnet / high | `a25da4ada23abbe0a` | 0 | merged (arm 50, neck 72 muscles load; trunk waits on the director's download) | `ws/D2` | D-008, K19 picks | fetch script, `SHA256SUMS`, `SOURCES.md` section | `check_env.py` loads the model in OpenSim 4.6 |
 | W1 | Web, whole-body views | sonnet / high | `a208befd13ed6f3b2` | 0 | merged | `ws/W1` | C2, C3 | whole-skeleton framing; region and side filter; panels grouped by region and side; search across regions | `tsc`; web tests; boundary test with `RegionFilter` once S merges |
 | G2 | CI | sonnet / medium | — | 0 | todo | `ws/G2` | D2 | CI fetches and caches the upper-body model; every stage runs | CI green on `main`; pipeline job under 15 minutes |
 
