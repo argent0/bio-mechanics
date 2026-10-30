@@ -68,6 +68,22 @@ regions:
   ulna: upperLimb
   radius: upperLimb
   hand: upperLimb
+  # Bodies the model merge adds (pipeline/config/model.yaml): FBLS lumbar vertebrae and their
+  # two wrapping bodies, Mortensen cervical vertebrae (the neck rides with the head region).
+  lumbar1: trunk
+  lumbar2: trunk
+  lumbar3: trunk
+  lumbar4: trunk
+  lumbar5: trunk
+  Abdomen: trunk
+  LB_wrap: trunk
+  cerv1: head
+  cerv2: head
+  cerv3: head
+  cerv4: head
+  cerv5: head
+  cerv6: head
+  cerv7: head
 
 # Joints: `opensim` lists the model joints (the first names the node); `articulates` lists
 # bones, each of which belongs to a parent or child body of those model joints.

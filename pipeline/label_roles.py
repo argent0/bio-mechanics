@@ -1,9 +1,10 @@
 """Stage `labelRoles`: each muscle's role per gait phase and joint action (decisions D-002, D-006).
 
 Scope. One complete stride of the right leg (stride 0 of `phases.csv`), its seven phases, the
-muscles of both legs (`Config.muscle_suffixes`, `labelled_muscles`), and the joint coordinates
-of `Config.coordinates`. A coordinate takes the muscles of its own leg (`muscles_of`): those
-whose name ends in the coordinate's suffix, e.g. `vaslat_l` for `knee_angle_l`. A phase spans
+joint coordinates of `Config.coordinates`, and the muscles of both sides
+(`Config.muscle_suffixes`, `labelled_muscles`) that cross one of those coordinates. A
+coordinate takes the muscles of its own leg (`muscles_of`): those whose name ends in the
+coordinate's suffix, e.g. `vaslat_l` for `knee_angle_l`. A phase spans
 the frames from the event that opens it to the event that closes it, both included, so the
 phases tile the stride; integrals use the trapezoid rule over those frames.
 
@@ -349,7 +350,7 @@ def r6(x: float, digits: int) -> float:
 def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, Any]:
     """The contents of `roles.json`."""
     t_all = trial.time
-    muscles = labelled_muscles(list(trial.activation), cfg)
+    muscles = [m for m in labelled_muscles(list(trial.activation), cfg) if any((m, c) in trial.moment_arm for c in cfg.coordinates)]
     bounds = phase_bounds(p, stride)
     s0, s1 = t_all[bounds[0][1]], t_all[bounds[-1][2]]
     stride_peak = {m: max(trial.activation[m][bounds[0][1] : bounds[-1][2] + 1]) for m in muscles}
