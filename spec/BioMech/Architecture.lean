@@ -25,7 +25,7 @@ inductive ModuleId
 
 /-- API identifiers: the contracts between modules. -/
 inductive ApiId
-  | C1 | C2 | C3 | C4 | C5 | C6
+  | C1 | C2 | C3 | C4 | C5 | C6 | C7
   deriving DecidableEq, Repr, Inhabited
 
 /-- Where a module stands. `planned` modules appear on the map before their code exists. -/
@@ -83,9 +83,10 @@ def modules : List Module := [
   { id := .E3, name := "Movement views", lang := "TypeScript", model := "sonnet", state := .planned,
     paths := ["web/src/viewer/", "web/src/timeline/", "web/src/phase/"],
     acceptance := ["cd web && npx tsc --noEmit", "cd web && npx eslint src"] },
-  { id := .F, name := "Lean checkers", lang := "Lean", model := "opus", state := .running,
+  { id := .F, name := "Lean checkers", lang := "Lean", model := "opus", state := .merged,
     paths := ["spec/BioMech/CheckGraph.lean", "spec/BioMech/Conform.lean"],
-    acceptance := ["cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json"] },
+    acceptance := ["cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json",
+      "cd spec && lake exe conform ../data/fixtures/trace.sample.json"] },
   { id := .G, name := "CI and traces", lang := "YAML", model := "sonnet", state := .planned,
     paths := [".github/workflows/", "web/src/trace/"],
     acceptance := ["CI green on main"] },
@@ -116,7 +117,9 @@ def apis : List Api := [
     producer := .A, consumers := [.C, .F] },
   { id := .C6, name := "Pipeline and component graphs",
     files := ["spec/BioMech/Pipeline.lean", "spec/BioMech/Components.lean"],
-    producer := .B, consumers := [.C] }
+    producer := .B, consumers := [.C] },
+  { id := .C7, name := "trace.json", files := ["spec/BioMech/Conform.lean", "data/fixtures/trace.sample.json"],
+    producer := .F, consumers := [.G] }
 ]
 
 def ModuleId.all : List ModuleId :=
@@ -146,7 +149,7 @@ theorem ModuleId.mem_all (m : ModuleId) : m ∈ ModuleId.all := by cases m <;> d
 theorem modules_ids : modules.map (·.id) = ModuleId.all := by decide
 
 /-- Each API appears exactly once in `apis`. -/
-theorem apis_ids : apis.map (·.id) = [.C1, .C2, .C3, .C4, .C5, .C6] := by decide
+theorem apis_ids : apis.map (·.id) = [.C1, .C2, .C3, .C4, .C5, .C6, .C7] := by decide
 
 def lookup (m : ModuleId) : Option Module := modules.find? (·.id == m)
 

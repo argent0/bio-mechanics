@@ -1,0 +1,139 @@
+{
+ "traces": [
+  {
+   "machine": "gait",
+   "steps": [
+    {
+     "event": "oppositeToeOff",
+     "state": "midStance",
+     "t": 0
+    },
+    {
+     "event": "heelOff",
+     "state": "terminalStance",
+     "t": 100
+    },
+    {
+     "event": "oppositeInitialContact",
+     "state": "preSwing",
+     "t": 200
+    },
+    {
+     "event": "toeOff",
+     "state": "initialSwing",
+     "t": 300
+    },
+    {
+     "event": "feetAdjacent",
+     "state": "midSwing",
+     "t": 400
+    },
+    {
+     "event": "tibiaVertical",
+     "state": "terminalSwing",
+     "t": 500
+    },
+    {
+     "event": "initialContact",
+     "state": "loadingResponse",
+     "t": 600
+    },
+    {
+     "event": "oppositeToeOff",
+     "state": "midStance",
+     "t": 700
+    },
+    {
+     "event": "heelOff",
+     "state": "terminalStance",
+     "t": 800
+    },
+    {
+     "event": "oppositeInitialContact",
+     "state": "preSwing",
+     "t": 900
+    },
+    {
+     "event": "toeOff",
+     "state": "initialSwing",
+     "t": 1000
+    },
+    {
+     "event": "feetAdjacent",
+     "state": "midSwing",
+     "t": 1100
+    },
+    {
+     "event": "tibiaVertical",
+     "state": "terminalSwing",
+     "t": 1200
+    },
+    {
+     "event": "initialContact",
+     "state": "loadingResponse",
+     "t": 1300
+    }
+   ]
+  },
+  {
+   "machine": "ui",
+   "steps": [
+    {
+     "event": "play",
+     "state": "playing",
+     "t": 0
+    },
+    {
+     "event": "pause",
+     "state": "paused",
+     "t": 100
+    },
+    {
+     "event": "selectNode",
+     "state": "inspectingNode",
+     "t": 200
+    },
+    {
+     "event": "scrubStart",
+     "state": "scrubbing",
+     "t": 300
+    },
+    {
+     "event": "play",
+     "state": "scrubbing",
+     "t": 400
+    },
+    {
+     "event": "scrubEnd",
+     "state": "paused",
+     "t": 500
+    },
+    {
+     "event": "stop",
+     "state": "idle",
+     "t": 600
+    }
+   ]
+  },
+  {
+   "machine": "gait",
+   "steps": [
+    {
+     "event": "oppositeToeOff",
+     "state": "midStance",
+     "t": 0
+    },
+    {
+     "event": "heelOff",
+     "state": "terminalStance",
+     "t": 100
+    },
+    {
+     "event": "oppositeInitialContact",
+     "state": "preSwing",
+     "t": 200
+    }
+   ]
+  }
+ ]
+}

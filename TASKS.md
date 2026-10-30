@@ -32,7 +32,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 |---|---|---|---|---|---|---|---|
 | C | Emitters | opus / high | `a0d7098928e70d129` | 0 | running | A, B | regenerate gives an empty diff; `ninja -n` |
 | P1 | Pipeline stages 1–3 | opus / high | `aa1666b96d68aaa97` | 0 | running | D, C2 | `mypy`; tibialis anterior and gluteus medius plausibility |
-| F | Lean checkers | opus / high | `a4950df23482a4305` | 0 | running | C1, A, C3 | fixture passes; bad edge and bad trace fail by name |
+| F | Lean checkers | opus / high | `a4950df23482a4305` | 0 | merged | C1, A, C3 | fixture passes; bad edge and bad trace fail by name |
 | E2 | ArchitectureView | sonnet / medium | — | 0 | todo | C (`architecture.json`) | `tsc`; four diagrams render |
 
 ## Wave 3

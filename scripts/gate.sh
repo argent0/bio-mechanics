@@ -26,6 +26,15 @@ step "lake exe arch check"
 step "lake exe arch print --detail 0"
 (cd spec && lake exe arch print --detail 0 2>&1 | grep -vE '^(⚠|✔|warning|trace)')
 
+step "checkGraph and conform on fixtures"
+q() { grep -vE '^(⚠|✔|warning|trace)' || true; }
+(cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json 2>&1 | q; exit "${PIPESTATUS[0]}")
+if (cd spec && lake exe checkGraph ../data/fixtures/graph.bad-edge.json >/dev/null 2>&1); then echo "checkGraph accepted graph.bad-edge.json"; exit 1; fi
+(cd spec && lake exe conform ../data/fixtures/trace.sample.json 2>&1 | q; exit "${PIPESTATUS[0]}")
+for bad in trace.bad-gait.json trace.bad-ui.json; do
+  if (cd spec && lake exe conform "../data/fixtures/$bad" >/dev/null 2>&1); then echo "conform accepted $bad"; exit 1; fi
+done
+
 step "mypy"
 targets=(generated/py tests)
 for d in pipeline tools; do [ -d "$d" ] && targets+=("$d"); done

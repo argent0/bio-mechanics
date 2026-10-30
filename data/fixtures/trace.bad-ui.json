@@ -1,0 +1,44 @@
+{
+ "traces": [
+  {
+   "machine": "ui",
+   "steps": [
+    {
+     "event": "play",
+     "state": "playing",
+     "t": 0
+    },
+    {
+     "event": "pause",
+     "state": "paused",
+     "t": 100
+    },
+    {
+     "event": "selectNode",
+     "state": "paused",
+     "t": 200
+    },
+    {
+     "event": "scrubStart",
+     "state": "scrubbing",
+     "t": 300
+    },
+    {
+     "event": "play",
+     "state": "scrubbing",
+     "t": 400
+    },
+    {
+     "event": "scrubEnd",
+     "state": "paused",
+     "t": 500
+    },
+    {
+     "event": "stop",
+     "state": "idle",
+     "t": 600
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "traces": [
+  {
+   "machine": "gait",
+   "steps": [
+    {
+     "event": "oppositeToeOff",
+     "state": "midStance",
+     "t": 0
+    },
+    {
+     "event": "oppositeInitialContact",
+     "state": "preSwing",
+     "t": 100
+    },
+    {
+     "event": "toeOff",
+     "state": "initialSwing",
+     "t": 200
+    },
+    {
+     "event": "feetAdjacent",
+     "state": "midSwing",
+     "t": 300
+    },
+    {
+     "event": "tibiaVertical",
+     "state": "terminalSwing",
+     "t": 400
+    },
+    {
+     "event": "initialContact",
+     "state": "loadingResponse",
+     "t": 500
+    }
+   ]
+  }
+ ]
+}
