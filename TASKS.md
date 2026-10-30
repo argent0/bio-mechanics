@@ -52,9 +52,9 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K11 D-004 activation floor in labelRoles | merged | graph.json 543 edges |
 | K12 Investigate low vasti activation in loading response (static optimisation) | merged | no defect in stages 1–3; D-004's whole-phase floor hides the braking; evidence test in `test_p1_stages.py` |
 | K14 `exportMusclePaths` reads `phases` (edge `segmentPhases → exportMusclePaths`) | merged | B's worker |
-| K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | review | merged; first CI run pending |
+| K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | merged | CI pipeline-smoke green |
 | K16 CI `python` job installs `types-PyYAML` | merged | coordinator fix in `ci.yml` (G's file), one package |
-| K17 CI compares regenerated graph.json structurally (`scripts/compare_graph.py`) | review | IK and SO drift across machines; ≤ 5 % of edges may differ, all listed |
+| K17 CI compares regenerated graph.json structurally (`scripts/compare_graph.py`) | merged | IK and SO drift across machines; ≤ 5 % of edges may differ, all listed |
 | K18 D-006 combined role floor | merged | all teaching tests pass; 550 edges |
 | K15 D-005 relative role floor | merged | vasti braking restored; calf mid-stance role lost, adductors back (director question) |
 
@@ -71,8 +71,8 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | Task | State |
 |---|---|
 | Replace fixture references with pipeline output | merged (`web/src/config.ts` reads `data/out/graph.json`; Vite serves `data/out/`) |
-| Full gate on `main` | todo |
-| Record a walking trace, pass `lake exe conform` | todo |
+| Full gate on `main` | merged (local with OpenSim; CI run 40993670056 all six jobs green) |
+| Record a walking trace, pass `lake exe conform` | merged (`data/fixtures/trace.walking-session.json`: ui 6, gait 17 + 10 steps; in the gate) |
 | Fresh `handover.md` status from merged code | todo |
 | Director: order of later movements | todo |
 

@@ -31,6 +31,8 @@ q() { grep -vE '^(⚠|✔|warning|trace)' || true; }
 (cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json 2>&1 | q; exit "${PIPESTATUS[0]}")
 if (cd spec && lake exe checkGraph ../data/fixtures/graph.bad-edge.json >/dev/null 2>&1); then echo "checkGraph accepted graph.bad-edge.json"; exit 1; fi
 (cd spec && lake exe conform ../data/fixtures/trace.sample.json 2>&1 | q; exit "${PIPESTATUS[0]}")
+# A dev-mode session recorded in the browser (#/walking: play, pause, scrub, play, stop).
+(cd spec && lake exe conform ../data/fixtures/trace.walking-session.json >/dev/null 2>&1)
 for bad in trace.bad-gait.json trace.bad-ui.json; do
   if (cd spec && lake exe conform "../data/fixtures/$bad" >/dev/null 2>&1); then echo "conform accepted $bad"; exit 1; fi
 done
