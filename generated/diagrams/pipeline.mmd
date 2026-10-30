@@ -9,6 +9,7 @@ flowchart TB
   n_exportGraph["exportGraph"]
   n_exportMeshes["exportMeshes"]
   n_exportMusclePaths["exportMusclePaths"]
+  n_exportDynamics["exportDynamics"]
   n_loadModel -->|"kinematics"| n_runStaticOpt
   n_runStaticOpt --> n_computeMomentArms
   n_computeMomentArms --> n_segmentPhases
@@ -19,3 +20,4 @@ flowchart TB
   n_computeMomentArms -->|"mtLengths"| n_exportMusclePaths
   n_runStaticOpt -->|"activations"| n_exportMusclePaths
   n_segmentPhases -->|"phases"| n_exportMusclePaths
+  n_segmentPhases -->|"phases"| n_exportDynamics

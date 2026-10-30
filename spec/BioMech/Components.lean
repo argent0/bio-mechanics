@@ -13,7 +13,8 @@ Every component may also import the generated types and FSM tables under
 
 Layers, from the bottom: `GraphStore` holds `graph.json`; `QueryEngine` answers
 questions over it; the UI components (`ui`) read through `QueryEngine`;
-`Viewer3D` and `PhasePanel` follow `Timeline` for the current time and phase;
+`Viewer3D` and `PhasePanel` follow `Timeline` for the current time and phase,
+and `PhasePanel` borrows `Viewer3D`'s muscle colour scale;
 `ArchitectureView` reads generated files only; `TraceRecorder` records FSM
 events from every UI component; `App` wires everything together.
 
@@ -110,6 +111,8 @@ def edges : List (Component × Component) :=
     (.PhasePanel, .QueryEngine), (.GraphView, .QueryEngine),
     -- views that follow the current time and phase
     (.Viewer3D, .Timeline), (.PhasePanel, .Timeline),
+    -- the dynamics panel colours muscles with the viewer's colour scale
+    (.PhasePanel, .Viewer3D),
     -- every UI component records its FSM events
     (.Timeline, .TraceRecorder), (.Viewer3D, .TraceRecorder),
     (.PhasePanel, .TraceRecorder), (.GraphView, .TraceRecorder),

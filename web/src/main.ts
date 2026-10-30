@@ -29,15 +29,16 @@ search.addEventListener("input", (ev) => {
   if (!(ev instanceof InputEvent) || ev.inputType === "insertReplacementText") select();
 });
 
-/** Movement view (`#/walking`): Timeline, Viewer3D and PhasePanel over the pipeline's
- * walking clip. The viewer (and three.js) loads on first visit, in its own chunk. */
+/** Movement view (`#/walking`): Timeline, Viewer3D, PhasePanel and DynamicsPanel over the
+ * pipeline's walking clip. The viewer (and three.js) loads on first visit, in its own chunk. */
 async function mountWalking(): Promise<void> {
-  const [{ Timeline, loadMusclePaths, mountTimeline }, { mountPhasePanel }, { mountViewer3D }] =
+  const [{ Timeline, loadMusclePaths, mountTimeline }, { mountPhasePanel, mountDynamicsPanel, loadDynamics }, { mountViewer3D }] =
     await Promise.all([import("./timeline"), import("./phase"), import("./viewer")]);
-  const clip = await loadMusclePaths("./");
+  const [clip, dynamics] = await Promise.all([loadMusclePaths("./"), loadDynamics("./")]);
   const timeline = new Timeline({ query, clip });
   mountTimeline(byId("walk-timeline"), timeline);
   mountPhasePanel(byId("walk-phase"), { query, timeline });
+  mountDynamicsPanel(byId("walk-dynamics"), { query, timeline, clip, dynamics });
   await mountViewer3D(byId("walk-view"), { query, timeline, dataBase: "./" });
 }
 

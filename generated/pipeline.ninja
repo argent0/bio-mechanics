@@ -75,3 +75,11 @@ rule exportMusclePaths
   description = exportMusclePaths: Write muscle path points per frame for the tube renderer, with the bounds of the stride the knowledge graph describes.
 build data/out/muscle_paths.json: exportMusclePaths data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/work/kinematics.csv data/work/activations.csv data/work/mt_lengths.csv data/work/phases.csv | pipeline/export_muscle_paths.py
 build exportMusclePaths: phony data/out/muscle_paths.json
+
+# Write each muscle's moment about each joint coordinate, and the
+# coordinate's angle, per frame, for the dynamics panel.
+rule exportDynamics
+  command = $python -m pipeline.export_dynamics
+  description = exportDynamics: Write each muscle's moment about each joint coordinate, and the coordinate's angle, per frame, for the dynamics panel.
+build data/out/dynamics.json: exportDynamics data/work/model.json data/work/kinematics.csv data/work/activations.csv data/work/moment_arms.csv data/work/mt_lengths.csv data/work/phases.csv pipeline/config/roles.yaml data/curated/anatomy.yaml | pipeline/export_dynamics.py
+build exportDynamics: phony data/out/dynamics.json

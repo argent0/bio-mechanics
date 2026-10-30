@@ -367,9 +367,9 @@
     "loc": {
       "module": "BioMech.Pipeline",
       "file": "spec/BioMech/Pipeline.lean",
-      "line": 101,
-      "startLine": 100,
-      "endLine": 107
+      "line": 106,
+      "startLine": 105,
+      "endLine": 112
     },
     "stages": [
       {
@@ -461,6 +461,16 @@
         "writes": ["musclePaths"],
         "inputs": ["data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim", "data/work/kinematics.csv", "data/work/activations.csv", "data/work/mt_lengths.csv", "data/work/phases.csv"],
         "outputs": ["data/out/muscle_paths.json"]
+      },
+      {
+        "name": "exportDynamics",
+        "doc": "Write each muscle's moment about each joint coordinate, and the\ncoordinate's angle, per frame, for the dynamics panel.",
+        "script": "pipeline/export_dynamics.py",
+        "module": "pipeline.export_dynamics",
+        "reads": ["model", "kinematics", "activations", "momentArms", "mtLengths", "phases", "roleThresholds", "curatedAnatomy"],
+        "writes": ["dynamics"],
+        "inputs": ["data/work/model.json", "data/work/kinematics.csv", "data/work/activations.csv", "data/work/moment_arms.csv", "data/work/mt_lengths.csv", "data/work/phases.csv", "pipeline/config/roles.yaml", "data/curated/anatomy.yaml"],
+        "outputs": ["data/out/dynamics.json"]
       }
     ],
     "edges": [
@@ -513,9 +523,14 @@
         "source": "segmentPhases",
         "target": "exportMusclePaths",
         "artefacts": ["phases"]
+      },
+      {
+        "source": "segmentPhases",
+        "target": "exportDynamics",
+        "artefacts": ["phases"]
       }
     ],
-    "topoOrder": ["loadModel", "runStaticOpt", "computeMomentArms", "segmentPhases", "labelRoles", "enrichAnatomy", "exportGraph", "exportMeshes", "exportMusclePaths"],
+    "topoOrder": ["loadModel", "runStaticOpt", "computeMomentArms", "segmentPhases", "labelRoles", "enrichAnatomy", "exportGraph", "exportMeshes", "exportMusclePaths", "exportDynamics"],
     "artefacts": [
       {
         "name": "scaledModel",
@@ -663,6 +678,13 @@
         "path": "data/out/muscle_paths.json",
         "isSource": false,
         "isDirectory": false
+      },
+      {
+        "name": "dynamics",
+        "doc": "Per frame: each muscle's moment about each labelled joint coordinate,\nand the coordinate's angle.",
+        "path": "data/out/dynamics.json",
+        "isSource": false,
+        "isDirectory": false
       }
     ]
   },
@@ -670,9 +692,9 @@
     "loc": {
       "module": "BioMech.Components",
       "file": "spec/BioMech/Components.lean",
-      "line": 105,
-      "startLine": 104,
-      "endLine": 120
+      "line": 106,
+      "startLine": 105,
+      "endLine": 123
     },
     "components": [
       {
@@ -729,6 +751,7 @@
       { "source": "GraphView", "target": "QueryEngine" },
       { "source": "Viewer3D", "target": "Timeline" },
       { "source": "PhasePanel", "target": "Timeline" },
+      { "source": "PhasePanel", "target": "Viewer3D" },
       { "source": "Timeline", "target": "TraceRecorder" },
       { "source": "Viewer3D", "target": "TraceRecorder" },
       { "source": "PhasePanel", "target": "TraceRecorder" },
@@ -743,7 +766,7 @@
       { "source": "App", "target": "GraphView" },
       { "source": "App", "target": "ArchitectureView" }
     ],
-    "topoOrder": ["App", "Viewer3D", "PhasePanel", "Timeline", "GraphView", "QueryEngine", "GraphStore", "ArchitectureView", "TraceRecorder"],
+    "topoOrder": ["App", "PhasePanel", "Viewer3D", "Timeline", "GraphView", "QueryEngine", "GraphStore", "ArchitectureView", "TraceRecorder"],
     "sharedImports": ["generated/ts/"]
   },
   "theorems": [
@@ -1368,14 +1391,14 @@
       "namespace": "BioMech.Pipeline",
       "statement": "∀ (s : Stage), s ∈ Stage.all",
       "doc": "`Stage.all` lists every stage.",
-      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 69, "startLine": 68, "endLine": 69 }
+      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 72, "startLine": 71, "endLine": 72 }
     },
     {
       "name": "BioMech.Pipeline.Stage.nodup_all",
       "namespace": "BioMech.Pipeline",
       "statement": "Stage.all.Nodup",
       "doc": "`Stage.all` lists each stage once.",
-      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 72, "startLine": 71, "endLine": 72 }
+      "loc": { "module": "BioMech.Pipeline", "file": "spec/BioMech/Pipeline.lean", "line": 75, "startLine": 74, "endLine": 75 }
     },
     {
       "name": "BioMech.Pipeline.Artefact.mem_all",
@@ -1385,9 +1408,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 204,
-        "startLine": 203,
-        "endLine": 204
+        "line": 212,
+        "startLine": 211,
+        "endLine": 212
       }
     },
     {
@@ -1398,9 +1421,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 207,
-        "startLine": 206,
-        "endLine": 207
+        "line": 215,
+        "startLine": 214,
+        "endLine": 215
       }
     },
     {
@@ -1411,22 +1434,22 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 253,
-        "startLine": 252,
-        "endLine": 253
+        "line": 262,
+        "startLine": 261,
+        "endLine": 262
       }
     },
     {
       "name": "BioMech.Pipeline.topoOrder_eq",
       "namespace": "BioMech.Pipeline",
-      "statement": "topoOrder =\n  [Stage.loadModel, Stage.runStaticOpt, Stage.computeMomentArms, Stage.segmentPhases,\n    Stage.labelRoles, Stage.enrichAnatomy, Stage.exportGraph, Stage.exportMeshes,\n    Stage.exportMusclePaths]",
+      "statement": "topoOrder =\n  [Stage.loadModel, Stage.runStaticOpt, Stage.computeMomentArms, Stage.segmentPhases,\n    Stage.labelRoles, Stage.enrichAnatomy, Stage.exportGraph, Stage.exportMeshes,\n    Stage.exportMusclePaths, Stage.exportDynamics]",
       "doc": "The computed order, spelled out.",
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 304,
-        "startLine": 303,
-        "endLine": 307
+        "line": 319,
+        "startLine": 318,
+        "endLine": 322
       }
     },
     {
@@ -1437,9 +1460,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 310,
-        "startLine": 309,
-        "endLine": 310
+        "line": 325,
+        "startLine": 324,
+        "endLine": 325
       }
     },
     {
@@ -1450,9 +1473,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 313,
-        "startLine": 312,
-        "endLine": 313
+        "line": 328,
+        "startLine": 327,
+        "endLine": 328
       }
     },
     {
@@ -1463,9 +1486,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 318,
-        "startLine": 317,
-        "endLine": 320
+        "line": 333,
+        "startLine": 332,
+        "endLine": 335
       }
     },
     {
@@ -1476,9 +1499,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 324,
-        "startLine": 322,
-        "endLine": 324
+        "line": 339,
+        "startLine": 337,
+        "endLine": 339
       }
     },
     {
@@ -1489,9 +1512,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 327,
-        "startLine": 326,
-        "endLine": 328
+        "line": 342,
+        "startLine": 341,
+        "endLine": 343
       }
     },
     {
@@ -1502,9 +1525,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 331,
-        "startLine": 330,
-        "endLine": 332
+        "line": 346,
+        "startLine": 345,
+        "endLine": 347
       }
     },
     {
@@ -1515,9 +1538,9 @@
       "loc": {
         "module": "BioMech.Pipeline",
         "file": "spec/BioMech/Pipeline.lean",
-        "line": 336,
-        "startLine": 334,
-        "endLine": 336
+        "line": 351,
+        "startLine": 349,
+        "endLine": 351
       }
     },
     {
@@ -1528,9 +1551,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 59,
-        "startLine": 58,
-        "endLine": 59
+        "line": 60,
+        "startLine": 59,
+        "endLine": 60
       }
     },
     {
@@ -1541,9 +1564,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 62,
-        "startLine": 61,
-        "endLine": 62
+        "line": 63,
+        "startLine": 62,
+        "endLine": 63
       }
     },
     {
@@ -1554,9 +1577,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 94,
-        "startLine": 93,
-        "endLine": 94
+        "line": 95,
+        "startLine": 94,
+        "endLine": 95
       }
     },
     {
@@ -1567,9 +1590,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 134,
-        "startLine": 132,
-        "endLine": 134
+        "line": 137,
+        "startLine": 135,
+        "endLine": 137
       }
     },
     {
@@ -1580,9 +1603,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 137,
-        "startLine": 136,
-        "endLine": 137
+        "line": 140,
+        "startLine": 139,
+        "endLine": 140
       }
     },
     {
@@ -1593,9 +1616,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 142,
-        "startLine": 141,
-        "endLine": 143
+        "line": 145,
+        "startLine": 144,
+        "endLine": 146
       }
     },
     {
@@ -1606,9 +1629,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 146,
-        "startLine": 145,
-        "endLine": 148
+        "line": 149,
+        "startLine": 148,
+        "endLine": 151
       }
     },
     {
@@ -1619,9 +1642,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 151,
-        "startLine": 150,
-        "endLine": 152
+        "line": 154,
+        "startLine": 153,
+        "endLine": 155
       }
     },
     {
@@ -1632,9 +1655,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 155,
-        "startLine": 154,
-        "endLine": 156
+        "line": 158,
+        "startLine": 157,
+        "endLine": 159
       }
     },
     {
@@ -1645,9 +1668,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 160,
-        "startLine": 158,
-        "endLine": 162
+        "line": 163,
+        "startLine": 161,
+        "endLine": 165
       }
     },
     {
@@ -1658,9 +1681,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 165,
-        "startLine": 164,
-        "endLine": 166
+        "line": 168,
+        "startLine": 167,
+        "endLine": 169
       }
     },
     {
@@ -1671,9 +1694,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 170,
-        "startLine": 168,
-        "endLine": 172
+        "line": 173,
+        "startLine": 171,
+        "endLine": 175
       }
     },
     {
@@ -1684,9 +1707,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 175,
-        "startLine": 174,
-        "endLine": 175
+        "line": 178,
+        "startLine": 177,
+        "endLine": 178
       }
     },
     {
@@ -1697,9 +1720,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 179,
-        "startLine": 177,
-        "endLine": 179
+        "line": 182,
+        "startLine": 180,
+        "endLine": 182
       }
     },
     {
@@ -1710,9 +1733,9 @@
       "loc": {
         "module": "BioMech.Components",
         "file": "spec/BioMech/Components.lean",
-        "line": 183,
-        "startLine": 181,
-        "endLine": 185
+        "line": 186,
+        "startLine": 184,
+        "endLine": 188
       }
     }
   ]

@@ -58,12 +58,15 @@ inductive Stage
   /-- Write muscle path points per frame for the tube renderer, with the
   bounds of the stride the knowledge graph describes. -/
   | exportMusclePaths
+  /-- Write each muscle's moment about each joint coordinate, and the
+  coordinate's angle, per frame, for the dynamics panel. -/
+  | exportDynamics
   deriving DecidableEq, Repr, Inhabited
 
 /-- Every stage, in declaration order. -/
 def Stage.all : List Stage :=
   [.loadModel, .runStaticOpt, .computeMomentArms, .segmentPhases, .labelRoles,
-   .enrichAnatomy, .exportGraph, .exportMeshes, .exportMusclePaths]
+   .enrichAnatomy, .exportGraph, .exportMeshes, .exportMusclePaths, .exportDynamics]
 
 /-- `Stage.all` lists every stage. -/
 theorem Stage.mem_all (s : Stage) : s ∈ Stage.all := by cases s <;> decide
@@ -84,6 +87,7 @@ def Stage.name : Stage → String
   | .exportGraph => "exportGraph"
   | .exportMeshes => "exportMeshes"
   | .exportMusclePaths => "exportMusclePaths"
+  | .exportDynamics => "exportDynamics"
 
 /-- The Python script that runs the stage, relative to the repository root. -/
 def Stage.script : Stage → String
@@ -96,6 +100,7 @@ def Stage.script : Stage → String
   | .exportGraph => "pipeline/export_graph.py"
   | .exportMeshes => "pipeline/export_meshes.py"
   | .exportMusclePaths => "pipeline/export_muscle_paths.py"
+  | .exportDynamics => "pipeline/export_dynamics.py"
 
 /-- Stage order: `a → b` means `b` runs after `a`. -/
 def edges : List (Stage × Stage) :=
@@ -104,7 +109,7 @@ def edges : List (Stage × Stage) :=
    (.labelRoles, .enrichAnatomy), (.enrichAnatomy, .exportGraph),
    (.loadModel, .exportMeshes),
    (.computeMomentArms, .exportMusclePaths), (.runStaticOpt, .exportMusclePaths),
-   (.segmentPhases, .exportMusclePaths)]
+   (.segmentPhases, .exportMusclePaths), (.segmentPhases, .exportDynamics)]
 
 /-- The stage digraph: adjacency is membership in `edges`. -/
 abbrev graph : Digraph Stage := ofEdges edges
@@ -190,6 +195,9 @@ inductive Artefact
   /-- Muscle path points, activation, and lengthening velocity per frame, and
   the start and end times of the stride. -/
   | musclePaths
+  /-- Per frame: each muscle's moment about each labelled joint coordinate,
+  and the coordinate's angle. -/
+  | dynamics
   deriving DecidableEq, Repr, Inhabited
 
 /-- Every artefact, in declaration order. -/
@@ -198,7 +206,7 @@ def Artefact.all : List Artefact :=
    .curatedAnatomy, .roleThresholds,
    .model, .kinematics, .grf, .activations, .momentArms, .mtLengths, .phases,
    .roles, .enriched,
-   .knowledgeGraph, .meshes, .musclePaths]
+   .knowledgeGraph, .meshes, .musclePaths, .dynamics]
 
 /-- `Artefact.all` lists every artefact. -/
 theorem Artefact.mem_all (a : Artefact) : a ∈ Artefact.all := by cases a <;> decide
@@ -217,7 +225,7 @@ def Artefact.dir : Artefact → Dir
   | .roleThresholds => .config
   | .model | .kinematics | .grf | .activations | .momentArms | .mtLengths
   | .phases | .roles | .enriched => .work
-  | .knowledgeGraph | .meshes | .musclePaths => .out
+  | .knowledgeGraph | .meshes | .musclePaths | .dynamics => .out
 
 /-- The artefact's path inside its directory. A trailing `/` marks a directory. -/
 def Artefact.file : Artefact → String
@@ -242,6 +250,7 @@ def Artefact.file : Artefact → String
   | .knowledgeGraph => "graph.json"
   | .meshes => "meshes/index.json"
   | .musclePaths => "muscle_paths.json"
+  | .dynamics => "dynamics.json"
 
 /-- The artefact's path relative to the repository root. -/
 def Artefact.path (a : Artefact) : String := a.dir.root ++ a.file
@@ -264,7 +273,10 @@ less evident from the stage's purpose:
   and `model` lists the mesh files only.
 * `exportMusclePaths` reads `phases`: the gait events there give the stride
   bounds, the opening and closing right initial contacts of the stride whose
-  phase percentages `graph.json` carries, so the viewer plays that stride. -/
+  phase percentages `graph.json` carries, so the viewer plays that stride.
+* `exportDynamics` reads `curatedAnatomy`: it names the joint action each
+  direction of a coordinate is, and `mtLengths` only because `labelRoles`'s
+  trial reader loads it alongside the moment arms. -/
 def Stage.reads : Stage → List Artefact
   | .loadModel => [.scaledModel, .ikMotion, .grfMotion]
   | .runStaticOpt => [.scaledModel, .externalLoads, .grfMotion, .kinematics]
@@ -276,6 +288,8 @@ def Stage.reads : Stage → List Artefact
   | .exportGraph => [.enriched]
   | .exportMeshes => [.scaledModel, .model, .geometry]
   | .exportMusclePaths => [.scaledModel, .kinematics, .activations, .mtLengths, .phases]
+  | .exportDynamics => [.model, .kinematics, .activations, .momentArms, .mtLengths, .phases,
+      .roleThresholds, .curatedAnatomy]
 
 /-- The files a stage writes. -/
 def Stage.writes : Stage → List Artefact
@@ -288,6 +302,7 @@ def Stage.writes : Stage → List Artefact
   | .exportGraph => [.knowledgeGraph]
   | .exportMeshes => [.meshes]
   | .exportMusclePaths => [.musclePaths]
+  | .exportDynamics => [.dynamics]
 
 /-- Paths a stage reads, relative to the repository root. -/
 def Stage.inputs (s : Stage) : List String := s.reads.map Artefact.path
@@ -303,7 +318,7 @@ def topoOrder : List Stage := topoSort Stage.all edges
 /-- The computed order, spelled out. -/
 theorem topoOrder_eq : topoOrder =
     [.loadModel, .runStaticOpt, .computeMomentArms, .segmentPhases, .labelRoles,
-     .enrichAnatomy, .exportGraph, .exportMeshes, .exportMusclePaths] := by
+     .enrichAnatomy, .exportGraph, .exportMeshes, .exportMusclePaths, .exportDynamics] := by
   decide
 
 /-- `topoOrder` lists every stage once, each after all its predecessors. -/

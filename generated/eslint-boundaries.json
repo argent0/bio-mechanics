@@ -41,7 +41,7 @@
           },
           {
             "from": ["PhasePanel"],
-            "allow": ["PhasePanel", "QueryEngine", "Timeline", "TraceRecorder", "generated"]
+            "allow": ["PhasePanel", "QueryEngine", "Timeline", "Viewer3D", "TraceRecorder", "generated"]
           },
           {
             "from": ["GraphView"],

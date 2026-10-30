@@ -9,7 +9,7 @@ on:
 
 env:
   # One variable: the ninja targets of the pipeline smoke test, the final outputs of the full graph.
-  PIPELINE_TARGET: exportGraph exportMeshes exportMusclePaths
+  PIPELINE_TARGET: exportGraph exportMeshes exportMusclePaths exportDynamics
 
 jobs:
   lean:

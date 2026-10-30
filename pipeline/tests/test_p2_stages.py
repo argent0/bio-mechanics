@@ -37,6 +37,7 @@ class Out:
         self.graph: dict[str, Any] = json.loads((d / "graph.json").read_text())
         self.meshes: dict[str, Any] = json.loads((d / "meshes" / "index.json").read_text())
         self.paths: dict[str, Any] = json.loads((d / "muscle_paths.json").read_text())
+        self.dynamics: dict[str, Any] = json.loads((d / "dynamics.json").read_text())
 
     def phase(self, name: str) -> dict[str, Any]:
         return next(p for p in self.roles["phases"] if p["phase"] == name)
@@ -48,10 +49,10 @@ class Out:
 @pytest.fixture(scope="module")
 def out(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Out]:
     pytest.importorskip("opensim")
-    from pipeline import enrich_anatomy, export_graph, export_meshes, export_muscle_paths, label_roles, load_model, moment_arms, segment_phases, static_opt
+    from pipeline import enrich_anatomy, export_dynamics, export_graph, export_meshes, export_muscle_paths, label_roles, load_model, moment_arms, segment_phases, static_opt
 
     d = tmp_path_factory.mktemp("p2")
-    w = {k: str(d / k) for k in ("model.json", "kinematics.csv", "grf.csv", "activations.csv", "moment_arms.csv", "mt_lengths.csv", "phases.csv", "roles.json", "enriched.json", "graph.json", "muscle_paths.json")}
+    w = {k: str(d / k) for k in ("model.json", "kinematics.csv", "grf.csv", "activations.csv", "moment_arms.csv", "mt_lengths.csv", "phases.csv", "roles.json", "enriched.json", "graph.json", "muscle_paths.json", "dynamics.json")}
     assert load_model.main(["--out-model", w["model.json"], "--out-kinematics", w["kinematics.csv"], "--out-grf", w["grf.csv"]]) == 0
     assert static_opt.main(["--kinematics", w["kinematics.csv"], "--out-activations", w["activations.csv"], "--out-forces", str(d / "forces.csv"), "--out-settings", str(d / "static_opt.json"), "--scratch", str(d / "so")]) == 0
     assert moment_arms.main(["--kinematics", w["kinematics.csv"], "--out-moment-arms", w["moment_arms.csv"], "--out-lengths", w["mt_lengths.csv"]]) == 0
@@ -68,6 +69,7 @@ def out(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Out]:
     assert export_graph.main(["--enriched", w["enriched.json"], "--out", w["graph.json"]]) == 0
     assert export_meshes.main(["--model", w["model.json"], "--out", str(d / "meshes" / "index.json")]) == 0
     assert export_muscle_paths.main([*common, "--kinematics", w["kinematics.csv"], "--phases", w["phases.csv"], "--out", w["muscle_paths.json"]]) == 0
+    assert export_dynamics.main([*common, "--moment-arms", w["moment_arms.csv"], "--phases", w["phases.csv"], "--kinematics", w["kinematics.csv"], "--model", w["model.json"], "--out", w["dynamics.json"]]) == 0
     yield Out(d)
 
 
@@ -199,3 +201,14 @@ def test_muscle_paths_match_opensim_lengths(out: Out) -> None:
             assert poly == pytest.approx(lengths[m][round(p["time"][k], 6)], rel=0.02), m
     kin = read_csv(out.dir / "kinematics.csv")
     assert len(p["time"]) == math.ceil(len(kin.time) / 2)
+
+
+def test_dynamics_share_the_clip_and_hold_the_pelvis_level_in_mid_stance(out: Out) -> None:
+    """dynamics.json runs on the frames of muscle_paths.json, and in mid-stance the muscles'
+    net moment about hip adduction points toward abduction (negative) at every frame."""
+    d = out.dynamics
+    assert d["time"] == out.paths["time"] and d["stride"] == out.paths["stride"]
+    ph = out.phase("midStance")
+    hip = next(c for c in d["coordinates"] if c["coordinate"] == "hip_adduction_r")
+    frames = [i for i, t in enumerate(d["time"]) if ph["start"] <= t <= ph["end"]]
+    assert frames and all(sum(m[i] for m in hip["moments"].values()) < 0 for i in frames)

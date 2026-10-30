@@ -102,6 +102,11 @@ MUSCLE_PATHS: Final = "data/out/muscle_paths.json"
 the start and end times of the stride.
 """
 
+DYNAMICS: Final = "data/out/dynamics.json"
+"""Per frame: each muscle's moment about each labelled joint coordinate,
+and the coordinate's angle.
+"""
+
 
 LOAD_MODEL: Final = Stage(
     name="loadModel",
@@ -196,6 +201,17 @@ EXPORT_MUSCLE_PATHS: Final = Stage(
 bounds of the stride the knowledge graph describes.
 """
 
+EXPORT_DYNAMICS: Final = Stage(
+    name="exportDynamics",
+    script="pipeline/export_dynamics.py",
+    module="pipeline.export_dynamics",
+    inputs=(MODEL, KINEMATICS, ACTIVATIONS, MOMENT_ARMS, MT_LENGTHS, PHASES, ROLE_THRESHOLDS, CURATED_ANATOMY),
+    outputs=(DYNAMICS,),
+)
+"""Write each muscle's moment about each joint coordinate, and the
+coordinate's angle, per frame, for the dynamics panel.
+"""
+
 
 ARTEFACTS: Final[dict[str, str]] = {
     "scaledModel": SCALED_MODEL,
@@ -219,16 +235,17 @@ ARTEFACTS: Final[dict[str, str]] = {
     "knowledgeGraph": KNOWLEDGE_GRAPH,
     "meshes": MESHES,
     "musclePaths": MUSCLE_PATHS,
+    "dynamics": DYNAMICS,
 }
 """Every artefact by its Lean name."""
 
 SOURCES: Final[tuple[str, ...]] = (SCALED_MODEL, GEOMETRY, IK_MOTION, GRF_MOTION, EXTERNAL_LOADS, UBERON, FMA, CURATED_ANATOMY, ROLE_THRESHOLDS)
 """Paths maintained outside the pipeline."""
 
-STAGES: Final[tuple[Stage, ...]] = (LOAD_MODEL, RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS, SEGMENT_PHASES, LABEL_ROLES, ENRICH_ANATOMY, EXPORT_GRAPH, EXPORT_MESHES, EXPORT_MUSCLE_PATHS)
+STAGES: Final[tuple[Stage, ...]] = (LOAD_MODEL, RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS, SEGMENT_PHASES, LABEL_ROLES, ENRICH_ANATOMY, EXPORT_GRAPH, EXPORT_MESHES, EXPORT_MUSCLE_PATHS, EXPORT_DYNAMICS)
 """Every stage, in declaration order."""
 
-TOPO_ORDER: Final[tuple[Stage, ...]] = (LOAD_MODEL, RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS, SEGMENT_PHASES, LABEL_ROLES, ENRICH_ANATOMY, EXPORT_GRAPH, EXPORT_MESHES, EXPORT_MUSCLE_PATHS)
+TOPO_ORDER: Final[tuple[Stage, ...]] = (LOAD_MODEL, RUN_STATIC_OPT, COMPUTE_MOMENT_ARMS, SEGMENT_PHASES, LABEL_ROLES, ENRICH_ANATOMY, EXPORT_GRAPH, EXPORT_MESHES, EXPORT_MUSCLE_PATHS, EXPORT_DYNAMICS)
 """The order the stages run in (`topoOrder`)."""
 
 EDGES: Final[tuple[tuple[Stage, Stage], ...]] = (
@@ -242,5 +259,6 @@ EDGES: Final[tuple[tuple[Stage, Stage], ...]] = (
     (COMPUTE_MOMENT_ARMS, EXPORT_MUSCLE_PATHS),
     (RUN_STATIC_OPT, EXPORT_MUSCLE_PATHS),
     (SEGMENT_PHASES, EXPORT_MUSCLE_PATHS),
+    (SEGMENT_PHASES, EXPORT_DYNAMICS),
 )
 """Stage order: `a → b` means `b` runs after `a`."""

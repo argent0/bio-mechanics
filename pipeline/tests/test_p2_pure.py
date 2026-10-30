@@ -13,7 +13,7 @@ import pytest
 import gait_fsm
 import schema
 from pipeline import enrich_anatomy as ea
-from pipeline import export_graph, export_meshes, export_muscle_paths, label_roles
+from pipeline import export_dynamics, export_graph, export_meshes, export_muscle_paths, label_roles
 from pipeline import segment_phases as sp
 from pipeline.load_model import REPO
 
@@ -110,6 +110,31 @@ def test_stride_bounds_from_initial_contacts() -> None:
     assert export_muscle_paths.stride_bounds(p) == {"start": 0.05, "end": 0.75}
     with pytest.raises(ValueError, match="incomplete"):
         export_muscle_paths.stride_bounds(p, 1)
+
+
+def test_dynamics_moments_are_activation_force_moment_arm() -> None:
+    """dynamics.json: a·F·r per frame on the muscle-paths time base, for the right-leg muscles
+    whose moment arm reaches the floor within the stride."""
+    c = config()
+    n = 90
+    t = [0.01 * i for i in range(n)]
+    q = {k: [math.radians(10.0)] * n for k in c.coordinates}
+    trial = label_roles.Trial(
+        time=t,
+        coordinates=q,
+        activation={"a_r": [0.5] * n, "b_r": [0.5] * n, "a_l": [0.5] * n},
+        moment_arm={("a_r", "knee_angle_r"): [-0.04] * n, ("b_r", "knee_angle_r"): [0.001] * n, ("a_l", "knee_angle_r"): [0.04] * n},
+        velocity={},
+        max_force={"a_r": 1000.0, "b_r": 1000.0, "a_l": 1000.0},
+    )
+    d = export_dynamics.build(trial, sp.Phases(t, [], [], [], stride_events()), c, ea.load_anatomy(REPO / "data" / "curated" / "anatomy.yaml"))
+    assert d["format"] == export_dynamics.FORMAT and d["rateHz"] == 50.0
+    assert d["time"] == t[:: export_muscle_paths.frame_step(100.0)] and d["stride"] == {"start": 0.05, "end": 0.75}
+    assert [x["coordinate"] for x in d["coordinates"]] == list(c.coordinates)
+    knee = next(x for x in d["coordinates"] if x["coordinate"] == "knee_angle_r")
+    assert (knee["joint"], knee["positive"], knee["negative"]) == ("joint:knee_r", "action:knee_flexion_r", "action:knee_extension_r")
+    assert list(knee["moments"]) == ["muscle:a_r"] and knee["moments"]["muscle:a_r"] == [-20.0] * 45
+    assert knee["angleDeg"] == [10.0] * 45
 
 
 # ---------------------------------------------------------------------------------------------

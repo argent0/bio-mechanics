@@ -12,6 +12,7 @@ digraph pipeline {
   "exportGraph" [label="exportGraph"];
   "exportMeshes" [label="exportMeshes"];
   "exportMusclePaths" [label="exportMusclePaths"];
+  "exportDynamics" [label="exportDynamics"];
   "loadModel" -> "runStaticOpt" [label="kinematics"];
   "runStaticOpt" -> "computeMomentArms";
   "computeMomentArms" -> "segmentPhases";
@@ -22,4 +23,5 @@ digraph pipeline {
   "computeMomentArms" -> "exportMusclePaths" [label="mtLengths"];
   "runStaticOpt" -> "exportMusclePaths" [label="activations"];
   "segmentPhases" -> "exportMusclePaths" [label="phases"];
+  "segmentPhases" -> "exportDynamics" [label="phases"];
 }
