@@ -1,4 +1,4 @@
-"""Stage `labelRoles`: each muscle's role per gait phase and joint action (decisions D-002, D-004).
+"""Stage `labelRoles`: each muscle's role per gait phase and joint action (decisions D-002, D-005).
 
 Scope. One complete stride of the right leg (stride 0 of `phases.csv`), its seven phases, the
 right-leg muscles (`Config.muscle_suffix`), and the joint coordinates of `Config.coordinates`.
@@ -29,8 +29,11 @@ Roles (`classify`), the first rule that holds:
   2. main mover: A_i ≥ O_i and A_i / A ≥ `main_mover_min_share`;
   3. helper: A_i ≥ O_i and A_i / A ≥ `helper_min_share`;
   4. antagonist: O_i > A_i and O_i / O ≥ `antagonist_min_share`;
-rules 2–4 also need a mean activation over the phase ≥ `role_min_activation` (decision D-004);
-below that floor the muscle is inactive for the action in the phase. Otherwise the muscle has no
+rules 2–4 also need a mean activation over the phase ≥ `role_min_peak_fraction` × the muscle's
+own peak activation over the stride (decision D-005, which replaces D-004's absolute floor); the
+stride peak is the largest activation between the stride's two right initial contacts, both
+included. Below that floor the muscle is inactive for the action in the phase. Otherwise the
+muscle has no
 role in the action during the phase and roles.json omits it (and the graph has no `drivenBy`
 edge for it). The totals A and O sum over every muscle crossing the coordinate, inactive ones
 included: the floor decides who earns a role, and the shares stay the D-002 moment shares.
@@ -55,7 +58,8 @@ Output `roles.json`:
   phases    [{phase, order, start, end, startPct, endPct, actions}], in stride order; each
             action {coordinate, direction, changeDeg, stabilised, agonistMoment,
             opposingMoment (N·m·s), muscles}; each muscle {muscle, role, contraction, share,
-            meanActivation, peakActivation, meanVelocity (m/s), activation, momentArm (m)}
+            meanActivation, peakActivation (over the phase), stridePeakActivation,
+            meanVelocity (m/s), activation, momentArm (m)}
   crosses   [{muscle, coordinate, momentArm}]
   muscles   {name: {maxIsometricForce}} for the right-leg muscles
 
@@ -93,7 +97,7 @@ class Config:
     main_mover_min_share: float
     helper_min_share: float
     antagonist_min_share: float
-    role_min_activation: float
+    role_min_peak_fraction: float
     stabiliser_min_activation: float
     stabiliser_max_change_deg: float
     isometric_max_velocity: float
@@ -157,6 +161,8 @@ class MuscleInPhase:
     moment_arm: list[float]
     velocity: list[float]
     max_force: float
+    stride_peak: float
+    """The muscle's peak activation over the stride (D-005)."""
 
 
 @dataclass
@@ -190,7 +196,7 @@ def classify(t: Sequence[float], m: MuscleInPhase, s: Shares, total: Shares, sta
     mean_act = trapezoid(t, m.activation) / (t[-1] - t[0])
     if stabilised and mean_act >= cfg.stabiliser_min_activation and max(abs(r) for r in m.moment_arm) >= cfg.moment_arm_min_m:
         return "stabiliser", max(ag, op)
-    if mean_act < cfg.role_min_activation:
+    if mean_act < cfg.role_min_peak_fraction * m.stride_peak:
         return None
     if s.agonist >= s.opposing and s.agonist > 0:
         if ag >= cfg.main_mover_min_share:
@@ -296,6 +302,7 @@ def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, An
     muscles = [m for m in trial.activation if m.endswith(cfg.muscle_suffix)]
     bounds = phase_bounds(p, stride)
     s0, s1 = t_all[bounds[0][1]], t_all[bounds[-1][2]]
+    stride_peak = {m: max(trial.activation[m][bounds[0][1] : bounds[-1][2] + 1]) for m in muscles}
     phases_out: list[dict[str, Any]] = []
     for order, (phase, f0, f1) in enumerate(bounds):
         t = t_all[f0 : f1 + 1]
@@ -309,6 +316,7 @@ def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, An
                     trial.moment_arm[(m, coord)][f0 : f1 + 1],
                     trial.velocity[m][f0 : f1 + 1],
                     trial.max_force[m],
+                    stride_peak[m],
                 )
                 for m in muscles
                 if (m, coord) in trial.moment_arm
@@ -331,6 +339,7 @@ def label(trial: Trial, p: Phases, cfg: Config, stride: int = 0) -> dict[str, An
                         "share": r6(share, 4),
                         "meanActivation": r6(trapezoid(t, x.activation) / (t[-1] - t[0]), 4),
                         "peakActivation": r6(max(x.activation), 4),
+                        "stridePeakActivation": r6(x.stride_peak, 4),
                         "meanVelocity": r6(v, 4),
                         "activation": [r6(a, 4) for a in sample(t, x.activation, t[0], t[-1], cfg.samples_per_phase)],
                         "momentArm": [r6(r, 5) for r in sample(t, x.moment_arm, t[0], t[-1], cfg.samples_per_phase)],

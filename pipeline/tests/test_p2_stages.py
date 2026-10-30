@@ -101,35 +101,38 @@ def test_gluteus_medius_works_in_single_leg_stance(out: Out) -> None:
         assert roles.get("glmed1_r") in ("mainMover", "helper", "stabiliser"), phase
 
 
-def test_quadriceps_brake_knee_flexion_in_loading_response(out: Out) -> None:
-    """The knee flexes in loading response while the quadriceps lengthen (eccentric braking).
-    A quadriceps muscle with a role there is an eccentric antagonist. In this trial static
-    optimisation keeps every quadriceps muscle under the D-004 activation floor (0.05) in
-    loading response (vastus lateralis 0.046), so the roles may list none of them."""
+def test_vasti_brake_knee_flexion_in_loading_response(out: Out) -> None:
+    """The teaching example: in loading response the knee flexes under load while the vasti
+    lengthen and resist it (eccentric antagonists of knee flexion). P1's K12 investigation
+    (`test_p1_stages.py::test_vasti_brake_knee_flexion_in_loading_response`) shows them carrying
+    most of the knee-extensor moment late in the phase; D-005 measures their activity against
+    their own stride peak."""
     act = out.action("loadingResponse", "knee_angle_r")
     assert act["direction"] == 1 and not act["stabilised"]  # the knee flexes
-    ph = out.phase("loadingResponse")
-    velocity: dict[str, list[float]] = {}
-    with (out.dir / "mt_lengths.csv").open() as f:
-        for row in csv.DictReader(f):
-            if row["muscle"] in QUADRICEPS and ph["start"] - 1e-9 <= float(row["time"]) <= ph["end"] + 1e-9:
-                velocity.setdefault(row["muscle"], []).append(float(row["velocity"]))
-    for m in ("vaslat_r", "vasmed_r", "vasint_r"):
-        assert sum(velocity[m]) / len(velocity[m]) > 0.0, m  # lengthening
-    for m in act["muscles"]:
-        if m["muscle"] in QUADRICEPS:
-            assert m["role"] == "antagonist" and m["contraction"] == "eccentric", m["muscle"]
+    roles = {m["muscle"]: m for m in act["muscles"]}
+    vasti = [v for v in ("vaslat_r", "vasmed_r", "vasint_r") if v in roles]
+    assert "vaslat_r" in vasti and len(vasti) >= 2, sorted(roles)
+    for v in vasti:
+        assert (roles[v]["role"], roles[v]["contraction"]) == ("antagonist", "eccentric"), v
+
+
+def test_tibialis_anterior_is_no_mover_in_mid_stance(out: Out) -> None:
+    """Mid-stance: the tibia rolls over the planted foot and the calf brakes it; tibialis
+    anterior is near silent (D-005) and moves nothing."""
+    act = out.action("midStance", "ankle_angle_r")
+    roles = {m["muscle"]: m["role"] for m in act["muscles"]}
+    assert roles.get("tibant_r") not in ("mainMover", "helper"), roles
 
 
 def test_roles_record_the_thresholds(out: Out) -> None:
     c = out.roles["config"]
     assert (c["momentArmMinM"], c["mainMoverMinShare"], c["helperMinShare"], c["antagonistMinShare"], c["stabiliserMinActivation"], c["stabiliserMaxChangeDeg"]) == (0.005, 0.25, 0.05, 0.05, 0.1, 5.0)
-    assert c["roleMinActivation"] == 0.05
+    assert c["roleMinPeakFraction"] == 0.25
     for p in out.roles["phases"]:
         for a in p["actions"]:
             for m in a["muscles"]:
                 assert len(m["activation"]) == len(m["momentArm"]) == c["samplesPerPhase"]
-                floor = c["stabiliserMinActivation"] if m["role"] == "stabiliser" else c["roleMinActivation"]
+                floor = c["stabiliserMinActivation"] if m["role"] == "stabiliser" else c["roleMinPeakFraction"] * m["stridePeakActivation"]
                 assert m["meanActivation"] >= floor - 1e-4, (p["phase"], a["coordinate"], m["muscle"])
 
 
