@@ -1,0 +1,16 @@
+# Conda environment for the Bio-Mechanics pipeline (workstream D).
+# Verified 2026-10-29: opensim-org::opensim 4.6 (build py312np24) solves on linux-64
+# with Python 3.12 and numpy 2.4. System Python (3.14) is too new for OpenSim builds.
+# Create with pipeline/env/setup.sh (installs micromamba if absent).
+name: bm-opensim
+channels:
+  - opensim-org
+  - conda-forge
+dependencies:
+  - python=3.12
+  - opensim-org::opensim=4.6
+  - numpy
+  - scipy
+  - pyyaml
+  - mypy
+  - pytest
