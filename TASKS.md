@@ -133,7 +133,8 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 | K20 Pass-through `pipeline/build_model.py`, empty `pipeline/config/model.yaml` (M's paths, before M starts) | merged | ninja needs both; pipeline output byte-identical |
 | K21 App wires `RegionFilter` (`web/src/main.ts`, `web/index.html`) | merged | search, GraphView, PhasePanel, DynamicsPanel, Viewer3D share one filter |
 | K22 Stage scripts default to `paths.MERGED_MODEL`, `paths.IK_FULL` (the reads ninja declares) | merged (M half); P4: export scripts | M: `load_model.py`, `static_opt.py`, `moment_arms.py`, `segment_phases.py` |
-| K23 `buildModel` reads the upper-body model files once D2 fixes their paths | running | S worker resumed |
+| K23 `buildModel` reads the upper-body model files once D2 fixes their paths | merged | six source artefacts plus `geometry`; `tests/test_merge_recipe.py` keeps `model.yaml` and the reads in sync |
+| K28 ninja: each stage also depends on the `pipeline/*.py` modules it imports (per-stage list in `Pipeline.lean`) | running | S worker resumed |
 | K26 Static optimisation under 15 min in CI (462 muscles: 24 min locally); CI timeout 60 min meanwhile | running | M: custom convex QP in `static_opt.py` |
 | K27 Accept M's commit `c6a1ade` outside its paths: fixtures in `test_p1/p2/l_stages.py`, regions of 15 new bodies in `anatomy.yaml`, `label_roles.py` labels muscles that cross a labelled coordinate | merged | owners L, P2 finished; leg graph unchanged |
 | K25 D2: fetch FBLS from its pinned mirror, git-ignored, checksummed (D-011) | merged | 324 muscles load; mirror holds no meshes (vertebra meshes absent); full licence text unobtained (simtk.org down) |
