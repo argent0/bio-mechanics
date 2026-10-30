@@ -2,8 +2,9 @@
  * PhasePanel model: for one phase, its joint actions and per action the muscles with role and
  * work type in plain language. A pure function of the graph (through QueryEngine) and a phase id.
  */
-import type { Contraction, Role } from "@gen/types";
+import type { Contraction, Region, Role, Side } from "@gen/types";
 import type { QueryEngine } from "../query/QueryEngine";
+import { groupByRegionSide, passes, type Group, type RegionSelection } from "../region";
 
 /** Role names in plain language (decision D-002 defines the roles). */
 export const ROLE_LABEL: Readonly<Record<Role, string>> = {
@@ -48,6 +49,9 @@ export interface ActionRow {
   id: string;
   name: string;
   commonName: string | null;
+  /** Where the joint action sits on the body (the node's `region` and `side`). */
+  region: Region | null;
+  side: Side;
   rangeDeg: number;
   muscles: MuscleRow[];
 }
@@ -56,15 +60,20 @@ export interface PhaseModel {
   id: string;
   name: string;
   commonName: string | null;
+  /** Every action, largest range of motion first. */
   actions: ActionRow[];
+  /** The same actions grouped by region and side, each group headed "Region, side". */
+  groups: Group<ActionRow>[];
 }
 
-export function phasePanelModel(query: QueryEngine, phaseId: string): PhaseModel | undefined {
+/** The model of one phase; `selection` keeps the actions on the chosen regions and sides. */
+export function phasePanelModel(query: QueryEngine, phaseId: string, selection?: RegionSelection): PhaseModel | undefined {
   const phase = query.node(phaseId);
   if (!phase) return undefined;
   const driven = query.edgesOf("drivenBy").filter((e) => e.phase === phaseId);
   const actions = query
     .jointActionsFor(phaseId)
+    .filter(({ jointAction }) => !selection || passes(selection, jointAction))
     .map(({ jointAction, rangeDeg }): ActionRow => {
       const muscles = driven
         .filter((e) => e.source === jointAction.id)
@@ -86,8 +95,8 @@ export function phasePanelModel(query: QueryEngine, phaseId: string): PhaseModel
           ];
         })
         .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || b.peakActivation - a.peakActivation);
-      return { id: jointAction.id, name: jointAction.name, commonName: jointAction.commonName, rangeDeg, muscles };
+      return { id: jointAction.id, name: jointAction.name, commonName: jointAction.commonName, region: jointAction.region, side: jointAction.side, rangeDeg, muscles };
     })
     .sort((a, b) => b.rangeDeg - a.rangeDeg);
-  return { id: phase.id, name: phase.name, commonName: phase.commonName, actions };
+  return { id: phase.id, name: phase.name, commonName: phase.commonName, actions, groups: groupByRegionSide(actions, (a) => a) };
 }

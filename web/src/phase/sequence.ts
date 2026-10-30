@@ -9,13 +9,18 @@
  * Terms: the *peak* is the sample of highest activation; the *onset* is the first sample where
  * activation reaches half of that peak. Rows sort by peak, then by onset.
  */
+import type { Region, Side } from "@gen/types";
 import type { QueryEngine } from "../query/QueryEngine";
+import { groupByRegionSide, passes, type Group, type RegionSelection } from "../region";
 
 export interface SequenceRow {
   /** Graph node id, `muscle:<name>`. */
   id: string;
   name: string;
   commonName: string | null;
+  /** Where the muscle sits on the body (the node's `region` and `side`). */
+  region: Region | null;
+  side: Side;
   /** Activation 0-1, sampled evenly across the phase. */
   activation: number[];
   /** Position of the peak in the phase, 0-1. */
@@ -25,18 +30,24 @@ export interface SequenceRow {
   peak: number;
 }
 
-export function sequenceModel(query: QueryEngine, phaseId: string): SequenceRow[] {
+/** The rows of one phase; `selection` keeps the muscles on the chosen regions and sides. */
+export function sequenceModel(query: QueryEngine, phaseId: string, selection?: RegionSelection): SequenceRow[] {
   const curves = new Map<string, number[]>();
   for (const e of query.edgesOf("drivenBy")) if (e.phase === phaseId && !curves.has(e.target)) curves.set(e.target, e.activation);
   const rows: SequenceRow[] = [];
   for (const [id, activation] of curves) {
     const m = query.node(id);
     const n = activation.length;
-    if (!m || n < 2) continue;
+    if (!m || n < 2 || (selection && !passes(selection, m))) continue;
     const peak = Math.max(...activation);
     const iPeak = activation.indexOf(peak);
     const iOnset = activation.findIndex((a) => a >= peak / 2);
-    rows.push({ id, name: m.name, commonName: m.commonName, activation, peak, peakAt: iPeak / (n - 1), onsetAt: iOnset / (n - 1) });
+    rows.push({ id, name: m.name, commonName: m.commonName, region: m.region, side: m.side, activation, peak, peakAt: iPeak / (n - 1), onsetAt: iOnset / (n - 1) });
   }
   return rows.sort((a, b) => a.peakAt - b.peakAt || a.onsetAt - b.onsetAt || b.peak - a.peak);
+}
+
+/** The rows grouped by region and side; each group keeps the order of peaks. */
+export function sequenceGroups(rows: readonly SequenceRow[]): Group<SequenceRow>[] {
+  return groupByRegionSide(rows, (r) => r);
 }
