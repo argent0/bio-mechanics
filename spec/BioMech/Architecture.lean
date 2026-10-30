@@ -56,7 +56,7 @@ structure Api where
 
 def modules : List Module := [
   { id := .coordinator, name := "Coordinator", lang := "Lean", model := "opus", state := .running,
-    paths := ["CLAUDE.md", "handover.md", "plan.md", "prompt.md", "TASKS.md", "DECISIONS.md",
+    paths := ["CLAUDE.md", "handover.md", "README.md", "plan.md", "prompt.md", "TASKS.md", "DECISIONS.md",
       ".gitignore", "pyproject.toml", "scripts/", "tests/", "generated/", "data/fixtures/",
       "pipeline/__init__.py", "spec/lakefile.lean", "spec/lean-toolchain", "spec/lake-manifest.json",
       "spec/BioMech/Schema.lean", "spec/BioMech/Architecture.lean", "spec/BioMech/Arch/",
