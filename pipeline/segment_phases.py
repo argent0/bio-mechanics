@@ -9,8 +9,7 @@ Signals. The scaled model (`pipeline_paths.SCALED_MODEL`) is posed at every fram
 coordinates (`kinematics.csv`), and OpenSim reports in ground the positions of the model's foot
 and leg markers (`MARKERS`: heel, toe, ankle, knee) and of the pelvis origin. Positions are
 projected on the walking direction: the horizontal unit vector of the pelvis displacement from
-the first to the last frame. Ground reaction forces come from `grf.csv`. The scaled model is
-an input beyond the stage's declared ones (`kinematics`, `grf` in `spec/BioMech/Pipeline.lean`).
+the first to the last frame. Ground reaction forces come from `grf.csv`.
 
 Events, per leg (side `r` or `l`):
   - Initial contact (`detect_contacts`). Kinematic: each maximum of the heel marker's position

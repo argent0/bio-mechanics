@@ -11,6 +11,9 @@ mainMoverMinShare: 0.25
 helperMinShare: 0.05
 # Share of the total opposing moment over the phase: antagonist from this share up.
 antagonistMinShare: 0.05
+# Main mover, helper, antagonist: mean activation over the phase from this value up (decision
+# D-004); below it the muscle is inactive for the action in the phase.
+roleMinActivation: 0.05
 # Stabiliser: mean activation over the phase from this value up ...
 stabiliserMinActivation: 0.10
 # ... while the coordinate changes by less than this over the phase, in degrees.
