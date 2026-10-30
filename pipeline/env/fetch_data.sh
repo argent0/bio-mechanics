@@ -23,12 +23,12 @@
 #                         mitkof6/OpenSimDatabase; Stanford_VA_Upper_Limb_original.osim, Geometry/*.vtp
 #   data/raw/mortensen/   Mortensen 2018 HYOID 1.2 head and neck (72 muscles), from
 #                         MyoHub/myoconverter; the .osim, license, notes.txt, Geometry/*.vtp
-#   data/raw/christophy/  Christophy 2012 lumbar model: simtk.org needs a login, so the file is
-#                         placed by hand. The script skips with a message while the folder holds
-#                         no files, verifies them against SHA256SUMS once recorded, and
-#                         records them with --record-christophy.
+#   data/raw/fbls/       FBLS full-body lumbar spine model (Raabe & Chaudhari 2016, 324 muscles:
+#                         the trunk source, D-011), from the GitHub mirror
+#                         rocketheat/multifidus_atrophy. Git-ignored: the licence forbids
+#                         redistribution.
 # data/raw/SHA256SUMS lists every fetched file, paths relative to data/raw/.
-# Use: pipeline/env/fetch_data.sh [--no-derive] [--record-christophy]
+# Use: pipeline/env/fetch_data.sh [--no-derive]
 #      (derive needs the env from setup.sh)
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -38,11 +38,10 @@ dst="$raw/rajagopal"
 sha="d9b05d470b1a481c222372c85b75772faf8f7792"   # opensim-org/opensim-models, 2025-11-05
 base="https://raw.githubusercontent.com/opensim-org/opensim-models/$sha"
 prefix="${BM_ENV_PREFIX:-$HOME/.local/share/bm-opensim}"
-derive=1; record_christophy=0
+derive=1
 for arg in "$@"; do
   case "$arg" in
     --no-derive) derive=0 ;;
-    --record-christophy) record_christophy=1 ;;
     *) echo "fetch_data: unknown option $arg" >&2; exit 2 ;;
   esac
 done
@@ -99,32 +98,17 @@ meshes="$(grep -o '<mesh_file>[^<]*</mesh_file>' "$dst/HYOID_1.2_ScaledStrenght_
 export dst base mo
 printf '%s\n' $meshes | xargs -P 8 -I{} bash -c 'fetch "$mo/Geometry/{}" "Geometry/{}"'
 
-# Christophy 2012 lumbar model: placed by hand (simtk.org group 567 needs a login).
-chr="$raw/christophy"
-chr_files() { find "$chr" -type f ! -name 'README*' ! -name '.*' -printf '%P\n' 2>/dev/null | LC_ALL=C sort; }
-if [ "$record_christophy" = 1 ]; then
-  [ -n "$(chr_files)" ] || { echo "fetch_data: --record-christophy found no files in $chr" >&2; exit 1; }
-  { grep -v '  \./christophy/' "$raw/SHA256SUMS" || true; } > "$raw/SHA256SUMS.new"
-  (cd "$chr" && chr_files | sed 's#^#./#' | xargs -d '\n' sha256sum | sed 's#  \./#  ./christophy/#') >> "$raw/SHA256SUMS.new"
-  LC_ALL=C sort -k2 "$raw/SHA256SUMS.new" > "$raw/SHA256SUMS" && rm "$raw/SHA256SUMS.new"
-  echo "fetch_data: recorded $(chr_files | wc -l) Christophy file(s) in SHA256SUMS" >&2
-fi
+# FBLS (Raabe & Chaudhari 2016): the trunk muscles (D-011). Its licence forbids copying and
+# distributing the model, so the file stays out of git (data/raw/fbls/ is git-ignored) and is
+# downloaded here from a third-party GitHub mirror. The mirror holds the .osim only; the
+# bone meshes the model names are not in it, and the model loads without them.
+dst="$raw/fbls"
+base="https://raw.githubusercontent.com/rocketheat/multifidus_atrophy/15f5de3df05e92f3bb5eca059256bfa2688eff03"
+fetch models/FBLSmodel.osim FBLSmodel.osim
 
 # Checksums: SHA256SUMS lists paths relative to data/raw/.
-sums="$(mktemp)"; chr_sums="$(mktemp)"; trap 'rm -f "$sums" "$chr_sums"' EXIT
-grep -v '  \./christophy/' "$raw/SHA256SUMS" > "$sums"
-grep '  \./christophy/' "$raw/SHA256SUMS" > "$chr_sums" || true
-(cd "$raw" && sha256sum --quiet -c "$sums") || { echo "fetch_data: checksum mismatch" >&2; exit 1; }
-echo "fetch_data: downloads verified ($(wc -l < "$sums") files)" >&2
-
-if [ -z "$(chr_files)" ]; then
-  echo "fetch_data: christophy skipped, data/raw/christophy/ holds no files (manual download from simtk.org group 567, then rerun with --record-christophy)" >&2
-elif [ -s "$chr_sums" ]; then
-  (cd "$raw" && sha256sum --quiet -c "$chr_sums") || { echo "fetch_data: christophy checksum mismatch" >&2; exit 1; }
-  echo "fetch_data: christophy verified ($(wc -l < "$chr_sums") files)" >&2
-else
-  echo "fetch_data: christophy files present with no checksums recorded; rerun with --record-christophy" >&2
-fi
+(cd "$raw" && sha256sum --quiet -c SHA256SUMS) || { echo "fetch_data: checksum mismatch" >&2; exit 1; }
+echo "fetch_data: downloads verified ($(wc -l < "$raw/SHA256SUMS") files)" >&2
 
 if [ "$derive" = 1 ]; then
   [ -x "$prefix/bin/python" ] || { echo "fetch_data: run pipeline/env/setup.sh first" >&2; exit 1; }

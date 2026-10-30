@@ -2,8 +2,8 @@
 
 Facts live in `pipeline/env/fetch_data.sh` (URLs, pinned commits) and `data/raw/SHA256SUMS`
 (checksums of every fetched file, paths relative to `data/raw/`). This note records
-provenance and licence terms. Rajagopal files fetched 2026-10-29; Holzbaur and Mortensen
-files fetched 2026-10-30. `fetch_data.sh --no-derive` downloads only what is absent and
+provenance and licence terms. Rajagopal files fetched 2026-10-29; Holzbaur, Mortensen and
+FBLS files fetched 2026-10-30. `fetch_data.sh --no-derive` downloads only what is absent and
 verifies every checksum.
 
 ## Rajagopal full-body model and walking trial
@@ -86,15 +86,23 @@ BSD 3-Clause text:
 
 The upstream folder also holds `HYOID_1.2_ScaledStrenght_UpdatedInertia_adjusted.osim` (joint ranges rescaled for the MyoConverter pipeline) and `neck6d.osim`; both stay unfetched.
 
-## Christophy 2012 lumbar model (trunk; manual download)
+## FBLS full-body lumbar spine model (trunk; kept out of git)
 
 | Item | Value |
 |---|---|
-| Model | Lumbar_C_210, 210 to 238 muscles (OpenSim 2 file format; the OpenSim 4.6 load is untested) |
-| Paper | Christophy M, Faruk Senan NA, Lotz JC, O'Reilly OM (2012). A musculoskeletal model for the lumbar spine. Biomech Model Mechanobiol 11(1-2):19-34. https://doi.org/10.1007/s10237-011-0290-6 |
-| Source | SimTK group 567 on https://simtk.org (login needed) |
-| Licence | MIT, University of California Berkeley 2010, per survey K19. Read the licence file in the download and add its text here once the file is in hand. |
-| State | Awaiting the director's manual download. Place the files in `data/raw/christophy/` (see its `README.md`); `fetch_data.sh` skips with a message while the folder is empty, and `fetch_data.sh --record-christophy` pins their checksums in `SHA256SUMS`. `check_env.py` loads any `*.osim` there and reports the result. |
+| Model | FBLS, `RaabeFullBody`: 324 muscles (`Thelen2003Muscle`), 58 coordinates, 30 bodies; OpenSim 3.2-era model in file format 40500; loads in OpenSim 4.6 (`initSystem()`). Combines the Hamner 2010 full-body model, the Christophy 2012 lumbar torso and the Arnold patella (D-011). |
+| Paper | Raabe ME, Chaudhari AMW (2016). An investigation of jogging biomechanics using the full-body lumbar spine model: Model development and validation. J Biomech 49:1238-1243. https://doi.org/10.1016/j.jbiomech.2016.02.046 (the model's ReadMe asks for this citation; the DOI and page range are confirmed against Crossref) |
+| Project | SimTK "Full-body Musculoskeletal Model of the Lumbar Spine", https://simtk.org/projects/fullbodylumbar (refuses connections from this machine, 2026-10-30) |
+| Fetched from (login-free) | https://github.com/rocketheat/multifidus_atrophy, third-party mirror, at commit `15f5de3df05e92f3bb5eca059256bfa2688eff03` (2025-06-05), path `models/FBLSmodel.osim` |
+| Model URL | https://raw.githubusercontent.com/rocketheat/multifidus_atrophy/15f5de3df05e92f3bb5eca059256bfa2688eff03/models/FBLSmodel.osim |
+| Licence | As recorded in D-011 from the SimTK project: "You may not copy or distribute this model … only for non-commercial, academic work". The ellipsis marks words the record omits; simtk.org was unreachable, so the full wording is not yet in hand. The mirror carries no licence file and the `.osim` embeds none. |
+| Repository policy | The file stays out of git. `.gitignore` lists `data/raw/fbls/`; `fetch_data.sh` downloads it, and `SHA256SUMS` records its checksum so that every fetch is verified. |
+
+| File (under `data/raw/fbls/`) | Upstream path | Notes |
+|---|---|---|
+| `FBLSmodel.osim` | `models/FBLSmodel.osim` | 1,580,733 bytes, sha256 `92b3b787...18cbc`; git-ignored |
+
+The mirror also holds `README.md` and `ReadMe.pdf` (the authors' guide to the model, unfetched). It holds none of the 104 bone meshes the model names (`<mesh_file>`); 70 of those names exist in `data/raw/rajagopal/Geometry/`, and the model loads in OpenSim without them. The mirror's copy has not been compared with the SimTK original.
 
 ## Anatomy ontologies (not fetched yet)
 
