@@ -154,7 +154,7 @@ def apis : List Api := [
     producer := .F, consumers := [.G] },
   { id := .C8, name := "Upper-body model data", files := ["pipeline/env/fetch_data.sh", "data/raw/SHA256SUMS"],
     producer := .D2, consumers := [.M, .G2] },
-  { id := .C9, name := "Merged model", files := ["pipeline/config/model.yaml", "data/work/model.json"],
+  { id := .C9, name := "Merged model", files := ["pipeline/config/model.yaml", "data/work/model.osim", "data/work/ik_full.mot"],
     producer := .M, consumers := [.P4] }
 ]
 

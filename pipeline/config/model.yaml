@@ -1,0 +1,4 @@
+# Merge recipe of stage buildModel (pipeline/build_model.py, decision D-008 in DECISIONS.md).
+# `sources` lists the muscle-driven models merged onto the scaled Rajagopal model; the empty
+# list makes the stage a pass-through. Workstream M fills it (plan.md, Wave 2).
+sources: []
