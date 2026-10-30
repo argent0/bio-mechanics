@@ -45,13 +45,15 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | K5 Wire ArchitectureView into App at `#/architecture` | merged | `web/src/main.ts`, `web/index.html` |
 | K6 App calls `highlightState` from `recorder.onStep` in dev mode | todo | with E3 |
 | K7 Enable the deploy job (D-003) and set `SOURCE_BASE_URL` | merged | live at https://argent0.github.io/bio-mechanics/ |
+| K8 Declare missing stage inputs in `Pipeline.lean` (segmentPhases, labelRoles, exportMeshes) | todo | P2 report; via B's worker |
+| K9 Commit Uberon subset; ignore ninja state | merged | FMA subset stays local (licence) |
 | K4 Set `PIPELINE_TARGET` in `ci.yml` to the full graph | todo | after P2 merges |
 
 ## Wave 3
 
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Inputs | Acceptance |
 |---|---|---|---|---|---|---|---|
-| P2 | Pipeline stages 4–7 | opus / high | `ab4d531a834c2a987` | 0 | running | P1, C, D-002 | `ninja`; `lake exe checkGraph data/out/graph.json` |
+| P2 | Pipeline stages 4–7 | opus / high | `ab4d531a834c2a987` | 0 | merged | P1, C, D-002 | `ninja`; `lake exe checkGraph data/out/graph.json` |
 | E3 | Movement views | sonnet / high | — | 0 | todo | C, P2 | `tsc`, eslint boundaries; walking plays and scrubs |
 | G | CI and traces | sonnet / medium | `a9065076c8beaed8a` | 1 | merged | F, C | CI green on `main` |
 

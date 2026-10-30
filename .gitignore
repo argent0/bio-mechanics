@@ -18,3 +18,7 @@ data/work/
 data/raw/ontology/*.obo
 data/raw/ontology/*.owl
 data/raw/ontology/*.json.gz
+!data/raw/ontology/uberon.obo
+# Ninja build state
+.ninja_log
+.ninja_deps

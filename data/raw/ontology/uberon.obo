@@ -1,0 +1,2017 @@
+format-version: 1.2
+data-version: releases/2026-10-01
+ontology: uberon
+
+[Term]
+id: UBERON:0000303
+name: adductor longus
+def: "An adductor muscle that attaches to the hip and femur. In humans, it is a part of the adductor group of the thigh, that as the name suggests adducts the thigh. The adductor longus muscle forms the medial wall of the femoral triangle[WP, generalized]." [Wikipedia:Adductor_longus_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+synonym: "adductor longus muscle" EXACT []
+synonym: "long adductor muscle" RELATED [BTO:0000029]
+synonym: "musculus adductor longus" RELATED OMO:0003011 [BTO:0000029, Wikipedia:Adductor_longus_muscle]
+xref: AAO:0010034
+xref: BTO:0000029
+xref: EMAPA:36220
+xref: FMA:22441
+xref: SCTID:181686003
+xref: Wikipedia:Adductor_longus_muscle
+is_a: UBERON:0004252 ! hindlimb stylopod muscle
+is_a: UBERON:0011144 {source="Wikipedia"} ! adductor muscle of hip
+relationship: has_muscle_insertion UBERON:0000981 {notes="linea aspera", source="dbpedia"} ! femur
+relationship: has_muscle_origin UBERON:0001275 {notes="pubic body just below the pubic crest", source="dbpedia"} ! pubis
+relationship: part_of UBERON:0000376 ! hindlimb stylopod
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/e/e2/Anterior_Hip_Muscles_2.PNG" xsd:anyURI
+property_value: external_definition "Originates on the iliac portion of the ventral iliac rim and inserts on the lateral surface of the M. adductor magnus.[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0010034", ontology="AAO", source="AAO:EJS"}
+property_value: external_ontology_notes "definition generalized to accommodate AAO class - 'Originates on the iliac portion of the ventral iliac rim and inserts on the lateral surface of the M. adductor magnus.' [AAO:0010034]" xsd:string {external_ontology="AAO"}
+
+[Term]
+id: UBERON:0000368
+name: adductor brevis
+def: "The adductor brevis is a muscle in the thigh situated immediately behind the pectineus and adductor longus. It is somewhat triangular in form, and arises by a narrow origin from the outer surfaces of the superior and inferior rami of the pubis, between the gracilis and obturator externus. Its fibers, passing backward, lateralward, and downward, are inserted, by an aponeurosis, into the line leading from the lesser trochanter to the linea aspera and into the upper part of the linea aspera, immediately behind the pectineus and upper part of the adductor longus.[WP]." [Wikipedia:Adductor_brevis_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+synonym: "adductor brevis muscle" EXACT []
+synonym: "musculus adductos brevis" EXACT [FMA:22442]
+xref: BTO:0001288
+xref: EMAPA:36219
+xref: FMA:22442
+xref: SCTID:181687007
+xref: Wikipedia:Adductor_brevis_muscle
+is_a: UBERON:0004252 ! hindlimb stylopod muscle
+is_a: UBERON:0011144 {source="Wikipedia"} ! adductor muscle of hip
+relationship: has_muscle_insertion UBERON:0002504 {notes="the lesser trochanter and linea aspera of the femur", source="dbpedia"} ! lesser trochanter
+relationship: has_muscle_origin UBERON:0001275 {notes="anterior surface of the inferior ramus and body of the pubis", source="dbpedia"} ! pubis
+relationship: innervated_by UBERON:0005465 {source="dbpedia"} ! obturator nerve
+relationship: part_of UBERON:0000376 ! hindlimb stylopod
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/e/e2/Anterior_Hip_Muscles_2.PNG" xsd:anyURI
+
+[Term]
+id: UBERON:0000370
+name: adductor magnus
+def: "An adductor muscle that attaches to the pelvic bone and the femur. In humans, the adductor magnus is a large triangular muscle, situated on the medial side of the thigh. The portion which arises from the ischiopubic ramus (a small part of the inferior ramus of the pubis, and the inferior ramus of the ischium) is called the 'adductor magnesius portion', and the portion arising from the tuberosity of the ischium is called the 'hamstring portion'. The hamstring portion is not considered part of the hamstring group of muscles, but it is adjacent to it.[WP,generalized]." [Wikipedia:Adductor_magnus_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+synonym: "adductor magnus muscle" EXACT []
+synonym: "musculus adductor magnus" RELATED OMO:0003011 [Wikipedia:Adductor_magnus_muscle]
+xref: AAO:0010040
+xref: BTO:0001312
+xref: EMAPA:36221
+xref: FMA:22443
+xref: galen:AdductorMagnus
+xref: SCTID:181688002
+xref: Wikipedia:Adductor_magnus_muscle
+is_a: UBERON:0004252 ! hindlimb stylopod muscle
+is_a: UBERON:0011144 {source="Wikipedia"} ! adductor muscle of hip
+relationship: has_muscle_insertion UBERON:0000981 {source="dbpedia"} ! femur
+relationship: has_muscle_origin UBERON:0001275 {notes="tuberosity of the ischium", source="dbpedia"} ! pubis
+relationship: innervated_by UBERON:0001322 {notes="posterior branch of obturator nerve and sciatic nerve", source="dbpedia"} ! sciatic nerve
+relationship: innervated_by UBERON:0005465 {notes="posterior branch of obturator nerve and sciatic nerve", source="dbpedia"} ! obturator nerve
+relationship: part_of UBERON:0000376 ! hindlimb stylopod
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/e/e2/Anterior_Hip_Muscles_2.PNG" xsd:anyURI
+property_value: external_definition "Origin by two heads that are separated by a ventral tendon of the M. semitendinosus. One head originates from the ventral border of the pubic portion of the pelvic rim. The other head originates from the ischiatic border of the pelvic rim. The ventral head fuses with accessory head from the M. semitendinosus and inserts along the ventro-medial border of the femur. The dorsal belly merges with the ventral and accessory heads and inserts along the medial surface of the femur.[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0010040", ontology="AAO", source="AAO:EJS"}
+property_value: external_ontology_notes "Definition generalized to accommodate AAO class - 'Origin by two heads that are separated by a ventral tendon of the M. semitendinosus. One head originates from the ventral border of the pubic portion of the pelvic rim. The other head originates from the ischiatic border of the pelvic rim. The ventral head fuses with accessory head from the M. semitendinosus and inserts along the ventro-medial border of the femur. The dorsal belly merges with the ventral and accessory heads and inserts along the medial surface of the femur.' [AAO:0010040]" xsd:string {external_ontology="AAO"}
+
+[Term]
+id: UBERON:0000376
+name: hindlimb stylopod
+def: "The part of the hindlimb between pelvis and the knee, corresponding to the femur." [http://orcid.org/0000-0002-6601-2165]
+subset: efo_slim
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+synonym: "femur" RELATED OMO:0003011 [Wikipedia:Thigh]
+synonym: "hind limb stylopod" EXACT [OBOL:automatic]
+synonym: "hind limb stylopodium" EXACT [VHOG:0000349]
+synonym: "hind propodium" EXACT [AAO:0000887]
+synonym: "hindlimb propodium" EXACT [AAO:0000887]
+synonym: "hindlimb stylopod" EXACT [OBOL:automatic]
+synonym: "hindlimb stylopodium" EXACT [OBOL:automatic]
+synonym: "proximal segment of free lower limb" EXACT [FMA:24967]
+synonym: "stylopod of hind limb" EXACT [OBOL:automatic]
+synonym: "stylopod of hindlimb" EXACT [OBOL:automatic]
+synonym: "stylopod of lower limb" EXACT []
+synonym: "thigh" EXACT []
+synonym: "upper leg" EXACT HUMAN_PREFERRED [MA:0000052]
+xref: BTO:0001376
+xref: CALOHA:TS-2039
+xref: EFO:0001943
+xref: EHDAA2:0002130
+xref: EHDAA:5171
+xref: EHDAA:6200
+xref: EMAPA:17499
+xref: FMA:24967
+xref: GAID:50
+xref: galen:Thigh
+xref: MA:0000052
+xref: MESH:D013848
+xref: NCIT:C33763
+xref: SCTID:302544002
+xref: UMLS:C0039866 {source="ncithesaurus:Thigh"}
+xref: VHOG:0000349
+xref: Wikipedia:Thigh
+is_a: UBERON:0002472 ! stylopod
+is_a: UBERON:0008784 ! lower limb segment
+intersection_of: UBERON:0002472 ! stylopod
+intersection_of: part_of UBERON:0002103 ! hindlimb
+relationship: contributes_to_morphology_of UBERON:0002103 ! hindlimb
+relationship: has_skeleton UBERON:0015052 ! femur endochondral element
+relationship: part_of UBERON:0000978 {source="MA"} ! leg
+relationship: part_of UBERON:0002103 ! hindlimb
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/4/4b/Gray1238.png" xsd:anyURI
+property_value: homology_notes "Most anatomists now agree that the three proximal bones of the tetrapod limbs are homologous to the two or three proximal elements of the paired fin skeleton of other sarcopterygians, that is the humerus-femur, radius-tibia, and ulna-fibula.[well established][VHOG]" xsd:string {date_retrieved="2012-09-17", external_class="VHOG:0000349", ontology="VHOG", source="ISBN:978-0198540472 Janvier P, Early vertebrates (1996) p.268", source="http://bgee.unil.ch/"}
+property_value: terminology_notes "Naming conventions for pod terms under discussion within phenoscape group." xsd:string {seeAlso="https://github.com/obophenotype/uberon/issues/61"}
+
+[Term]
+id: UBERON:0000950
+name: gracilis
+def: "The most superficial muscle on the medial side of the thigh. It is thin and flattened, broad above, narrow and tapering below. It arises by a thin aponeurosis from the anterior margins of the lower half of the symphysis pubis and the upper half of the pubic arch." [Wikipedia:Gracilis_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "gracilis muscle" EXACT [BTO:0000536]
+synonym: "musculus gracilis" EXACT OMO:0003011 [Wikipedia:Gracilis_muscle]
+xref: BTO:0000536
+xref: EMAPA:36231
+xref: FMA:43882
+xref: galen:Gracilis
+xref: MA:0002311
+xref: MESH:D000071976 {sssom:mapping_justification="https://w3id.org/semapv/vocab/LexicalMatching"}
+xref: NCIT:C52935
+xref: SCTID:181689005
+xref: UMLS:C0224439 {source="ncithesaurus:Gracilis"}
+xref: Wikipedia:Gracilis_muscle
+is_a: UBERON:0004252 ! hindlimb stylopod muscle
+is_a: UBERON:0011144 {source="Wikipedia"} ! adductor muscle of hip
+relationship: has_muscle_insertion UBERON:0000979 {notes="pes anserinus", source="dbpedia"} ! tibia
+relationship: has_muscle_origin UBERON:0001272 {notes="ischiopubic ramus", source="dbpedia"} ! innominate bone
+relationship: part_of UBERON:0000376 ! hindlimb stylopod
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/e/e2/Anterior_Hip_Muscles_2.PNG" xsd:anyURI
+property_value: editor_note "AAO has minor and major gracilis, which merge together, attaching the pelvic rim to the tibiofibula - this could be grouped with the mammalian gracilis at some level; note the current insertion site is 'tibia' which would be modified for amphibian tibiafibula" xsd:string
+property_value: taxon_notes "A&P heads in rat, single head in humans[DOI:10.1002/ar.22919]" xsd:string
+
+[Term]
+id: UBERON:0000979
+name: tibia
+def: "The major preaxial endochondral bone in the posterior zeugopod[Phenoscape]." [PHENOSCAPE:mah]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "shankbone" EXACT [Wikipedia:Tibia]
+synonym: "shinbone" EXACT [Wikipedia:Tibia]
+xref: AAO:0000890
+xref: BTO:0001252
+xref: CALOHA:TS-1048
+xref: EFO:0003054
+xref: EMAPA:19142
+xref: FMA:24476
+xref: GAID:204
+xref: galen:Tibia
+xref: MA:0001361
+xref: MESH:D013977
+xref: NCIT:C12800
+xref: SCTID:182061009
+xref: UMLS:C0040184 {source="ncithesaurus:Tibia"}
+xref: Wikipedia:Tibia
+is_a: UBERON:0002495 {source="FMA"} ! long bone
+is_a: UBERON:0003608 ! hindlimb long bone
+is_a: UBERON:0004251 ! hindlimb zeugopod bone
+is_a: UBERON:0015004 ! tibia endochondral element
+intersection_of: UBERON:0015004 ! tibia endochondral element
+intersection_of: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: develops_from UBERON:0010849 ! tibia cartilage element
+relationship: in_taxon NCBITaxon:7742 ! Vertebrata <vertebrates>
+relationship: part_of UBERON:0010720 ! hindlimb zeugopod skeleton
+relationship: preaxialmost_part_of UBERON:0010720 ! hindlimb zeugopod skeleton
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/2/2a/Gray260.png" xsd:anyURI
+property_value: external_definition "One of the two long bones of endochondral origin of the hind-epipodium; it is a straight, simple bone whose section is more or less rectangular at the ends and circular at its central portion.[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0000890", ontology="AAO", source="AAO:LAP"}
+
+[Term]
+id: UBERON:0000981
+name: femur
+def: "Endochondral longbone connecting the pelvic girdle with posterior zeugopodium skeleton.[VSAO, modified]." [VSAO:0000186, Wikipedia:Femur]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "femoral bone" RELATED [BTO:0001284]
+synonym: "mesomere 1 of pevlic appendage" RELATED HOMOLOGY [ISBN:0226313409]
+synonym: "os femorale" RELATED OMO:0003011 [BTO:0001284]
+synonym: "os femoris" RELATED OMO:0003011 [BTO:0001284]
+synonym: "os longissimum" RELATED OMO:0003011 [Wikipedia:Femur]
+synonym: "proximal metapterygial mesomere of pelvic appendage" RELATED HOMOLOGY [ISBN:0226313409]
+synonym: "proximal metapterygial mesomere of pelvic fin" RELATED HOMOLOGY [ISBN:0226313409]
+synonym: "thigh bone" EXACT []
+xref: AAO:0000887
+xref: AAO:0000889
+xref: BTO:0001284
+xref: CALOHA:TS-0322
+xref: EFO:0001396
+xref: EMAPA:19143
+xref: FMA:9611
+xref: GAID:199
+xref: galen:Femur
+xref: MA:0001359
+xref: MESH:D005269
+xref: NCIT:C12717
+xref: SCTID:182046008
+xref: UMLS:C0015811 {source="ncithesaurus:Femur"}
+xref: VHOG:0001159
+xref: VSAO:0000186
+xref: Wikipedia:Femur
+xref: XAO:0003214
+is_a: UBERON:0003608 ! hindlimb long bone
+is_a: UBERON:0003826 ! upper leg bone
+is_a: UBERON:0008202 {source="MA"} ! bone of hip region
+is_a: UBERON:0015052 ! femur endochondral element
+intersection_of: UBERON:0015052 ! femur endochondral element
+intersection_of: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: connected_to UBERON:0000979 {gci_relation="part_of", gci_filler="NCBITaxon:9606", source="FMA"} ! tibia
+relationship: connected_to UBERON:0001272 {gci_relation="part_of", gci_filler="NCBITaxon:9606", source="FMA"} ! innominate bone
+relationship: connected_to UBERON:0002446 {gci_relation="part_of", gci_filler="NCBITaxon:9606", source="FMA"} ! patella
+relationship: develops_from UBERON:0010129 {evidence="definitional"} ! femur cartilage element
+relationship: in_taxon NCBITaxon:7742 ! Vertebrata <vertebrates>
+relationship: part_of UBERON:0000376 {source="FMA"} ! hindlimb stylopod
+relationship: part_of UBERON:0001441 {source="FMA"} ! hindlimb skeleton
+relationship: proximally_connected_to UBERON:0007832 ! pelvic girdle skeleton
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/7/73/Gray252.png" xsd:anyURI
+property_value: external_definition "Endochondral longbone connecting the pelvic girdle with posterior zeugopodium.[VSAO]" xsd:string {date_retrieved="2012-08-14", external_class="VSAO:0000186", ontology="VSAO", source="VSAO:NI"}
+property_value: external_definition "Paired, elongate, cylindrical bones of endochondral origin that form the thighs, extending from the pelvic girdles to the knees.[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0000889", ontology="AAO", source="AAO:LAP"}
+property_value: has_relational_adjective "femoral" xsd:string
+property_value: homology_notes "Most anatomists now agree that the three proximal bones of the tetrapod limbs are homologous to the two or three proximal elements of the paired fin skeleton of other sarcopterygians, that is the humerus-femur, radius-tibia, and ulna-fibula.[well established][VHOG]" xsd:string {date_retrieved="2012-09-17", external_class="VHOG:0001159", ontology="VHOG", source="ISBN:978-0198540472 Janvier P, Early vertebrates (1996) p.268", source="http://bgee.unil.ch/"}
+
+[Term]
+id: UBERON:0001267
+name: femoral nerve
+def: "The femoral nerve, the largest branch of the lumbar plexus, arises from the ventral divisions of the second, third, and fourth lumbar nerves. It descends through the fibers of the Psoas major, emerging from the muscle at the lower part of its lateral border, and passes down between it and the Iliacus, behind the iliac fascia; it then runs beneath the inguinal ligament, into the thigh, and splits into an anterior and a posterior division. Under the inguinal ligament, it is separated from the femoral artery by a portion of the Psoas major. [WP,unvetted]." [Wikipedia:Femoral_nerve]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "anterior crural nerve" EXACT []
+synonym: "nervus femoralis" RELATED OMO:0003011 [Wikipedia:Femoral_nerve]
+xref: EHDAA2:0000507
+xref: EHDAA:5655
+xref: EMAPA:35343
+xref: FMA:16486
+xref: GAID:850
+xref: MA:0001167
+xref: MESH:D005267
+xref: NCIT:C52816
+xref: SCTID:181051004
+xref: UMLS:C0015808 {source="ncithesaurus:Femoral_Nerve"}
+xref: VHOG:0001411
+xref: Wikipedia:Femoral_nerve
+is_a: UBERON:0003431 ! leg nerve
+relationship: innervates UBERON:0004482 ! musculature of lower limb
+relationship: part_of UBERON:0000978 ! leg
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/7/7c/Gray823.png" xsd:anyURI
+
+[Term]
+id: UBERON:0001270
+name: bony pelvis
+def: "A ring of bone formed by the sacrum and the first few coccygeal vertebrae as the roof, the pubis and ischia as the floor and the ilia and the acetabular part of the ischia as the walls." [http://medical-dictionary.thefreedictionary.com/bony+pelvis]
+subset: human_subset
+subset: mouse_subset
+synonym: "pelvis ossea" EXACT []
+synonym: "skeletal system of pelvis" EXACT [FMA:16580]
+xref: FMA:16580
+xref: SCTID:46633002
+is_a: UBERON:0000075 {source="FMA"} ! subdivision of skeletal system
+disjoint_from: UBERON:0002355 ! pelvic region of trunk
+relationship: has_part UBERON:0001274 ! ischium
+relationship: has_part UBERON:0001275 ! pubis
+relationship: has_part UBERON:0003690 ! fused sacrum
+property_value: depiction "https://cdn.humanatlas.io/digital-objects/ref-organ/pelvis-female/v1.3/assets/3d-vh-f-pelvis.glb" xsd:anyURI
+property_value: depiction "https://cdn.humanatlas.io/digital-objects/ref-organ/pelvis-male/v1.3/assets/3d-vh-m-pelvis.glb" xsd:anyURI
+property_value: editor_note "TODO add taxon-specific part of relations connecting sub-structures to this." xsd:string
+property_value: external_ontology_notes "in FMA, this is part of the axial skeletal system" xsd:string {external_ontology="FMA"}
+
+[Term]
+id: UBERON:0001298
+name: psoas major muscle
+def: "The psoas major is a long fusiform muscle placed on the side of the lumbar region of the vertebral column and brim of the lesser pelvis. It joins the iliacus muscle to form the iliopsoas. In less than 50 per cent of subjects the psoas major is accompanied by the psoas minor. [WP,unvetted]." [Wikipedia:Psoas_major_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "m. psoas major" RELATED OMO:0003011 [Wikipedia:Psoas_major_muscle]
+synonym: "psoas major" EXACT [MA:0002358]
+xref: BTO:0001877
+xref: EMAPA:18169
+xref: FMA:18060
+xref: MA:0002358
+xref: NCIT:C33420
+xref: SCTID:244952006
+xref: UMLS:C0224419 {source="ncithesaurus:Psoas_Major"}
+xref: Wikipedia:Psoas_major_muscle
+is_a: UBERON:0008450 {source="MA"} ! psoas muscle
+relationship: has_muscle_insertion UBERON:0002504 {notes="in the lesser trochanter of the femur", source="dbpedia"} ! lesser trochanter
+relationship: has_muscle_origin UBERON:0001077 {notes="Transverse processes of T12-L5 and the lateral aspects of the discs between them", source="dbpedia"} ! transverse process of vertebra
+relationship: innervated_by UBERON:0009624 {notes="Lumbar plexus via anterior branches of L1-L3 nerves", source="dbpedia"} ! lumbar nerve
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/e/e2/Anterior_Hip_Muscles_2.PNG" xsd:anyURI
+
+[Term]
+id: UBERON:0001322
+name: sciatic nerve
+def: "A large nerve that supplies nearly the whole of the skin of the leg, the muscles of the back of the thigh, and those of the leg and foot. It begins in the lower back and runs through the buttock and down the lower limb." [Wikipedia:Sciatic_nerve]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "ischiadic nerve" RELATED [Wikipedia:Sciatic_nerve]
+synonym: "ischiatic nerve" RELATED [Wikipedia:Sciatic_nerve]
+synonym: "nervus ischiadicus" RELATED OMO:0003011 [BTO:0001221, Wikipedia:Sciatic_nerve]
+synonym: "nervus sciaticus" RELATED [BTO:0001221]
+xref: BIRNLEX:1133
+xref: BTO:0001221
+xref: CALOHA:TS-0899
+xref: EFO:0001417
+xref: EHDAA2:0001779
+xref: EHDAA:5659
+xref: EMAPA:18577
+xref: FMA:19034
+xref: GAID:852
+xref: MA:0001172
+xref: MESH:D012584
+xref: NCIT:C52810
+xref: SCTID:181050003
+xref: UMLS:C0036394 {source="BIRNLEX:1133", source="ncithesaurus:Sciatic_Nerve"}
+xref: VHOG:0000894
+xref: Wikipedia:Sciatic_nerve
+is_a: UBERON:0001021 ! nerve
+relationship: innervates UBERON:0001511 ! skin of leg
+relationship: overlaps UBERON:0000978 ! leg
+relationship: part_of UBERON:0001815 ! lumbosacral nerve plexus
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/3/3a/Gray1244.png" xsd:anyURI
+property_value: taxon_notes "mouse sciatic nerve origins predominantly from the third lumbar (L3) and L4 spinal nerves, unlike the L4 and L5 in rats - http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2700063/" xsd:string
+
+[Term]
+id: UBERON:0001323
+name: tibial nerve
+def: "The tibial nerve is a branch of the sciatic nerve. The tibial nerve passes through the popliteal fossa to pass below the arch of soleus. In the popliteal fossa the nerve gives off branches to gastrocnemius, popliteus, soleus and plantaris muscles, an articular branch to the knee joint, and a cutaneous branch that will become the sural nerve. The sural nerve is joined by fibres from the common peroneal nerve and runs down the calf to supply the lateral side of the foot. Below the soleus muscle the nerve lies close to the tibia and supplies the tibialis posterior, the flexor digitorum longus and the flexor hallucis longus. The nerve passes into the foot running posterior to the medial malleolus. Here it is bound down by the flexor retinaculum in company with the posterior tibial artery. [WP,unvetted]." [Wikipedia:Tibial_nerve]
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "medial popliteal nerve" EXACT []
+synonym: "n. tibialis" RELATED OMO:0003011 [Wikipedia:Tibial_nerve]
+xref: EMAPA:36512
+xref: FMA:19035
+xref: GAID:854
+xref: MA:0001173
+xref: MESH:D013979
+xref: NCIT:C52809
+xref: SCTID:181078002
+xref: UMLS:C0040186 {source="ncithesaurus:Tibial_Nerve"}
+xref: Wikipedia:Tibial_nerve
+is_a: UBERON:0003431 ! leg nerve
+disjoint_from: UBERON:0001324 {source="lexical"} ! common fibular nerve
+relationship: branching_part_of UBERON:0001322 {source="FMA", source="WP"} ! sciatic nerve
+relationship: part_of UBERON:0000978 ! leg
+relationship: part_of UBERON:0001322 ! sciatic nerve
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/1/1a/Gray828.png" xsd:anyURI
+
+[Term]
+id: UBERON:0001324
+name: common fibular nerve
+def: "A nerve arising at the terminal division of the sciatic nerve at the popliteal fossa and extending to the neck of the fibula, ultimately innervating the Peroneus muscle[MP]." [MP:0011211]
+subset: efo_slim
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "common peroneal nerve" EXACT []
+synonym: "extrernal peroneal nerve" EXACT [MP:0011211]
+synonym: "lateral popliteal nerve" EXACT [MP:0011211]
+synonym: "n. fibularis communis" RELATED OMO:0003011 [Wikipedia:Common_fibular_nerve]
+synonym: "n. peroneus communis" RELATED OMO:0003011 [Wikipedia:Common_fibular_nerve]
+synonym: "nervus fibularis communis" RELATED OMO:0003011 []
+synonym: "nervus peroneus communis" EXACT OMO:0003011 [FMA:19039, FMA:TA]
+xref: EFO:0003062
+xref: FMA:19039
+xref: GAID:853
+xref: MA:0001169
+xref: MESH:D010543
+xref: NCIT:C52814
+xref: SCTID:181077007
+xref: UMLS:C0031173 {source="ncithesaurus:Peroneal_Nerve"}
+xref: Wikipedia:Common_fibular_nerve
+is_a: UBERON:0003431 ! leg nerve
+is_a: UBERON:0035652 ! fibular nerve
+relationship: branching_part_of UBERON:0001322 ! sciatic nerve
+relationship: innervates UBERON:0009132 ! peroneus
+relationship: part_of UBERON:0000978 ! leg
+relationship: part_of UBERON:0001322 ! sciatic nerve
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/9/9d/Gray832.png" xsd:anyURI
+property_value: structure_notes "derives into deep and superficial branches" xsd:string
+
+[Term]
+id: UBERON:0001369
+name: iliacus muscle
+def: "The iliacus is a flat, triangular muscle, which fills the iliac fossa. [WP,unvetted]." [Wikipedia:Iliacus_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "anterior muscle of pelvic girdle" EXACT []
+synonym: "iliacus" EXACT [MA:0002318]
+synonym: "iliacus muscle" RELATED [Wikipedia:Iliacus_muscle]
+synonym: "musculus iliacus" RELATED OMO:0003011 [Wikipedia:Iliacus_muscle]
+xref: EMAPA:19164
+xref: FMA:22310
+xref: MA:0002318
+xref: NCIT:C32762
+xref: SCTID:244956009
+xref: UMLS:C0224418 {source="ncithesaurus:Iliacus"}
+xref: Wikipedia:Iliacus_muscle
+is_a: UBERON:0001497 {source="FMA"} ! muscle of pelvic girdle
+relationship: has_muscle_antagonist UBERON:0001370 {source="dbpedia"} ! gluteus maximus
+relationship: has_muscle_insertion UBERON:0002504 {notes="lesser trochanter of femur", source="dbpedia"} ! lesser trochanter
+relationship: has_muscle_origin UBERON:0011015 {source="dbpedia"} ! iliac fossa
+relationship: innervated_by UBERON:0001267 {source="dbpedia"} ! femoral nerve
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/e/e2/Anterior_Hip_Muscles_2.PNG" xsd:anyURI
+property_value: external_ontology_notes "AAO has iliacus major and minor, both of which attach to ilium and femur - consider grouping these somehow" xsd:string {external_ontology="AAO"}
+
+[Term]
+id: UBERON:0001370
+name: gluteus maximus
+def: "The largest and most superficial of the three gluteal muscles [WP,unvetted]." [Wikipedia:Gluteus_maximus_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "glutaeus maximus muscle" RELATED [Wikipedia:Gluteus_maximus_muscle]
+synonym: "gluteus maximus muscle" EXACT [Wikipedia:Gluteus_maximus_muscle]
+synonym: "gluteus superficialis" RELATED []
+synonym: "glutæus maximus" EXACT []
+synonym: "m.gluteus maximus" EXACT []
+synonym: "musculus gluteus maximus" RELATED OMO:0003011 [Wikipedia:Gluteus_maximus_muscle]
+xref: EMAPA:18527
+xref: FMA:22314
+xref: MA:0002309
+xref: NCIT:C52560
+xref: SCTID:181674001
+xref: UMLS:C0224424 {source="ncithesaurus:Gluteus_Maximus"}
+xref: Wikipedia:Gluteus_maximus_muscle
+is_a: UBERON:0002000 ! gluteal muscle
+is_a: UBERON:0011645 ! iliofemoralis muscle
+relationship: has_muscle_antagonist UBERON:0001298 {source="dbpedia"} ! psoas major muscle
+relationship: has_muscle_antagonist UBERON:0001369 {source="dbpedia"} ! iliacus muscle
+relationship: has_muscle_antagonist UBERON:0001372 {source="dbpedia"} ! psoas minor muscle
+relationship: has_muscle_insertion UBERON:0000981 {notes="Gluteal tuberosity of the femur iliotibial tract", source="dbpedia"} ! femur
+relationship: has_muscle_origin UBERON:0001273 {notes="Gluteal surface of ilium lumbar fascia sacrum sacrotuberous ligament", source="dbpedia"} ! ilium
+relationship: has_muscle_origin UBERON:0003690 {notes="Gluteal surface of ilium lumbar fascia sacrum sacrotuberous ligament", source="dbpedia"} ! fused sacrum
+relationship: part_of UBERON:0004470 {source="FMA"} ! musculature of pelvic girdle
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/7/70/Posterior_Hip_Muscles_3.PNG" xsd:anyURI
+property_value: taxon_notes "In humans, it makes up a large portion of the shape and appearance of the buttocks. It is a broad and thick fleshy mass of a quadrilateral shape, and forms the prominence of the nates. Its large size is one of the most characteristic features of the muscular system in humans, connected as it is with the power of maintaining the trunk in the erect posture. The muscle is remarkably coarse in structure, being made up of fasciculi lying parallel with one another and collected together into large bundles separated by fibrous septa." xsd:string
+
+[Term]
+id: UBERON:0001371
+name: gluteus medius
+def: "One of three gluteal muscles, is a broad, thick, radiating muscle, situated on the outer surface of the pelvis. Its posterior third is covered by the gluteus maximus, its anterior two-thirds by the gluteal aponeurosis, which separates it from the superficial fascia and integument. [WP,unvetted]." [Wikipedia:Gluteus_medius_muscle]
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "gluteus medius muscle" RELATED [Wikipedia:Gluteus_medius_muscle]
+synonym: "musculus gluteus medius" RELATED OMO:0003011 [Wikipedia:Gluteus_medius_muscle]
+xref: EMAPA:19163
+xref: FMA:22315
+xref: galen:GluteusMedius
+xref: MA:0002310
+xref: NCIT:C52933
+xref: SCTID:181675000
+xref: UMLS:C0224425 {source="ncithesaurus:Gluteus_Medius"}
+xref: Wikipedia:Gluteus_medius_muscle
+is_a: UBERON:0002000 ! gluteal muscle
+relationship: attaches_to UBERON:0002503 {source="FMA"} ! greater trochanter
+relationship: has_muscle_insertion UBERON:0002503 {notes="Greater trochanter of the femur", source="dbpedia"} ! greater trochanter
+relationship: has_muscle_origin UBERON:0001273 {notes="Gluteal surface of ilium under gluteus maximus", source="dbpedia"} ! ilium
+relationship: part_of UBERON:0004470 {source="FMA"} ! musculature of pelvic girdle
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/7/70/Posterior_Hip_Muscles_3.PNG" xsd:anyURI
+property_value: taxon_notes "A&P heads in rat, single head in humans[DOI:10.1002/ar.22919]" xsd:string
+
+[Term]
+id: UBERON:0001373
+name: sartorius muscle
+def: "The Sartorius muscle - the longest muscle in the human body - is a long thin muscle that runs down the length of the thigh. Its upper portion forms the lateral border of the femoral triangle." [Wikipedia:Sartorius_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "ambliens" RELATED SENSU []
+synonym: "M. sartorius" RELATED []
+synonym: "musculus sartorius" RELATED OMO:0003011 [Wikipedia:Sartorius_muscle]
+synonym: "sartorius" EXACT [MA:0002368]
+xref: BTO:0001215
+xref: EHDAA2:0001776
+xref: EHDAA:10583
+xref: EMAPA:37693 {source="MA:th"}
+xref: FMA:22353
+xref: galen:Sartorius
+xref: MA:0002368
+xref: NCIT:C33515
+xref: SCTID:181683006
+xref: UMLS:C0224434 {source="ncithesaurus:Sartorius_Muscle"}
+xref: VHOG:0001192
+xref: Wikipedia:Sartorius_muscle
+is_a: UBERON:0001630 ! muscle organ
+relationship: has_muscle_insertion UBERON:0008977 {notes="anteromedial surface of the upper tibia in the pes anserinus", source="dbpedia"} ! pes anserinus of tibia
+relationship: has_muscle_origin UBERON:0001273 ! ilium
+relationship: in_taxon NCBITaxon:40674 ! Mammalia
+relationship: innervated_by UBERON:0001267 {notes="femoral nerve", source="dbpedia"} ! femoral nerve
+relationship: part_of RO:0002577 ! system
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/a/af/Sartorius.png" xsd:anyURI
+property_value: editor_note "We do NOT group this AAO class here at this stage until further evidence of shared attachments" xsd:string
+property_value: homology_notes "The ambiens of reptiles and the iliotibialis of amphibians are likely homologues of the sartorius.[well established][VHOG]" xsd:string {date_retrieved="2012-09-17", external_class="VHOG:0001192", ontology="VHOG", source="ISBN:978-0072528305 Kardong KV, Vertebrates: Comparative Anatomy, Function, Evolution (2006) p.391", source="http://bgee.unil.ch/"}
+property_value: taxon_notes "No iliotibialis in AAO - M. sartorius has def: 'Originates on the ventral pelvic rim, the pubic region, and the ventral surface of the adductor longus. The insertion bifurcates distally; the ventral portion attaches to the aponeurosis of the cruralis and the dorsal part attaches to the distal attachment of the gracilis major, the semitendinosus, and to the aponeurosis of the cruralis.' [AAO:0010027]" xsd:string
+property_value: taxon_notes "The ambiens of reptiles and the iliotibialis of amphibians are likely homologues of the sartorius. Kardong KV, Vertebrates: Comparative Anatomy, Function, Evolution, Fourth Edition (2006) McGraw-Hill, p.391 [VHOG:0001192]" xsd:string
+
+[Term]
+id: UBERON:0001374
+name: biceps femoris
+def: "The biceps femoris is a muscle of the posterior (the back) thigh. As its name implies, it has two parts, one of which (the long head) forms part of the hamstrings muscle group. [WP,unvetted]." [Wikipedia:Biceps_femoris_muscle]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "biceps femoris muscle" EXACT [BTO:0003418]
+synonym: "musculus biceps femoris" RELATED OMO:0003011 [Wikipedia:Biceps_femoris_muscle]
+xref: BTO:0003418
+xref: EFO:0001418
+xref: EMAPA:35170
+xref: FMA:22356
+xref: galen:BicepsFemoris
+xref: MA:0002270
+xref: NCIT:C53147
+xref: SCTID:181672002
+xref: UMLS:C0224449 {source="ncithesaurus:Biceps_Femoris"}
+xref: Wikipedia:Biceps_femoris_muscle
+is_a: UBERON:0002463 {source="cjm"} ! muscle of posterior compartment of hindlimb stylopod
+relationship: has_muscle_antagonist UBERON:0001377 {source="dbpedia"} ! quadriceps femoris
+relationship: has_muscle_insertion UBERON:0008775 {notes="the head of the fibula which articulates with the back of the lateral tibial condyle", source="dbpedia"} ! proximal epiphysis of fibula
+relationship: has_muscle_insertion UBERON:0009989 {notes="the head of the fibula which articulates with the back of the lateral tibial condyle", source="dbpedia"} ! condyle of tibia
+relationship: has_muscle_origin UBERON:0000981 {source="dbpedia"} ! femur
+relationship: innervated_by UBERON:0001323 {notes="long head: tibial nerveshort head: common peroneal nerve", source="dbpedia"} ! tibial nerve
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/b/bc/Biceps_femoris_muscle_long_head.PNG" xsd:anyURI
+
+[Term]
+id: UBERON:0001375
+name: semitendinosus
+def: "The semitendinosus is a muscle in the back of the thigh; it is one of the hamstrings. [WP,unvetted]." [Wikipedia:Semitendinosus_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "musculus semitendinosus" RELATED OMO:0003011 [BTO:0001236, Wikipedia:Semitendinosus_muscle]
+synonym: "semitendinosus muscle" EXACT []
+xref: BTO:0001236
+xref: EMAPA:35762
+xref: FMA:22357
+xref: galen:Semitendinosus
+xref: MA:0002375
+xref: NCIT:C53176
+xref: SCTID:181685004
+xref: UMLS:C0224453 {source="ncithesaurus:Semitendinosus"}
+xref: Wikipedia:Semitendinosus_muscle
+is_a: UBERON:0002463 {source="cjm"} ! muscle of posterior compartment of hindlimb stylopod
+relationship: has_muscle_antagonist UBERON:0001377 {source="dbpedia"} ! quadriceps femoris
+relationship: has_muscle_insertion UBERON:0008977 {source="dbpedia"} ! pes anserinus of tibia
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/3/3f/Semitendinosus_muscle.PNG" xsd:anyURI
+property_value: taxon_notes "A&P heads in rat, single head in humans[DOI:10.1002/ar.22919]" xsd:string
+
+[Term]
+id: UBERON:0001376
+name: tensor fasciae latae muscle
+def: "The tensor fasciae latae or tensor fasciæ latæ is a muscle of the thigh. [WP,unvetted]." [Wikipedia:Tensor_fasciae_latae_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "musculus tensor fasciae latae" EXACT OMO:0003011 [FMA:22423, FMA:TA, Wikipedia:Tensor_fasciae_latae_muscle]
+synonym: "tensor fasciae lata" EXACT [MA:0002391]
+synonym: "tensor fasciae lata muscle" EXACT []
+synonym: "tensor fasciae latae" EXACT [FMA:22423]
+synonym: "tensor of fascia lata" EXACT []
+xref: EMAPA:35855
+xref: FMA:22423
+xref: MA:0002391
+xref: NCIT:C53072
+xref: SCTID:181671009
+xref: UMLS:C1384497 {source="ncithesaurus:Tensor_Fasciae_Lata"}
+xref: Wikipedia:Tensor_fasciae_latae_muscle
+is_a: UBERON:0002000 ! gluteal muscle
+relationship: has_muscle_origin UBERON:0010746 ! iliac blade
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/e/e2/Anterior_Hip_Muscles_2.PNG" xsd:anyURI
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/b/bf/Anatomical_dissection5.JPG" xsd:anyURI
+
+[Term]
+id: UBERON:0001377
+name: quadriceps femoris
+def: "One of the muscles belong to the group consisting of the rectus femoris and the three heads of the vastus (lateralis, medialis, intermedius)." [ISBN:0073040584]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "musculus quadriceps femoris" RELATED OMO:0003011 [BTO:0001149, Wikipedia:Quadriceps_femoris_muscle]
+synonym: "quadricep muscle" RELATED [BTO:0001149]
+synonym: "quadriceps" EXACT []
+synonym: "quadriceps femoris muscle" EXACT []
+synonym: "quadriceps muscle" RELATED [BTO:0001149]
+synonym: "quadriceps muscle of the thigh" RELATED [BTO:0001149]
+synonym: "quadriceps muscle of thigh" RELATED [BTO:0001149]
+xref: BTO:0001149
+xref: EFO:0001938
+xref: EHDAA2:0001583
+xref: EHDAA:8299
+xref: EMAPA:19146
+xref: FMA:22428
+xref: galen:QuadricepsFemoris
+xref: MA:0002363
+xref: MESH:D052097 {sssom:mapping_justification="https://w3id.org/semapv/vocab/LexicalMatching"}
+xref: NCIT:C33441
+xref: SCTID:181669009
+xref: UMLS:C0224440 {source="ncithesaurus:Quadriceps_Muscle_of_the_Thigh"}
+xref: VHOG:0000828
+xref: Wikipedia:Quadriceps_femoris_muscle
+is_a: UBERON:0003663 ! hindlimb muscle
+union_of: UBERON:0001378 ! rectus femoris
+union_of: UBERON:0001379 ! vastus lateralis
+union_of: UBERON:0001380 ! vastus medialis
+union_of: UBERON:0014847 ! vastus intermedius
+relationship: has_muscle_insertion UBERON:0000979 {notes="tibial tuberosity", source="dbpedia"} ! tibia
+relationship: has_muscle_origin UBERON:0001378 {notes="combined rectus femoris and vastus muscles", source="dbpedia"} ! rectus femoris
+relationship: innervated_by UBERON:0001267 {source="dbpedia"} ! femoral nerve
+relationship: part_of UBERON:0002103 ! hindlimb
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/5/57/Illu_lower_extremity_muscles.jpg" xsd:anyURI
+property_value: external_definition "The quadriceps is a collective term for the rectus femoris and the three heads of the vastus (lateralis, medialis, intermedius). [Evolution, Fourth_Edition_(2006)_McGraw-Hill, Function, Kardong_KV, Vertebrates:_Comparative_Anatomy, p.391][VHOG]" xsd:string {date_retrieved="2012-09-17", external_class="VHOG:0000828", ontology="VHOG", source="http://bgee.unil.ch/"}
+
+[Term]
+id: UBERON:0001378
+name: rectus femoris
+def: "The Rectus femoris muscle is one of the four quadriceps muscles of the human body. (The others are the vastus medialis, the vastus intermedius, and the vastus lateralis. All four combine to form the quadriceps tendon, which inserts into the patella and continues as the patellar ligament. ) The Rectus femoris is situated in the middle of the front of the thigh; it is fusiform in shape, and its superficial fibers are arranged in a bipenniform manner, the deep fibers running straight down to the deep aponeurosis. [WP,unvetted]." [Wikipedia:Rectus_femoris_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "musculus rectos femoris" EXACT []
+xref: BTO:0001564
+xref: EMAPA:36266
+xref: FMA:22430
+xref: MA:0002365
+xref: NCIT:C53175
+xref: SCTID:181679006
+xref: UMLS:C0584894 {source="ncithesaurus:Rectus_Femoris"}
+xref: Wikipedia:Rectus_femoris_muscle
+is_a: UBERON:0001377 ! quadriceps femoris
+relationship: has_muscle_antagonist UBERON:0002463 {source="dbpedia"} ! muscle of posterior compartment of hindlimb stylopod
+relationship: has_muscle_origin UBERON:0001269 {notes="anterior inferior iliac spine and the exterior surface of the bony ridge which forms the iliac portion of the acetabulum", source="dbpedia"} ! acetabular part of hip bone
+relationship: innervated_by UBERON:0001267 {source="dbpedia"} ! femoral nerve
+relationship: part_of UBERON:0001377 {source="ISBN:0073040584"} ! quadriceps femoris
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/1/14/Rectus_femoris.png" xsd:anyURI
+
+[Term]
+id: UBERON:0001379
+name: vastus lateralis
+def: "The Vastus lateralis (Vastus externus) is the largest part of the Quadriceps femoris. It arises by a broad aponeurosis, which is attached to the upper part of the intertrochanteric line, to the anterior and inferior borders of the greater trochanter, to the lateral lip of the gluteal tuberosity, and to the upper half of the lateral lip of the linea aspera; this aponeurosis covers the upper three-fourths of the muscle, and from its deep surface many fibers take origin. A few additional fibers arise from the tendon of the Glutæus maximus, and from the lateral intermuscular septum between the Vastus lateralis and short head of the Biceps femoris. The fibers form a large fleshy mass, which is attached to a strong aponeurosis, placed on the deep surface of the lower part of the muscle: this aponeurosis becomes contracted and thickened into a flat tendon inserted into the lateral border of the patella, blending with the Quadriceps femoris tendon, and giving an expansion to the capsule of the knee-joint. [WP,unvetted]." [Wikipedia:Vastus_lateralis]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "lateralis" BROAD []
+synonym: "vastus externus" RELATED [BTO:0001563]
+synonym: "vastus lateralis muscle" EXACT []
+xref: BTO:0001563
+xref: EFO:0001937
+xref: EMAPA:36244
+xref: FMA:22431
+xref: galen:VastusLateralis
+xref: MA:0002402
+xref: NCIT:C53073
+xref: UMLS:C0224444 {source="ncithesaurus:Vastus_Lateralis"}
+xref: Wikipedia:Vastus_lateralis
+is_a: UBERON:0001377 ! quadriceps femoris
+relationship: part_of UBERON:0001377 {source="ISBN:0073040584"} ! quadriceps femoris
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/5/57/Illu_lower_extremity_muscles.jpg" xsd:anyURI
+
+[Term]
+id: UBERON:0001380
+name: vastus medialis
+def: "The vastus medialis, often called the 'teardrop' muscle, is a medially located muscle of the quadriceps. [WP,unvetted]." [Wikipedia:Vastus_medialis]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "medialis" BROAD []
+synonym: "vastus internus" RELATED [BTO:0004913]
+synonym: "vastus medialis muscle" EXACT []
+xref: BTO:0004913
+xref: EMAPA:36245
+xref: FMA:22432
+xref: galen:VastusMedialis
+xref: MA:0002403
+xref: NCIT:C117736
+xref: Wikipedia:Vastus_medialis
+is_a: UBERON:0001377 ! quadriceps femoris
+relationship: has_muscle_insertion UBERON:0002446 {source="dbpedia"} ! patella
+relationship: has_muscle_origin UBERON:0000981 {source="dbpedia"} ! femur
+relationship: innervated_by UBERON:0001267 {source="dbpedia"} ! femoral nerve
+relationship: part_of UBERON:0001377 {source="ISBN:0073040584"} ! quadriceps femoris
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/0/05/Illu_lower_extremity_muscles.jpg" xsd:anyURI
+
+[Term]
+id: UBERON:0001381
+name: semimembranosus muscle
+def: "The semimembranosus is a muscle in the back of the thigh. It is the most medial of the three hamstring muscles. [WP,unvetted]." [Wikipedia:Semimembranosus]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "musculus semimembranosus" EXACT OMO:0003011 [BTO:0003177]
+synonym: "semimembranosus" EXACT [MA:0002371]
+xref: BTO:0003177
+xref: EMAPA:36242
+xref: FMA:22438
+xref: galen:Semimembranosus
+xref: MA:0002371
+xref: NCIT:C52987
+xref: UMLS:C0224452 {source="ncithesaurus:Semimembranosus"}
+xref: Wikipedia:Semimembranosus
+is_a: UBERON:0002463 {source="cjm"} ! muscle of posterior compartment of hindlimb stylopod
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/b/bf/Semimembranosus_muscle.PNG" xsd:anyURI
+
+[Term]
+id: UBERON:0001385
+name: tibialis anterior
+def: "A muscle that originates in the upper two-thirds of the lateral surface of the tibia and inserts into the medial cuneiform and first metatarsal bones of the foot. Its acts to invert the foot. It is situated on the lateral side of the tibia; it is thick and fleshy above, tendinous below. This muscle overlaps the anterior tibial vessels and deep peroneal nerve in the upper part of the leg. [WP,unvetted]. The M. tibialis cranialis is a muscle that flexes the tarsometatarsus. It originates on the craniodistal aspect of the femur and proximal tibiotarsus and inserts on the cranial surface of the tarsometarsus[EvoWiki]." [http://evolutionwiki.org/wiki/M._tibialis_cranialis, Wikipedia:Tibialis_anterior_muscle]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "anterior tibialis" RELATED [BTO:0001382]
+synonym: "ibialis anticus" RELATED [BTO:0001382]
+synonym: "musculus tibialis anterior" RELATED OMO:0003011 [Wikipedia:Tibialis_anterior_muscle]
+synonym: "tibialis anterior muscle" EXACT [BTO:0001382]
+synonym: "tibialis cranialis" EXACT [MA:0002395]
+synonym: "tibilais cranialis" EXACT []
+xref: BTO:0001382
+xref: EFO:0001385
+xref: EMAPA:35866
+xref: FMA:22532
+xref: galen:TibialisAnterior
+xref: MA:0002395
+xref: NCIT:C53079
+xref: SCTID:181696007
+xref: UMLS:C1710423 {source="ncithesaurus:Tibialis_Cranialis"}
+xref: Wikipedia:Tibialis_anterior_muscle
+is_a: UBERON:0008230 ! tibialis
+relationship: has_muscle_antagonist UBERON:0001388 {source="dbpedia"} ! gastrocnemius
+relationship: has_muscle_antagonist UBERON:0001389 {source="dbpedia"} ! soleus muscle
+relationship: has_muscle_antagonist UBERON:0001667 {source="dbpedia"} ! tibialis posterior
+relationship: has_muscle_insertion UBERON:0001448 {notes="medial cuneiform and first metatarsal bones of the foot", source="dbpedia"} ! metatarsal bone
+relationship: has_muscle_insertion UBERON:0010721 {notes="medial cuneiform and first metatarsal bones of the foot", source="dbpedia"} ! distal tarsal bone
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/9/9c/Gray1240.png" xsd:anyURI
+
+[Term]
+id: UBERON:0001386
+name: extensor digitorum longus
+def: "A penniform muscle of the lateral front part of the hindlimb responsible for extension of the digits and dorsiflexion of the ankle." [MP:0004246]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "extensor digitorum longus muscle" EXACT [BTO:0000436]
+synonym: "musculus extensor digitorum longus" RELATED OMO:0003011 [Wikipedia:Extensor_digitorum_longus_muscle]
+synonym: "toe extensor" EXACT [HP:0011916]
+synonym: "toe extensor muscle" EXACT []
+xref: BTO:0000436
+xref: EMAPA:35330
+xref: FMA:22534
+xref: MA:0002295
+xref: NCIT:C52918
+xref: UMLS:C0224464 {source="ncithesaurus:Extensor_Digitorum_Longus"}
+xref: Wikipedia:Extensor_digitorum_longus_muscle
+is_a: UBERON:0000311 {source="BTO"} ! extensor muscle
+is_a: UBERON:0003663 ! hindlimb muscle
+relationship: has_muscle_insertion UBERON:0001449 {notes="Dorsal surface; middle and distal phalanges of lateral four digits", source="dbpedia"} ! phalanx of pes
+relationship: has_muscle_origin UBERON:0000979 {notes="Anterior lateral condyle of tibia anterior shaft of fibula and superior of interosseous membrane", source="dbpedia"} ! tibia
+relationship: has_muscle_origin UBERON:0001446 {notes="Anterior lateral condyle of tibia anterior shaft of fibula and superior of interosseous membrane", source="dbpedia"} ! fibula
+relationship: has_muscle_origin UBERON:0009991 {notes="Anterior lateral condyle of tibia anterior shaft of fibula and superior of interosseous membrane", source="dbpedia"} ! lateral condyle of tibia
+relationship: innervated_by UBERON:0001324 {source="dbpedia"} ! common fibular nerve
+relationship: part_of UBERON:0002103 ! hindlimb
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/5/5f/Gray1241.png" xsd:anyURI
+
+[Term]
+id: UBERON:0001387
+name: fibularis longus
+def: "A superficial muscle in the lateral compartment of the leg, and acts to evert and plantar flex the ankle. It is situated at the upper part of the lateral side of the leg, and is the most superficial of the three peroneus muscles. It is innervated by the superficial fibular nerve (superficial peroneal nerve). [WP,unvetted]." [Wikipedia:Peroneus_longus]
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "fibularis longus" RELATED [Wikipedia:Peroneus_longus]
+synonym: "fibularis longus muscle" RELATED [Wikipedia:Peroneus_longus]
+synonym: "musculus peroneus longus" EXACT OMO:0003011 [FMA:22539, FMA:TA]
+synonym: "peronaei longus" RELATED [Wikipedia:Peroneus_longus]
+synonym: "peronaeus longus" RELATED [Wikipedia:Peroneus_longus]
+synonym: "peroneous longus" RELATED [Wikipedia:Peroneus_longus]
+synonym: "peroneus longus" EXACT []
+synonym: "peroneus longus muscle" EXACT []
+synonym: "peroneus longus muscle" RELATED [Wikipedia:Peroneus_longus]
+xref: EMAPA:36253
+xref: FMA:22539
+xref: galen:PeroneusLongus
+xref: MA:0002356
+xref: NCIT:C53171
+xref: SCTID:361825008
+xref: UMLS:C0224469 {source="ncithesaurus:Peroneus_Longus"}
+xref: Wikipedia:Peroneus_longus
+is_a: UBERON:0009132 ! peroneus
+relationship: has_muscle_antagonist UBERON:0001385 {source="dbpedia"} ! tibialis anterior
+relationship: has_muscle_insertion UBERON:0003650 {source="dbpedia"} ! metatarsal bone of digit 1
+relationship: has_muscle_origin UBERON:0001446 {source="dbpedia"} ! fibula
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/9/9c/Gray1240.png" xsd:anyURI
+
+[Term]
+id: UBERON:0001389
+name: soleus muscle
+def: "A deep muscle of the triceps surae group, in the superficial posterior compartment of the leg." [http://orcid.org/0000-0002-6601-2165, Wikipedia:Soleus_muscle]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "soleus" EXACT [MA:0002424]
+xref: BTO:0001265
+xref: EFO:0001946
+xref: EMAPA:35786
+xref: FMA:22542
+xref: galen:Soleus
+xref: MA:0002424
+xref: NCIT:C53075
+xref: SCTID:181702007
+xref: UMLS:C0242694 {source="ncithesaurus:Soleus"}
+xref: Wikipedia:Soleus_muscle
+is_a: UBERON:0004256 ! hindlimb zeugopod muscle
+relationship: contributes_to_morphology_of UBERON:0003661 ! limb muscle
+relationship: has_muscle_antagonist UBERON:0001385 {source="dbpedia"} ! tibialis anterior
+relationship: has_muscle_insertion UBERON:0003701 {source="dbpedia"} ! calcaneal tendon
+relationship: has_muscle_origin UBERON:0001446 {notes="fibula medial border of tibia", source="dbpedia"} ! fibula
+relationship: innervated_by UBERON:0001323 {notes="tibial nerve specifically nerve roots ", source="dbpedia"} ! tibial nerve
+relationship: never_in_taxon NCBITaxon:9611 {source="Wikipedia:Soleus"} ! Canis
+relationship: part_of UBERON:0001665 {source="FMA"} ! triceps surae
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/5/57/Illu_lower_extremity_muscles.jpg" xsd:anyURI
+property_value: function_notes "responsible for plantar flexion of the foot" xsd:string {source="MP:0003081"}
+property_value: has_relational_adjective "soleal" xsd:string
+
+[Term]
+id: UBERON:0001392
+name: flexor hallucis longus
+def: "A deep muscle of the posterior compartment of the hindlimb that is innervated by the tibial nerve, arises from the fibula and insets in the distal phalanx of pedal digit 1." [Wikipedia:Flexor_hallucis_longus_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "flexor hallucis longus muscle" EXACT [Wikipedia:Flexor_hallucis_longus_muscle]
+xref: EMAPA:37588 {source="MA:th"}
+xref: FMA:22593
+xref: MA:0002301
+xref: NCIT:C52925
+xref: SCTID:361826009
+xref: UMLS:C0224473 {source="ncithesaurus:Flexor_Hallucis_Longus"}
+xref: Wikipedia:Flexor_hallucis_longus_muscle
+is_a: UBERON:0000366 ! flexor muscle
+is_a: UBERON:0001383 ! muscle of leg
+relationship: has_muscle_insertion UBERON:0004315 {notes="Plantar surface; base of distal phalanx of hallux", source="dbpedia"} ! distal phalanx of pedal digit 1
+relationship: has_muscle_origin UBERON:0001446 {notes="fibula posterior aspect of middle 1/3", source="dbpedia"} ! fibula
+relationship: innervated_by UBERON:0001323 {notes="tibial nerve S1 and S2 nerve roots", source="dbpedia"} ! tibial nerve
+relationship: part_of UBERON:0000978 ! leg
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/9/92/Gray442.png" xsd:anyURI
+
+[Term]
+id: UBERON:0001446
+name: fibula
+def: "The major postaxial endochondral bone in the posterior zeugopod[Phenoscape]." [PHENOSCAPE:mah]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+xref: AAO:0000891
+xref: BTO:0002346
+xref: CALOHA:TS-2203
+xref: EFO:0003052
+xref: EMAPA:19141
+xref: FMA:24479
+xref: GAID:202
+xref: galen:Fibula
+xref: MA:0001360
+xref: MESH:D005360
+xref: NCIT:C12718
+xref: SCTID:302529003
+xref: UMLS:C0016068 {source="ncithesaurus:Fibula"}
+xref: Wikipedia:Fibula
+is_a: UBERON:0002495 {source="FMA"} ! long bone
+is_a: UBERON:0003608 ! hindlimb long bone
+is_a: UBERON:0004251 ! hindlimb zeugopod bone
+is_a: UBERON:0015013 ! fibula endochondral element
+intersection_of: UBERON:0015013 ! fibula endochondral element
+intersection_of: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: develops_from UBERON:0010851 ! fibula cartilage element
+relationship: part_of UBERON:0010720 ! hindlimb zeugopod skeleton
+relationship: postaxialmost_part_of UBERON:0010720 ! hindlimb zeugopod skeleton
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/1/16/Illu_lower_extremity.jpg" xsd:anyURI
+property_value: external_definition "One of the two long bones of endochondral origin of the hind-epipodium; it is a rather more slender bone than the tibia but of about the same length.[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0000891", ontology="AAO", source="AAO:LAP"}
+property_value: has_relational_adjective "fibular" xsd:string
+
+[Term]
+id: UBERON:0001449
+name: phalanx of pes
+alt_id: UBERON:0004272
+def: "A phalanx that is part of a hindlimb autopod[Automatically generated definition]." [https://orcid.org/0000-0002-6601-2165, Wikipedia:Phalanges_of_the_foot]
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+synonym: "bone of toe" RELATED [FMA:24493]
+synonym: "digital bone of pes" BROAD [OBOL:automatic]
+synonym: "digitus pedis phalanx" EXACT [OBOL:automatic]
+synonym: "foot digit phalanx" EXACT [OBOL:automatic]
+synonym: "foot phalanx" EXACT [MA:0000305]
+synonym: "pedal phalanx" EXACT []
+synonym: "phalanges of hind digit" RELATED OMO:0003004 [AAO:0000930]
+synonym: "phalanx of digit of foot" EXACT [OBOL:automatic]
+synonym: "phalanx of digitus pedis" EXACT [OBOL:automatic]
+synonym: "phalanx of foot digit" EXACT [OBOL:automatic]
+synonym: "phalanx of hind digit" EXACT []
+synonym: "phalanx of pes" EXACT []
+synonym: "phalanx of toe" EXACT [FMA:24493]
+synonym: "toe phalanx" EXACT [OBOL:automatic]
+xref: AAO:0000930
+xref: EMAPA:32941
+xref: FMA:24493
+xref: MA:0000305
+xref: NCIT:C52772
+xref: ncithesaurus:Phalanx_of_the_Foot
+xref: SCTID:302533005
+xref: UMLS:C0584876 {source="ncithesaurus:Foot_Phalanx"}
+xref: Wikipedia:Phalanges_of_the_foot
+is_a: UBERON:0003221 ! phalanx
+is_a: UBERON:0003608 ! hindlimb long bone
+is_a: UBERON:0004248 ! pedal digit bone
+is_a: UBERON:0015030 ! pedal digit phalanx endochondral element
+intersection_of: UBERON:0003221 ! phalanx
+intersection_of: part_of UBERON:0002387 ! pes
+relationship: develops_from UBERON:0010685 ! pedal digit phalanx cartilage element
+relationship: part_of UBERON:0001466 ! pedal digit
+relationship: part_of UBERON:0002387 ! pes
+relationship: part_of UBERON:0010696 ! skeleton of pedal acropodium
+relationship: part_of UBERON:5101466 ! pedal digit digitopodial skeleton
+property_value: external_definition "Dumb-bell shaped bones of endochondral origin with cartilaginous epiphyses that make the five digits of the pes. The terminal phalanges are much smaller than the proximal and penultimate phalanges. The typical phalangeal formula of the pes, in a medial to lateral sequence, is 2(1)-2-3-4(3)-3(2).[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0000930", ontology="AAO", source="AAO:LAP"}
+
+[Term]
+id: UBERON:0001450
+name: calcaneus
+def: "The postaxial bone of the proximal tarsals series[Phenoscape]." [https://github.com/obophenotype/uberon/issues/72, PHENOSCAPE:mah]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "calcaneal bone" EXACT [BTO:0002355]
+synonym: "calcanei" RELATED OMO:0003004 []
+synonym: "calcaneum" EXACT [MA:0001348]
+synonym: "calcaneus bone" EXACT [UBERON:cjm]
+synonym: "fibulare" RELATED [AAO:0000913, ISBN:0073040584, VSAO:0005016, Wikipedia:Calcaneus]
+synonym: "heel bone" RELATED [BTO:0002355]
+synonym: "os calcis" EXACT OMO:0003011 [FMA:24496]
+synonym: "os tarsi fibulare" RELATED [BTO:0002355]
+xref: BTO:0002355
+xref: EMAPA:19134
+xref: FMA:24496
+xref: galen:Calcaneum
+xref: MA:0001348
+xref: MESH:D002111
+xref: NCIT:C32250
+xref: SCTID:182099002
+xref: UMLS:C0006655 {source="ncithesaurus:Calcaneum"}
+xref: VSAO:0005016
+xref: Wikipedia:Calcaneus
+is_a: UBERON:0011679 ! proximal tarsal bone
+is_a: UBERON:0015014 ! calcaneum endochondral element
+intersection_of: UBERON:0015014 ! calcaneum endochondral element
+intersection_of: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: dc-contributor https://orcid.org/0000-0001-7972-3866
+relationship: dc-contributor https://orcid.org/0000-0001-9114-8737
+relationship: dc-contributor https://orcid.org/0000-0002-6601-2165
+relationship: develops_from UBERON:0010842 ! calcaneum cartilage element
+relationship: postaxialmost_part_of UBERON:0009879 ! tarsal skeleton
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/a/a9/Subtalar_Joint.PNG" xsd:anyURI
+property_value: has_relational_adjective "calcaneal" xsd:string
+property_value: taxon_notes "synonymous with the fibulare of basal tetrapods." xsd:string
+
+[Term]
+id: UBERON:0001451
+name: navicular bone of pes
+def: "The oval-shaped tarsal bone found between the talus and the 3 cuneiform bones." [MGI:llw2, MP:0009727]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "central tarsal bone" RELATED []
+synonym: "centrale" BROAD []
+synonym: "centrale (hind)" EXACT [AAO:0000924]
+synonym: "navicular" EXACT []
+synonym: "navicular bone of foot" EXACT [FMA:24499]
+synonym: "navicular of foot" EXACT [FMA:24499]
+synonym: "navicular of pes" EXACT []
+synonym: "os naviculare" EXACT OMO:0003011 [FMA:24499, FMA:TA]
+synonym: "os naviculare" RELATED OMO:0003011 [Wikipedia:Navicular_bone]
+synonym: "os naviculare pedis" EXACT [BTO:0002356]
+synonym: "os tarsi centrale" EXACT OMO:0003011 [NominaAnatomicaVeterinaria:2005]
+xref: AAO:0000924
+xref: BTO:0002356
+xref: EMAPA:36180
+xref: FMA:24499
+xref: galen:Navicular
+xref: MA:0001349
+xref: NCIT:C33162
+xref: SCTID:182100005
+xref: UMLS:C0223947 {source="ncithesaurus:Navicular_Bone"}
+xref: Wikipedia:Navicular_bone
+is_a: UBERON:0001447 ! tarsal bone
+is_a: UBERON:0012131 ! centrale
+relationship: distally_connected_to UBERON:0010721 {notes="numbers vary"} ! distal tarsal bone
+relationship: proximally_connected_to UBERON:0002395 ! talus
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/8/81/Gray276.png" xsd:anyURI
+property_value: external_definition "Oval tarsal element that is located on the center of the mesopodium. It articulates with all other elements of the tarsus except tarsal 5.[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0000924", ontology="AAO", source="AAO:LAP"}
+property_value: taxon_notes "connections vary depending on species. AAO: Oval tarsal element that is located on the center of the mesopodium. It articulates with all other elements of the tarsus except tarsal 5. In humans: there is a cuboid instead of distal tarsal 4 and 5 - may articulate laterally with the cuboid" xsd:string {source="WP"}
+
+[Term]
+id: UBERON:0001452
+name: distal tarsal bone 1
+def: "Endochondral tarsal bone articulating with centralia and metatarsal 1." [VSAO:0005052, Wikipedia:Medial_cuneiform_bone]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "1st cuneiform" RELATED [EMAPA:36176]
+synonym: "cuneiforme 1" EXACT [VSAO:0005052]
+synonym: "distal tarsal 1" RELATED [VSAO:0005052]
+synonym: "distal tarsal 1 bone" EXACT SYSTEMATIC [UBERON:cjm]
+synonym: "entocuneiforme" EXACT [VSAO:0005052]
+synonym: "first cuneiform" EXACT [Wikipedia:Medial_cuneiform_bone]
+synonym: "first cuneiform bone" EXACT [FMA:24518]
+synonym: "foot distal carpal bone 1" RELATED []
+synonym: "medial cuneiform" EXACT [FMA:24518]
+synonym: "medial cuneiform bone" EXACT [FMA:24518]
+synonym: "os cuneiform primum" RELATED OMO:0003011 [Wikipedia:Medial_cuneiform_bone]
+synonym: "os cuneiforme mediale" EXACT OMO:0003011 [FMA:TA, NominaAnatomicaVeterinaria:2005]
+synonym: "os cuneiforme mediale" RELATED OMO:0003011 [Wikipedia:Medial_cuneiform_bone]
+synonym: "os cuneiforme primum" RELATED [BTO:0002360]
+synonym: "os tarsale I" EXACT OMO:0003011 [NominaAnatomicaVeterinaria:2005]
+synonym: "ossa cuneiforme mediale" RELATED [BTO:0002360]
+synonym: "tarsal 1" EXACT [AAO:0000918]
+xref: AAO:0000918
+xref: BTO:0002360
+xref: EMAPA:36176
+xref: FMA:24518
+xref: galen:MedialCuneiform
+xref: http://palaeos.com/vertebrates/glossary/images/450x218xEctocuneiform.gif.pagespeed.ic.kaiuLYQELL.png
+xref: MA:0001352
+xref: NCIT:C32840
+xref: SCTID:182116007
+xref: UMLS:C1512869 {source="ncithesaurus:Internal_Cuneiform_Bone_of_the_Foot"}
+xref: VSAO:0005052
+xref: Wikipedia:Medial_cuneiform_bone
+is_a: UBERON:0010721 ! distal tarsal bone
+is_a: UBERON:0015102 ! distal tarsal bone 1 endochondral element
+intersection_of: UBERON:0015102 ! distal tarsal bone 1 endochondral element
+intersection_of: composed_primarily_of UBERON:0002481 ! bone tissue
+disjoint_from: UBERON:0001454 {source="lexical"} ! distal tarsal bone 3
+relationship: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: develops_from UBERON:0015103 ! distal tarsal bone 1 cartilage
+relationship: distally_connected_to UBERON:0003650 ! metatarsal bone of digit 1
+relationship: part_of UBERON:0009879 ! tarsal skeleton
+relationship: proximally_connected_to UBERON:0001451 ! navicular bone of pes
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/8/81/Gray290.png" xsd:anyURI
+property_value: external_definition "Small element that articulates with the prehallux, metatarsal I and element Y. It may be fused to tarsal 2.[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0000918", ontology="AAO", source="AAO:LAP"}
+
+[Term]
+id: UBERON:0001485
+name: knee joint
+def: "The knee joint joins the thigh with the leg and consists of two articulations: one between the femur and tibia, and one between the femur and patella. It is the largest and most complicated joint in the human body. The knee is a mobile trocho-ginglymus (i.e. a pivotal hinge joint), which permits flexion and extension as well as a slight medial and lateral rotation[WP,unvetted]." [Wikipedia:Knee]
+subset: efo_slim
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "articulatio genus" RELATED OMO:0003011 [Wikipedia:Knee]
+synonym: "joint of knee" EXACT [OBOL:automatic]
+xref: EFO:0001957
+xref: EMAPA:19137
+xref: FMA:35175
+xref: GAID:114
+xref: galen:KneeJoint
+xref: MA:0000471
+xref: MESH:D007719
+xref: NCIT:C32898
+xref: SCTID:182204005
+xref: UMLS:C0022745 {source="ncithesaurus:Knee_Joint"}
+xref: VHOG:0001003
+xref: Wikipedia:Knee
+is_a: UBERON:0003840 ! hindlimb joint
+is_a: UBERON:0011139 ! synovial limb joint
+intersection_of: UBERON:0000982 ! skeletal joint
+intersection_of: connects UBERON:0000979 ! tibia
+intersection_of: connects UBERON:0000981 ! femur
+intersection_of: connects UBERON:0002446 ! patella
+relationship: connects UBERON:0000979 ! tibia
+relationship: connects UBERON:0000981 ! femur
+relationship: connects UBERON:0002446 ! patella
+relationship: develops_from UBERON:0006256 {evidence="definitional"} ! knee joint primordium
+relationship: part_of UBERON:0001465 ! knee
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/c/ca/Knee.agr.jpg" xsd:anyURI
+
+[Term]
+id: UBERON:0001486
+name: hip joint
+def: "A synovial joint that connects the femur to the acetbulum of the innominate bone." [http://orcid.org/0000-0002-6601-2165]
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "articulatio coxofemoralis" EXACT [FMA:35178]
+synonym: "coxal articulation" RELATED [Wikipedia:Hip]
+synonym: "femoro-iliac joint" EXACT []
+xref: BTO:0001502
+xref: EMAPA:19136
+xref: FMA:35178
+xref: GAID:262
+xref: galen:HipJoint
+xref: MA:0000470
+xref: MESH:D006621
+xref: NCIT:C32742
+xref: SCTID:182201002
+xref: UMLS:C0019558 {source="ncithesaurus:Hip_Joint"}
+xref: VHOG:0001001
+xref: Wikipedia:Hip#Articulation
+is_a: UBERON:0011107 {source="FMA"} ! synovial joint of pelvic girdle
+intersection_of: UBERON:0000982 ! skeletal joint
+intersection_of: connects UBERON:0000981 ! femur
+intersection_of: connects UBERON:0001269 ! acetabular part of hip bone
+relationship: connects UBERON:0000981 ! femur
+relationship: connects UBERON:0001269 ! acetabular part of hip bone
+relationship: develops_from UBERON:0006244 {evidence="definitional"} ! hip joint primordium
+relationship: part_of UBERON:0001464 {source="FMA"} ! hip
+
+[Term]
+id: UBERON:0001488
+name: ankle joint
+def: "A joint that connects the hindlimb autopod and zeugopod skeletons." [https://orcid.org/0000-0002-6601-2165, MESH:A02.835.583.378.062, Wikipedia:Ankle]
+subset: efo_slim
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "gambrel" NARROW [Wikipedia:Hock_(anatomy)]
+synonym: "hock" NARROW [Wikipedia:Hock_(anatomy)]
+synonym: "hock joint" NARROW [Wikipedia:Hock_(anatomy)]
+synonym: "mortise joint" RELATED [BTO:0004706]
+synonym: "talocrural articulation" RELATED [Wikipedia:Ankle]
+synonym: "talocrural joint" RELATED [Wikipedia:Ankle]
+synonym: "talotibial joint" NARROW [Wikipedia:Ankle]
+xref: BTO:0004706
+xref: EMAPA:35126
+xref: FMA:35195
+xref: GAID:257
+xref: galen:AnkleJoint
+xref: MA:0000463
+xref: MESH:D000843
+xref: NCIT:C32078
+xref: SCTID:182212002
+xref: UMLS:C0003087 {source="ncithesaurus:Ankle_Joint"}
+xref: Wikipedia:Ankle
+is_a: UBERON:0003840 ! hindlimb joint
+is_a: UBERON:0011139 ! synovial limb joint
+intersection_of: UBERON:0000982 ! skeletal joint
+intersection_of: connects UBERON:0001445 ! skeleton of pes
+intersection_of: connects UBERON:0010720 ! hindlimb zeugopod skeleton
+relationship: connects UBERON:0000979 {gci_relation="part_of", gci_filler="NCBITaxon:9606"} ! tibia
+relationship: connects UBERON:0001445 ! skeleton of pes
+relationship: connects UBERON:0001446 {gci_relation="part_of", gci_filler="NCBITaxon:9606"} ! fibula
+relationship: connects UBERON:0010720 ! hindlimb zeugopod skeleton
+relationship: overlaps UBERON:0002387 ! pes
+relationship: part_of UBERON:0002103 ! hindlimb
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/b/bf/Ankle_en.svg" xsd:anyURI
+property_value: taxon_notes "todo - accurately represent different types of ankle joint" xsd:string
+
+[Term]
+id: UBERON:0001665
+name: triceps surae
+def: "The triceps surae is a pair of muscles located at the calf - the gastrocnemius and the soleus. These muscles both insert into the calcaneus, the bone of the heel of the human foot, and form the major part of the muscle of the back part of the lower leg, commonly known as the calf muscle. The triceps surae is connected to the foot through the Achilles tendon, and has 3 heads deriving from the 2 major masses of muscle. The superficial portion (the gastrocnemius) gives off 2 heads attaching to the base of the femur directly above the knee. The deep (profundis) mass of muscle (the soleus) forms the remaining head which attaches to the superior posterior area of the tibia. The triceps surae is innervated by the tibial nerve, specifically, nerve roots L5-S2. [WP,unvetted]." [Wikipedia:Triceps_surae_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "calf muscle" RELATED [Wikipedia:Triceps_surae_muscle]
+synonym: "gastrosoleus" RELATED [Wikipedia:Triceps_surae_muscle]
+synonym: "gastrosoleus complex" RELATED [Wikipedia:Triceps_surae_muscle]
+synonym: "musculus triceps surae" RELATED OMO:0003011 [Wikipedia:Triceps_surae_muscle]
+synonym: "sural triceps" RELATED []
+xref: EMAPA:36267
+xref: FMA:51062
+xref: MA:0002400
+xref: NCIT:C53181
+xref: UMLS:C0224458 {source="ncithesaurus:Triceps_Surae"}
+xref: Wikipedia:Triceps_surae_muscle
+is_a: UBERON:0004256 ! hindlimb zeugopod muscle
+relationship: has_muscle_insertion UBERON:0001450 {source="dbpedia"} ! calcaneus
+relationship: has_muscle_insertion UBERON:0003701 {source="dbpedia"} ! calcaneal tendon
+relationship: innervated_by UBERON:0001323 {source="dbpedia"} ! tibial nerve
+relationship: part_of UBERON:0003823 ! hindlimb zeugopod
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/5/57/Illu_lower_extremity_muscles.jpg" xsd:anyURI
+property_value: external_ontology_notes "A set of muscles in FMA, a single organ in MA" xsd:string {external_ontology="FMA"}
+
+[Term]
+id: UBERON:0001666
+name: flexor digitorum longus
+def: "The Flexor digitorum longus is situated on the tibial side of the leg. At its origin it is thin and pointed, but it gradually increases in size as it descends. This muscle serves to curl the second, third, fourth, and fifth toes (flexion of phalanges II-V). [WP,unvetted]." [Wikipedia:Flexor_digitorum_longus]
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+xref: BTO:0000466
+xref: EMAPA:36248
+xref: FMA:51071
+xref: MA:0002299
+xref: NCIT:C52921
+xref: SCTID:181703002
+xref: UMLS:C1261048 {source="ncithesaurus:Flexor_Digitorum_Longus"}
+xref: Wikipedia:Flexor_digitorum_longus
+is_a: UBERON:0001383 ! muscle of leg
+relationship: has_muscle_insertion UBERON:0003641 ! pedal digit 2 phalanx
+relationship: has_muscle_insertion UBERON:0003642 ! pedal digit 3 phalanx
+relationship: has_muscle_insertion UBERON:0003862 ! pedal digit 4 phalanx
+relationship: has_muscle_insertion UBERON:0003863 ! pedal digit 5 phalanx
+relationship: has_muscle_origin UBERON:0000979 ! tibia
+relationship: innervated_by UBERON:0001323 ! tibial nerve
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/9/92/Gray442.png" xsd:anyURI
+
+[Term]
+id: UBERON:0001667
+name: tibialis posterior
+def: "The Tibialis posterior is the most central of all the leg muscles, and is located in the posterior compartment of the leg. It is the key stabilizing muscle of the lower leg. [WP,unvetted]." [Wikipedia:Tibialis_posterior_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "ibialis posticus" RELATED [BTO:0000867]
+synonym: "musculus tibialis posterior" RELATED OMO:0003011 [Wikipedia:Tibialis_posterior_muscle]
+synonym: "posterior tibialis" RELATED [BTO:0000867]
+synonym: "tibialis caudalis" EXACT []
+synonym: "tibialis posterior muscle" RELATED [BTO:0000867]
+xref: BTO:0000867
+xref: EMAPA:36255
+xref: FMA:51099
+xref: MA:0002394
+xref: NCIT:C53078
+xref: SCTID:361824007
+xref: UMLS:C1711425 {source="ncithesaurus:Tibialis_Caudalis"}
+xref: Wikipedia:Tibialis_posterior_muscle
+is_a: UBERON:0008230 ! tibialis
+relationship: has_muscle_antagonist UBERON:0001385 {source="dbpedia"} ! tibialis anterior
+relationship: has_muscle_insertion UBERON:0001451 {source="dbpedia"} ! navicular bone of pes
+relationship: has_muscle_insertion UBERON:0001452 {source="dbpedia"} ! distal tarsal bone 1
+relationship: has_muscle_origin UBERON:0000979 {source="dbpedia"} ! tibia
+relationship: has_muscle_origin UBERON:0001446 {source="dbpedia"} ! fibula
+relationship: innervated_by UBERON:0001323 {source="dbpedia"} ! tibial nerve
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/9/92/Gray442.png" xsd:anyURI
+
+[Term]
+id: UBERON:0001999
+name: iliopsoas
+def: "Anatomical cluster consisting of the iliacus and the psoas major[WP]." [Wikipedia:Iliopsoas]
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "Hyrtl's muscle" EXACT []
+synonym: "ilio-psoas" RELATED [VHOG:0001005]
+synonym: "iliopsoas muscle" EXACT [BTO:0000621]
+synonym: "illopsoas" EXACT [VHOG:0001005]
+synonym: "musculus iliopsoas" RELATED OMO:0003011 [Wikipedia:Iliopsoas]
+xref: BTO:0000621
+xref: EHDAA2:0000812
+xref: EHDAA:9458
+xref: EMAPA:18520
+xref: FMA:64918
+xref: MA:0002321
+xref: NCIT:C32764
+xref: SCTID:181668001
+xref: UMLS:C0224417 {source="ncithesaurus:Iliopsoas_Muscle"}
+xref: VHOG:0001005
+xref: Wikipedia:Iliopsoas
+is_a: UBERON:0000061 ! anatomical structure
+relationship: has_muscle_antagonist UBERON:0001370 {source="dbpedia"} ! gluteus maximus
+relationship: has_muscle_antagonist UBERON:0002463 ! muscle of posterior compartment of hindlimb stylopod
+relationship: has_muscle_insertion UBERON:0002504 {notes="lesser trochanter of femur", source="dbpedia"} ! lesser trochanter
+relationship: has_muscle_origin UBERON:0001130 {source="dbpedia"} ! vertebral column
+relationship: innervated_by UBERON:0001267 {source="dbpedia"} ! femoral nerve
+relationship: innervated_by UBERON:0009624 {source="dbpedia"} ! lumbar nerve
+relationship: part_of RO:0002577 ! system
+relationship: part_of UBERON:0001015 ! musculature
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/e/e2/Anterior_Hip_Muscles_2.PNG" xsd:anyURI
+property_value: seeAlso "https://github.com/obophenotype/uberon/issues/478" xsd:anyURI
+
+[Term]
+id: UBERON:0002000
+name: gluteal muscle
+def: "On of the muscles that make up the buttocks: the gluteus maximus muscle, gluteus medius muscle and gluteus minimus muscle." [Wikipedia:Gluteal_muscles]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "gluteus" RELATED [BTO:0000531]
+synonym: "gluteus muscle" RELATED []
+xref: BTO:0000531
+xref: EHDAA2:0000715
+xref: EMAPA:18186
+xref: FMA:64922
+xref: MA:0000535
+xref: NCIT:C78205
+xref: UMLS:C1744702 {source="ncithesaurus:Gluteal_Muscle"}
+xref: VHOG:0001316
+xref: Wikipedia:Gluteal_muscles
+is_a: UBERON:0001497 ! muscle of pelvic girdle
+intersection_of: UBERON:0001497 ! muscle of pelvic girdle
+intersection_of: part_of UBERON:0013691 ! buttock
+relationship: develops_from UBERON:0010963 {source="EHDAA2"} ! trunk and cervical myotome group
+relationship: part_of UBERON:0013691 ! buttock
+property_value: external_ontology_notes "FMA includes tensor fasciae latae and other buttock muscles. BTO def: Any one of three large skeletal muscles that form the buttock and move the thigh." xsd:string {external_ontology="FMA"}
+property_value: has_relational_adjective "gluteal" xsd:string
+
+[Term]
+id: UBERON:0002395
+name: talus
+def: "A proximal tarsal bone resulting from fusion of intermedium and fibulare." [http://orcid.org/0000-0002-6601-2165, Wikipedia:Talus_bone]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "astragaloid bone" RELATED [BTO:0002354]
+synonym: "astragalus" RELATED [ISBN:0073040584, MA:000135, Wikipedia:Talus_bone]
+synonym: "astragalus bone" RELATED [ISBN:0073040584, Wikipedia:Talus_bone]
+synonym: "major ankle bone" RELATED []
+synonym: "os tarsi tibiale" RELATED [BTO:0002354]
+synonym: "os trigonum" RELATED [Wikipedia:Talus_bone]
+xref: BTO:0002354
+xref: EMAPA:19135
+xref: FMA:9708
+xref: GAID:196
+xref: galen:Talus
+xref: MA:0001351
+xref: MESH:D013628
+xref: NCIT:C52799
+xref: SCTID:182098005
+xref: UMLS:C0039277 {source="ncithesaurus:Talus"}
+xref: Wikipedia:Talus_bone
+is_a: UBERON:0011679 ! proximal tarsal bone
+intersection_of: UBERON:0011679 ! proximal tarsal bone
+intersection_of: has_fused_element UBERON:0011678 ! hindlimb intermedium bone
+intersection_of: has_fused_element UBERON:0012126 ! fibulare
+relationship: connected_to UBERON:0000979 ! tibia
+relationship: has_fused_element UBERON:0011678 ! hindlimb intermedium bone
+relationship: has_fused_element UBERON:0012126 ! fibulare
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/a/a9/Subtalar_Joint.PNG" xsd:anyURI
+property_value: taxon_notes "The talus is apparently derived from the fusion of three separate bones in the feet of primitive amphibians; the tibiale, articulating with tibia, the intermedium, between the bases of the tibia and fibula, and the fourth centrale, lying in the mid-part of the tarsus. These bones are still partially separate in modern amphibians, which therefore do not have a true talus. The talus forms a considerably more flexible joint in mammals than it does in reptiles. This reaches its greatest extent in artiodactyls, where the distal surface of the bone has a smooth keel to allow greater freedom of movement of the foot, and thus increase running speed" xsd:string {source="WP"}
+
+[Term]
+id: UBERON:0002446
+name: patella
+def: "A large sesamoid bone found in the distal femur/proximal tibial region of the hindlimb of tetrapods. The patella is the attachment site for proximal hindlimb tendons.[PHENOSCAPE:ad]." [https://sourceforge.net/tracker/?func=detail&atid=1205376&aid=3470151&group_id=76834, PHENOSCAPE:ad]
+comment: The patella, also known as the knee cap or kneepan, is the largest sesamoid bone in the human body. The primary functional role of the patella is knee extension. The patella has convergently evolved in placental mammals and birds; marsupials have only rudimentary, non-ossified patellae. In more primitive tetrapods, including living amphibians and reptiles, the muscle tendons from the upper leg are attached directly to the tibia, and the patella is not present. See also: fabella.
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+subset: uberon_slim
+synonym: "knee bone" RELATED [FMA:24485]
+synonym: "knee cap" RELATED [Wikipedia:Patella]
+synonym: "patella" RELATED OMO:0003011 [Wikipedia:Patella]
+xref: EMAPA:35668
+xref: FMA:24485
+xref: GAID:203
+xref: galen:Patella
+xref: MA:0001374
+xref: MESH:D010329
+xref: NCIT:C33282
+xref: SCTID:182083008
+xref: UMLS:C0030647 {source="ncithesaurus:Patella"}
+xref: Wikipedia:Patella
+is_a: UBERON:0001479 {source="FMA"} ! sesamoid bone
+is_a: UBERON:0005893 ! leg bone
+is_a: UBERON:0011141 ! appendicular ossicle
+intersection_of: UBERON:0001474 ! bone element
+intersection_of: connected_to UBERON:0000981 ! femur
+intersection_of: part_of UBERON:0001465 ! knee
+relationship: adjacent_to UBERON:0001485 ! knee joint
+relationship: connected_to UBERON:0000981 ! femur
+relationship: part_of UBERON:0001441 ! hindlimb skeleton
+relationship: part_of UBERON:0001465 ! knee
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/9/9a/Knee_diagram.svg" xsd:anyURI
+property_value: has_relational_adjective "patellar" xsd:string
+
+[Term]
+id: UBERON:0002463
+name: muscle of posterior compartment of hindlimb stylopod
+alt_id: UBERON:0008538
+def: "Any of the posterior thigh muscles. [WP,modified]." [Wikipedia:Hamstring]
+subset: human_subset
+subset: mouse_subset
+subset: uberon_slim
+synonym: "hamstring" RELATED [VHOG:0000844]
+synonym: "hamstring muscle" EXACT [MA:0002312]
+synonym: "muscle of posterior compartment of thigh" EXACT [FMA:22427]
+synonym: "muscularis compartimentum femoris posterius" RELATED OMO:0003011 [Wikipedia:Posterior_compartment_of_thigh]
+synonym: "posterior fascial compartment of thigh" RELATED [Wikipedia:Posterior_compartment_of_thigh]
+synonym: "posterior femoral muscle" EXACT [FMA:22427]
+synonym: "posterior femoral muscles" RELATED [Wikipedia:Posterior_compartment_of_thigh]
+synonym: "set of hamstring muscles" RELATED [FMA:81022]
+xref: BTO:0003179
+xref: EHDAA2:0000727
+xref: EHDAA:8295
+xref: EMAPA:19145
+xref: FMA:22427
+xref: FMA:81022
+xref: MA:0002312
+xref: NCIT:C53042
+xref: UMLS:C0584895 {source="ncithesaurus:Hamstring"}
+xref: VHOG:0000844
+xref: Wikipedia:Hamstring
+xref: Wikipedia:Posterior_compartment_of_thigh
+is_a: UBERON:0004252 ! hindlimb stylopod muscle
+relationship: has_muscle_antagonist UBERON:0001378 {source="dbpedia"} ! rectus femoris
+relationship: has_muscle_insertion UBERON:0000979 {source="dbpedia"} ! tibia
+relationship: has_muscle_insertion UBERON:0001446 {source="dbpedia"} ! fibula
+relationship: innervated_by UBERON:0001322 {notes="sciatic nerve", source="dbpedia"} ! sciatic nerve
+relationship: part_of UBERON:0000376 ! hindlimb stylopod
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/b/bc/Biceps_femoris_muscle_long_head.PNG" xsd:anyURI
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/d/dc/Gray1239.png" xsd:anyURI
+property_value: editor_note "check FMA, singular." xsd:string
+
+[Term]
+id: UBERON:0003650
+name: metatarsal bone of digit 1
+def: "A metatarsal bone that distally_connected_to a proximal phalanx of pedal digit 1." [OBOL:automatic]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+synonym: "first metatarsal bone" EXACT [FMA:24502]
+synonym: "foot digit 1 metatarsal bone" EXACT [OBOL:automatic]
+synonym: "hallux metatarsal bone" EXACT [OBOL:automatic]
+synonym: "hindlimb digit 1 metatarsus" RELATED [EMAPA:19123]
+synonym: "metatarsal 1" EXACT []
+synonym: "metatarsal bone digit 1" EXACT [MA:0001369]
+synonym: "metatarsal bone of digit I" EXACT COMPARATIVE_PREFERRED [https://github.com/obophenotype/uberon/issues/458]
+synonym: "metatarsal bone of foot digit 1" EXACT [OBOL:automatic]
+synonym: "metatarsal bone of hallux" EXACT [OBOL:automatic]
+synonym: "metatarsal I" EXACT [AAO:0000925]
+synonym: "toe 1 metatarsal" EXACT []
+synonym: "toe 1 metatarsus" EXACT []
+xref: AAO:0000925
+xref: EMAPA:19123
+xref: FMA:24502
+xref: MA:0001369
+xref: NCIT:C52791
+xref: SCTID:182121005
+xref: UMLS:C1708999 {source="ncithesaurus:Metatarsal_Bone_Digit_1"}
+is_a: UBERON:0001448 ! metatarsal bone
+is_a: UBERON:0013581 ! metapodium bone 1
+is_a: UBERON:0015037 ! pedal digit 1 metatarsal endochondral element
+intersection_of: UBERON:0015037 ! pedal digit 1 metatarsal endochondral element
+intersection_of: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: develops_from UBERON:0010557 ! pedal digit 1 metatarsal cartilage element
+relationship: distally_connected_to UBERON:0004332 ! proximal phalanx of pedal digit 1
+property_value: external_definition "Dumb-bell-shaped bone of endochondral origin with cartilaginous epiphyses that articulates with the prepollex and tarsal 1 proximally and with the proximal phalanx of digit I distally.[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0000925", ontology="AAO", source="AAO:LAP"}
+property_value: external_definition "The first metatarsal bone is the bone in the body of the foot just behind the big toe. It is remarkable for its great thickness, and is the shortest of the metatarsal bones. The body is strong, and of well-marked prismoid form. The base presents, as a rule, no articular facets on its sides, but occasionally on the lateral side there is an oval facet, by which it articulates with the second metatarsal. Its proximal articular surface is of large size and kidney-shaped; its circumference is grooved, for the tarsometatarsal ligaments, and medially gives insertion to part of the tendon of the Tibialis anterior; its plantar angle presents a rough oval prominence for the insertion of the tendon of the Peronæus longus. The head is large; on its plantar surface are two grooved facets, on which glide sesamoid bones; the facets are separated by a smooth elevation[Wikipedia:First_metatarsal_bone]." xsd:string {source="Wikipedia:First_metatarsal_bone"}
+property_value: ray_number "1" xsd:nonNegativeInteger
+
+[Term]
+id: UBERON:0003654
+name: metatarsal bone of digit 5
+def: "A metatarsal bone that distally_connected_to a proximal phalanx of pedal digit 5." [OBOL:automatic]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+synonym: "fifth metatarsal bone" EXACT [FMA:24506]
+synonym: "foot digit 5 metatarsal bone" EXACT [OBOL:automatic]
+synonym: "hindlimb digit 5 metatarsus" RELATED [EMAPA:19131]
+synonym: "metatarsal 5" EXACT []
+synonym: "metatarsal bone digit 5" EXACT [MA:0001373]
+synonym: "metatarsal bone of digit V" EXACT COMPARATIVE_PREFERRED [https://github.com/obophenotype/uberon/issues/458]
+synonym: "metatarsal bone of foot digit 5" EXACT [OBOL:automatic]
+synonym: "metatarsal V" EXACT [AAO:0000929]
+synonym: "toe 5 metatarsal" EXACT []
+synonym: "toe 5 metatarsus" EXACT []
+xref: AAO:0000929
+xref: EMAPA:19131
+xref: FMA:24506
+xref: MA:0001373
+xref: NCIT:C52787
+xref: SCTID:182144008
+xref: UMLS:C1709003 {source="ncithesaurus:Metatarsal_Bone_Digit_5"}
+is_a: UBERON:0001448 ! metatarsal bone
+is_a: UBERON:0013585 ! metapodium bone 5
+is_a: UBERON:0015041 ! pedal digit 5 metatarsal endochondral element
+intersection_of: UBERON:0015041 ! pedal digit 5 metatarsal endochondral element
+intersection_of: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: composed_primarily_of UBERON:0002481 ! bone tissue
+relationship: develops_from UBERON:0010561 ! pedal digit 5 metatarsal cartilage element
+relationship: distally_connected_to UBERON:0004336 ! proximal phalanx of pedal digit 5
+property_value: external_definition "Dumb-bell-shaped bone of endochondral origin with cartilaginous epiphyses that articulates with tarsal 5 or the distal head of the tibiale-fibulare proximally and with the proximal phalanx of digit V distally.[AAO]" xsd:string {date_retrieved="2012-06-20", external_class="AAO:0000929", ontology="AAO", source="AAO:LAP"}
+property_value: external_definition "The fifth metatarsal bone is recognized by a rough eminence, the tuberosity, on the lateral side of its base. The base articulates behind, by a triangular surface cut obliquely in a transverse direction, with the cuboid; and medially, with the fourth metatarsal. On the medial part of its dorsal surface is inserted the tendon of the Peronæus tertius and on the dorsal surface of the tuberosity that of the Peronæus brevis. A strong band of the plantar aponeurosis connects the projecting part of the tuberosity with the lateral process of the tuberosity of the calcaneus. The plantar surface of the base is grooved for the tendon of the Abductor digiti quinti, and gives origin to the Flexor digiti quinti brevis. The base of the metatarsal is often injured and a particularly notorious fracture is the Jones fracture. When the tuberosity is broken, it is called a pseudo-Jones fracture or a dancer's fracture. This is a common fracture of the fifth metatarsal. Stress fractures are common in the fifth metatarsal among athletes[Wikipedia:Fifth_metatarsal_bone]." xsd:string {source="Wikipedia:Fifth_metatarsal_bone"}
+property_value: ray_number "5" xsd:nonNegativeInteger
+
+[Term]
+id: UBERON:0003671
+name: anterior cruciate ligament of knee joint
+def: "A major stabilizing ligament in the knee that attaches the surfaces of the femur and tibia." [ncithesaurus:Anterior_Cruciate_Ligament]
+subset: human_subset
+subset: mouse_subset
+synonym: "anterior cruciate ligament" EXACT [FMA:44614]
+xref: FMA:44614
+xref: GAID:122
+xref: galen:AnteriorCruciateLigament
+xref: MESH:D016118
+xref: NCIT:C32088
+xref: SCTID:182443006
+xref: UMLS:C0078960 {source="ncithesaurus:Anterior_Cruciate_Ligament"}
+is_a: UBERON:0006659 ! cruciate ligament of knee
+disjoint_from: UBERON:0003680 {source="lexical"} ! posterior cruciate ligament of knee joint
+relationship: attaches_to UBERON:0000979 ! tibia
+relationship: attaches_to UBERON:0000981 ! femur
+
+[Term]
+id: UBERON:0003676
+name: patellar ligament
+def: "The central portion of the common tendon of the quadriceps femoris. It is attached to the apex of the PATELLA and to the lower part of the tubercle of the TIBIA." [MESH:A02.513.514.475, Wikipedia:Patellar_ligament]
+subset: human_subset
+subset: mouse_subset
+synonym: "central band of tendon of quadriceps femoris" EXACT [FMA:44581]
+synonym: "ligamentum patella" EXACT [FMA:44581]
+synonym: "patellar tendon" RELATED []
+xref: EMAPA:18509
+xref: FMA:44581
+xref: GAID:128
+xref: galen:LigamentumPatellae
+xref: MESH:D017847
+xref: NCIT:C33283
+xref: SCTID:244639004
+xref: UMLS:C0206332 {source="ncithesaurus:Patellar_Ligament"}
+xref: Wikipedia:Patellar_ligament
+is_a: UBERON:0011088 ! ligament of knee joint
+relationship: connects UBERON:0000979 ! tibia
+relationship: connects UBERON:0002446 ! patella
+relationship: part_of UBERON:0001485 {source="FMA"} ! knee joint
+
+[Term]
+id: UBERON:0003680
+name: posterior cruciate ligament of knee joint
+subset: human_subset
+subset: mouse_subset
+synonym: "posterior cruciate ligament" EXACT [FMA:44617]
+xref: FMA:44617
+xref: GAID:129
+xref: galen:PosteriorCruciateLigament
+xref: MESH:D016119
+xref: NCIT:C33359
+xref: SCTID:182445004
+xref: UMLS:C0080039 {source="ncithesaurus:Posterior_Cruciate_Ligament"}
+is_a: UBERON:0006659 ! cruciate ligament of knee
+
+[Term]
+id: UBERON:0003696
+name: metatarsophalangeal joint
+def: "The metatarsophalangeal articulations are the joints between the metatarsal bones of the foot and the proximal bones of the toes . They are condyloid joints meaning an elliptical or rounded surface (of the metatarsal bones) come close to the shallow cavities (of the proximal phalanges). The ligaments are the plantar and two collateral." [Wikipedia:Metatarsophalangeal_articulations]
+subset: human_subset
+subset: mouse_subset
+synonym: "articulationes metatarsophalangeae" RELATED OMO:0003011 [Wikipedia:Metatarsophalangeal_articulations]
+synonym: "metatarsal joint" RELATED [FMA:35222]
+synonym: "metatarsal-phalangeal joint" EXACT [PHENOSCAPE:ad]
+synonym: "metatarsalphalangeal joint" RELATED [Wikipedia:Metatarsophalangeal_articulations]
+synonym: "metatarsophalangeal" RELATED [Wikipedia:Metatarsophalangeal_articulations]
+synonym: "metatarsophalangeal articulation" RELATED [Wikipedia:Metatarsophalangeal_articulations]
+xref: FMA:35222
+xref: GAID:258
+xref: galen:MetatarsoPhalangealJoint
+xref: MESH:D008683
+xref: NCIT:C33108
+xref: SCTID:239747005
+xref: SCTID:302535003
+xref: SCTID:370752004
+xref: UMLS:C0025589 {source="ncithesaurus:Metatarsophalangeal_Joint"}
+xref: Wikipedia:Metatarsophalangeal_articulations
+is_a: UBERON:0001487 ! pes joint
+intersection_of: UBERON:0000982 ! skeletal joint
+intersection_of: connects UBERON:0001448 ! metatarsal bone
+intersection_of: connects UBERON:0003867 ! distal phalanx of pes
+relationship: connects UBERON:0001448 ! metatarsal bone
+relationship: connects UBERON:0003867 ! distal phalanx of pes
+relationship: part_of UBERON:0001466 ! pedal digit
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/9/9e/Gray268.png" xsd:anyURI
+property_value: editor_note "we follow FMA in making these joints part of digits" xsd:string
+
+[Term]
+id: UBERON:0003698
+name: subtalar joint
+def: "A joint of the pes that connects the talus and the calcaneus." [https://orcid.org/0000-0002-6601-2165, Wikipedia:Subtalar_joint]
+subset: human_subset
+subset: mouse_subset
+synonym: "articulatio subtalaris" EXACT OMO:0003011 [FMA:35198, FMA:TA]
+synonym: "articulatio talocalcanea" EXACT OMO:0003011 [FMA:35198, FMA:TA]
+synonym: "subtalar joint" EXACT [FMA:35198]
+synonym: "talocalcaneal articulation" RELATED [Wikipedia:Subtalar_joint]
+synonym: "talocalcaneal joint" RELATED [GAID:260]
+xref: FMA:35198
+xref: GAID:260
+xref: MESH:D013380
+xref: NCIT:C33653
+xref: SCTID:182213007
+xref: UMLS:C0038593 {source="ncithesaurus:Subtalar_Joint"}
+xref: Wikipedia:Subtalar_joint
+is_a: UBERON:0008447 {source="MESH"} ! intertarsal joint
+intersection_of: UBERON:0002217 ! synovial joint
+intersection_of: connects UBERON:0001450 ! calcaneus
+intersection_of: connects UBERON:0002395 ! talus
+relationship: connects UBERON:0001450 ! calcaneus
+relationship: connects UBERON:0002395 ! talus
+relationship: part_of UBERON:0002387 ! pes
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/a/a9/Subtalar_Joint.PNG" xsd:anyURI
+
+[Term]
+id: UBERON:0003826
+name: upper leg bone
+def: "A bone that is part of a hindlimb stylopod [Automatically generated definition]." [https://sourceforge.net/tracker/index.php?func=detail&aid=3586533&group_id=76834&atid=1205376, OBOL:automatic]
+comment: May be merged into femur. See https://sourceforge.net/tracker/index.php?func=detail&aid=3586533&group_id=76834&atid=1205376
+subset: human_subset
+subset: mouse_subset
+synonym: "femur" RELATED [https://sourceforge.net/tracker/index.php?func=detail&aid=3586533&group_id=76834&atid=1205376]
+xref: EMAPA:35893
+xref: MA:0000682
+is_a: UBERON:0005893 ! leg bone
+intersection_of: UBERON:0001474 ! bone element
+intersection_of: part_of UBERON:0000376 ! hindlimb stylopod
+relationship: part_of UBERON:0000376 ! hindlimb stylopod
+
+[Term]
+id: UBERON:0005465
+name: obturator nerve
+def: "The obturator nerve arises from the ventral divisions of the second, third, and fourth lumbar nerves; the branch from the third is the largest, while that from the second is often very small." [Wikipedia:Obturator_nerve]
+subset: human_subset
+subset: mouse_subset
+synonym: "nervus obturatorius" RELATED OMO:0003011 [Wikipedia:Obturator_nerve]
+xref: EHDAA2:0001282
+xref: EHDAA:5657
+xref: FMA:16487
+xref: MESH:D009776
+xref: NCIT:C75909
+xref: SCTID:181052006
+xref: UMLS:C0028783 {source="ncithesaurus:Obturator_Nerve"}
+xref: Wikipedia:Obturator_nerve
+is_a: UBERON:0001021 ! nerve
+relationship: innervates UBERON:0000376 ! hindlimb stylopod
+relationship: part_of UBERON:0001815 ! lumbosacral nerve plexus
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/b/b7/Gray344.png" xsd:anyURI
+
+[Term]
+id: UBERON:0008521
+name: gluteus minimus
+def: "The smallest of the three gluteal muscles, situated immediately beneath the gluteus medius." [Wikipedia:Gluteus_minimus_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+synonym: "glutaeus minimus" RELATED [Wikipedia:Gluteus_minimus_muscle]
+synonym: "gluteus minimus" RELATED [Wikipedia:Gluteus_minimus_muscle]
+synonym: "gluteus minimus muscle" EXACT []
+synonym: "gluteus profundus" RELATED [EMAPA:36230]
+synonym: "glutæus minimus" RELATED [Wikipedia:Gluteus_minimus_muscle]
+synonym: "musculus gluteus minimus" RELATED OMO:0003011 [Wikipedia:Gluteus_minimus_muscle]
+xref: EMAPA:36230
+xref: FMA:22317
+xref: SCTID:181676004
+xref: Wikipedia:Gluteus_minimus_muscle
+is_a: UBERON:0002000 {source="FMA"} ! gluteal muscle
+relationship: attaches_to UBERON:0002503 {source="FMA"} ! greater trochanter
+relationship: has_muscle_insertion UBERON:0002503 {notes="Greater trochanter of the femur", source="dbpedia"} ! greater trochanter
+relationship: has_muscle_origin UBERON:0001273 {notes="Gluteal surface of ilium under gluteus medius.", source="dbpedia"} ! ilium
+relationship: part_of UBERON:0004470 {source="FMA"} ! musculature of pelvic girdle
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/5/55/Posterior_Hip_Muscles_1.PNG" xsd:anyURI
+
+[Term]
+id: UBERON:0008529
+name: piriformis muscle
+def: "The piriformis is a muscle in the gluteal region that originates from the anterior (front) part of the sacrum, the part of the spine in the gluteal region, and from the superior margin of the greater sciatic notch (as well as the sacroiliac joint capsule and the sacrotuberous ligament). It exits the pelvis through the greater sciatic foramen to insert on the greater trochanter of the femur. Its tendon often joins with the tendons of the superior gemellus, inferior gemellus, and obturator internus muscles prior to insertion[WP,modified]." [Wikipedia:Piriformis_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+synonym: "m.piriformis" EXACT [FMA:19082]
+synonym: "musculus piriformis" RELATED OMO:0003011 [Wikipedia:Piriformis_muscle]
+synonym: "piriform muscle" RELATED [Wikipedia:Piriformis_muscle]
+synonym: "piriformis" EXACT [FMA:19082]
+synonym: "piriformis muscle" RELATED [Wikipedia:Piriformis_muscle]
+xref: EMAPA:36239
+xref: FMA:19082
+xref: SCTID:245019009
+xref: Wikipedia:Piriformis_muscle
+is_a: UBERON:0002000 {source="FMA"} ! gluteal muscle
+relationship: has_muscle_insertion UBERON:0002503 {source="dbpedia"} ! greater trochanter
+relationship: has_muscle_origin UBERON:0003690 {source="dbpedia"} ! fused sacrum
+relationship: part_of UBERON:0004470 {source="FMA"} ! musculature of pelvic girdle
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/5/55/Posterior_Hip_Muscles_1.PNG" xsd:anyURI
+
+[Term]
+id: UBERON:0010526
+name: fibularis brevis
+def: "The peroneus brevis muscle (or fibularis brevis) lies under cover of the peroneus longus, and is a shorter and smaller muscle." [Wikipedia:Peroneus_brevis]
+subset: human_subset
+subset: mouse_subset
+subset: pheno_slim
+synonym: "fibularis brevis" RELATED [Wikipedia:Peroneus_brevis]
+synonym: "musculus peroneus brevis" EXACT OMO:0003011 [FMA:TA]
+synonym: "peronaeus brevis" EXACT [Wikipedia:Peroneus_brevis]
+synonym: "peroneus brevis" EXACT [FMA:22540]
+synonym: "peroneus brevis muscle" EXACT [Wikipedia:Peroneus_brevis]
+synonym: "peronius brevis" RELATED [Wikipedia:Peroneus_brevis]
+xref: EMAPA:36252
+xref: FMA:22540
+xref: SCTID:181704008
+xref: Wikipedia:Peroneus_brevis
+is_a: UBERON:0009132 ! peroneus
+relationship: has_muscle_insertion UBERON:0003654 ! metatarsal bone of digit 5
+relationship: has_muscle_origin UBERON:0001446 {source="dbpedia"} ! fibula
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/3/3d/Gray357.png" xsd:anyURI
+
+[Term]
+id: UBERON:0011144
+name: adductor muscle of hip
+subset: human_subset
+subset: mouse_subset
+synonym: "adductor group (leg)" EXACT [MA:0002267]
+synonym: "muscle of adductor group" RELATED []
+xref: BTO:0000030
+xref: EMAPA:19166
+xref: MA:0002267
+xref: SCTID:181670005
+xref: SCTID:368101007
+xref: Wikipedia:Adductor_muscles_of_the_hip
+is_a: UBERON:0003658 ! hip muscle
+is_a: UBERON:0011145 ! adductor muscle
+intersection_of: UBERON:0011145 ! adductor muscle
+intersection_of: part_of UBERON:0001464 ! hip
+relationship: has_muscle_origin UBERON:0001272 ! innominate bone
+relationship: innervated_by UBERON:0005465 {notes="a small part of adductor magnus is innervated by the tibial nerve", source="dbpedia"} ! obturator nerve
+relationship: part_of UBERON:0001464 ! hip
+property_value: depiction "http://upload.wikimedia.org/wikipedia/commons/e/e2/Anterior_Hip_Muscles_2.PNG" xsd:anyURI
+
+[Term]
+id: UBERON:0011907
+name: gastrocnemius medialis
+def: "Missing definition for term UBERON:0011907. Please replace it using linked reference." [ISBN:0073040584]
+comment: Mammalian gastrocnemius medialis and flexor hallucis longus arise from reptilian gastrocnemius internus[Kardong]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+synonym: "caput mediale (musculus gastrocnemius)" EXACT [FMA:45956]
+synonym: "caput mediale musculus gastrocnemii" EXACT OMO:0003011 [FMA:45956, FMA:TA]
+synonym: "medial head of gastrocnemius" EXACT [FMA:45956]
+synonym: "medial head of gastrocnemius muscle" EXACT []
+xref: EMAPA:36250
+xref: FMA:45956
+xref: SCTID:213689008
+is_a: UBERON:0011906 ! muscle head
+disjoint_from: UBERON:0011908 {source="lexical"} ! gastrocnemius lateralis
+relationship: part_of UBERON:0001388 {source="FMA"} ! gastrocnemius
+
+[Term]
+id: UBERON:0011908
+name: gastrocnemius lateralis
+def: "Missing definition for term UBERON:0011908. Please replace it using linked reference." [ISBN:0073040584]
+comment: Mammalian gastrocnemius lateralis, soleus and plantaris arise from reptilian gastrocnemius externus[Kardong]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+synonym: "caput laterale (musculus gastrocnemius)" EXACT [FMA:45959]
+synonym: "caput laterale musculus gastrocnemii" EXACT OMO:0003011 [FMA:45959, FMA:TA]
+synonym: "lateral head of gastrocnemius" EXACT [FMA:45959]
+synonym: "lateral head of gastrocnemius muscle" EXACT []
+xref: EMAPA:36249
+xref: FMA:45959
+xref: SCTID:213588009
+is_a: UBERON:0011906 ! muscle head
+relationship: part_of UBERON:0001388 {source="FMA"} ! gastrocnemius
+
+[Term]
+id: UBERON:0011971
+name: calcaneofibular ligament
+def: "A skeletal ligament that connects the fibula to the calcaneus." [Wikipedia:Calcaneofibular_ligament]
+subset: human_subset
+subset: mouse_subset
+synonym: "ligamentum calcaneofibulare" EXACT OMO:0003011 [Wikipedia:Calcaneofibular_ligament]
+xref: FMA:44089
+xref: SCTID:244650001
+xref: Wikipedia:Calcaneofibular_ligament
+is_a: UBERON:0003701 ! calcaneal tendon
+intersection_of: UBERON:0008846 ! skeletal ligament
+intersection_of: connects UBERON:0001446 ! fibula
+intersection_of: connects UBERON:0001450 ! calcaneus
+relationship: connects UBERON:0001446 ! fibula
+relationship: connects UBERON:0001450 ! calcaneus
+relationship: connects UBERON:0012291 {gci_relation="part_of", gci_filler="NCBITaxon:9606", source="Wikipedia"} ! lateral malleolus of fibula
+relationship: part_of UBERON:0001488 ! ankle joint
+property_value: depiction "https://upload.wikimedia.org/wikipedia/commons/b/bf/Ankle_en.svg" xsd:anyURI
+property_value: taxon_notes "In humans, it is a narrow, rounded cord, running from the apex of the fibular malleolus downward and slightly backward to a tubercle on the lateral surface of the calcaneus. It is covered by the tendons of the Peronæi longus and brevis." xsd:string {source="WP,modified"}
+
+[Term]
+id: UBERON:0011972
+name: medial ligament of ankle joint
+def: "A skeletal ligament that connects a tibia and connects a tarsal skeleton." [OBOL:automatic]
+subset: human_subset
+subset: mouse_subset
+synonym: "deltoid collateral ligament of ankle joint" EXACT [FMA:44055]
+synonym: "deltoid ligament of ankle joint" EXACT [FMA:44055]
+synonym: "ligamentum collaterale mediale (articulatio talocruralis)" EXACT [FMA:44055]
+synonym: "ligamentum collaterale mediale articulationis talocruralis" EXACT OMO:0003011 [FMA:44055, FMA:TA]
+synonym: "ligamentum deltoideum" EXACT [FMA:TA]
+synonym: "ligamentum deltoideum (articulatio talocruralis)" EXACT [FMA:44055]
+synonym: "medial collateral ligament of ankle joint" EXACT [FMA:44055]
+xref: FMA:44055
+xref: SCTID:41159004
+is_a: UBERON:0008846 ! skeletal ligament
+intersection_of: UBERON:0008846 ! skeletal ligament
+intersection_of: connects UBERON:0000979 ! tibia
+intersection_of: connects UBERON:0009879 ! tarsal skeleton
+relationship: connects UBERON:0000979 ! tibia
+relationship: connects UBERON:0009879 ! tarsal skeleton
+relationship: part_of UBERON:0001488 ! ankle joint
+
+[Term]
+id: UBERON:0012076
+name: tibiotalar joint
+def: "A skeletal joint that connects a tibia and connects a talus." [OBOL:automatic]
+subset: human_subset
+subset: mouse_subset
+synonym: "ankle joint" BROAD [Wikipedia:Ankle]
+synonym: "talotibial joint" NARROW [Wikipedia:Ankle]
+synonym: "tibioastragalar joint" NARROW [Wikipedia:Ankle]
+xref: SCTID:361864006
+is_a: UBERON:0011980 ! crurotarsal joint
+intersection_of: UBERON:0000982 ! skeletal joint
+intersection_of: connects UBERON:0000979 ! tibia
+intersection_of: connects UBERON:0002395 ! talus
+relationship: connects UBERON:0000979 ! tibia
+relationship: connects UBERON:0002395 ! talus
+property_value: external_ontology_notes "see also FMA:44063 ! tibiotalar part of medial ligament of ankle joint" xsd:string {external_ontology="FMA"}
+
+[Term]
+id: UBERON:0013725
+name: anterior talofibular ligament
+def: "The anterior talofibular ligament is a ligament in the ankle. It passes from the anterior margin of the fibular malleolus, anteriorly and medially, to the talus bone, in front of its lateral articular facet. It is one of the lateral ligaments of the ankle and prevents the foot from sliding forward in relation to the shin." [Wikipedia:Anterior_talofibular_ligament]
+subset: human_subset
+subset: mouse_subset
+synonym: "ligamentum talofibulare anterius" EXACT OMO:0003011 [Wikipedia:Anterior_talofibular_ligament]
+xref: FMA:44083
+xref: SCTID:242467001
+xref: Wikipedia:Anterior_talofibular_ligament
+is_a: UBERON:0011970 {source="FMA"} ! talofibular ligament
+disjoint_from: UBERON:0013726 {source="lexical"} ! posterior talofibular ligament
+
+[Term]
+id: UBERON:0014847
+name: vastus intermedius
+def: "The Vastus intermedius (Cruraeus) arises from the front and lateral surfaces of the body of the femur in its upper two-thirds, sitting under Rectus Femoris and from the lower part of the lateral intermuscular septum. Its fibers end in a superficial aponeurosis, which forms the deep part of the Quadriceps femoris tendon. The Vastus medialis and Vastus intermedius appear to be inseparably united, but when the Rectus femoris has been reflected a narrow interval will be observed extending upward from the medial border of the patella between the two muscles, and the separation may be continued as far as the lower part of the intertrochanteric line, where, however, the two muscles are frequently continuous." [Wikipedia:Vastus_intermedius_muscle]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+synonym: "cruraeus" RELATED [Wikipedia:Vastus_intermedius_muscle]
+synonym: "crureus" RELATED [BTO:0002542]
+synonym: "intermediate great muscle" RELATED [BTO:0002542]
+synonym: "intermediate vastus muscle" RELATED [BTO:0002542]
+synonym: "musculus vastus intermedius" RELATED [BTO:0002542]
+synonym: "vastus intermedialis" RELATED [Wikipedia:Vastus_intermedius_muscle]
+synonym: "vastus intermedius" RELATED [Wikipedia:Vastus_intermedius_muscle]
+xref: BTO:0002542
+xref: EMAPA:36243
+xref: FMA:22433
+xref: SCTID:181682001
+xref: Wikipedia:Vastus_intermedius_muscle
+is_a: UBERON:0001377 ! quadriceps femoris
+relationship: has_muscle_insertion UBERON:0014848 ! tendon of quadriceps femoris
+relationship: has_muscle_origin UBERON:0000981 {source="dbpedia"} ! femur
+relationship: part_of UBERON:0001377 {source="ISBN:0073040584"} ! quadriceps femoris
+property_value: external_definition "Origin: anterior and lateral surfaces of femur; insertion: patella, common tendon of quadriceps femoris; innervation: femoral; action, extends leg[BTO:0002542]." xsd:string {source="BTO:0002542"}
+
+[Term]
+id: UBERON:0034987
+name: lumbar nerve plexus
+def: "A nervous plexus in the lumbar region of the body which forms part of the lumbosacral plexus." [Wikipedia:Lumbar_plexus]
+subset: human_reference_atlas
+subset: human_subset
+subset: mouse_subset
+synonym: "femoral plexus" RELATED [Wikipedia:Lumbar_plexus]
+synonym: "lumbar plexus" EXACT [FMA:5908]
+synonym: "plexus lumbalis" EXACT [FMA:TA]
+synonym: "plexus lumbalis" RELATED [Wikipedia:Lumbar_plexus]
+xref: FMA:5908
+xref: NCIT:C12845
+xref: SCTID:302506006
+xref: Wikipedia:Lumbar_plexus
+is_a: UBERON:0001815 ! lumbosacral nerve plexus
+
+[Term]
+id: UBERON:0035207
+name: deep fibular nerve
+def: "A branch of the common peroneal nerve. It innervates the ankle and toes." [ncithesaurus:Deep_Peroneal_Nerve]
+subset: human_subset
+subset: mouse_subset
+synonym: "deep peroneal nerve" EXACT [FMA:44771]
+xref: FMA:44771
+xref: NCIT:C92602
+xref: SCTID:181081007
+xref: UMLS:C0228949
+xref: Wikipedia:Deep_fibular_nerve
+is_a: UBERON:0003431 ! leg nerve
+is_a: UBERON:0035652 ! fibular nerve
+intersection_of: UBERON:0001021 ! nerve
+intersection_of: branching_part_of UBERON:0001324 ! common fibular nerve
+intersection_of: innervates UBERON:0001385 ! tibialis anterior
+intersection_of: innervates UBERON:0010524 ! fibularis tertius
+relationship: branching_part_of UBERON:0001324 ! common fibular nerve
+relationship: innervates UBERON:0001385 ! tibialis anterior
+relationship: innervates UBERON:0010524 ! fibularis tertius
+relationship: part_of UBERON:0001324 ! common fibular nerve
+
+[Term]
+id: UBERON:0035526
+name: superficial fibular nerve
+def: "A branch of the common fibular nerve that innervates the fibularis longus and brevis muscles, and via branches innervates parts of the dorsal part of the pes." [http://medical-dictionary.thefreedictionary.com/superficial%20fibular%20nerve, ncithesaurus:Superficial_Peroneal_Nerve, UBERON:cjm]
+subset: human_subset
+subset: mouse_subset
+synonym: "superficial peroneal nerve" EXACT [FMA:44699]
+xref: FMA:44699
+xref: NCIT:C92603
+xref: SCTID:181080008
+xref: UMLS:C0228952
+xref: Wikipedia:Superficial_fibular_nerve
+is_a: UBERON:0003431 ! leg nerve
+is_a: UBERON:0035652 ! fibular nerve
+intersection_of: UBERON:0001021 ! nerve
+intersection_of: branching_part_of UBERON:0001324 ! common fibular nerve
+intersection_of: innervates UBERON:0001387 ! fibularis longus
+intersection_of: innervates UBERON:0002387 ! pes
+intersection_of: innervates UBERON:0010526 ! fibularis brevis
+relationship: branching_part_of UBERON:0001324 ! common fibular nerve
+relationship: innervates UBERON:0001387 ! fibularis longus
+relationship: innervates UBERON:0002387 ! pes
+relationship: innervates UBERON:0010526 ! fibularis brevis
+relationship: part_of UBERON:0001324 ! common fibular nerve
+
+[Term]
+id: UBERON:4200011
+name: pedal centrale
+def: "A centrale found in the pes." [PHENOSCAPE]
+subset: human_subset
+subset: mouse_subset
+synonym: "navicular bone of pes" BROAD []
+xref: PHENOSCAPE:AD
+is_a: UBERON:0001447 ! tarsal bone
+is_a: UBERON:0012131 ! centrale
+relationship: dc-contributor https://orcid.org/0000-0001-7972-3866

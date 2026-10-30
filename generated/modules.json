@@ -102,7 +102,7 @@
    "id": "E2",
    "consumes": [],
    "acceptance": ["cd web && npx tsc --noEmit"]},
-  {"state": "planned",
+  {"state": "running",
    "produces": [],
    "paths": ["web/src/viewer/", "web/src/timeline/", "web/src/phase/"],
    "name": "Movement views",
@@ -164,7 +164,7 @@
    "acceptance":
    ["mypy pipeline",
     "~/.local/share/bm-opensim/bin/python -m pytest pipeline/tests -k p1"]},
-  {"state": "running",
+  {"state": "merged",
    "produces": ["C3"],
    "paths":
    ["pipeline/segment_phases.py",
