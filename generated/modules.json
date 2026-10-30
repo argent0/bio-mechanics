@@ -68,7 +68,7 @@
    "acceptance":
    ["cd spec && lake exe gen && git diff --exit-code -- ../generated",
     "ninja -n -f generated/pipeline.ninja"]},
-  {"state": "running",
+  {"state": "merged",
    "produces": [],
    "paths": ["data/raw/", "pipeline/env/"],
    "name": "Data acquisition",
@@ -77,7 +77,8 @@
    "lang": "Python",
    "id": "D",
    "consumes": [],
-   "acceptance": ["python -c \"import opensim\""]},
+   "acceptance":
+   ["~/.local/share/bm-opensim/bin/python pipeline/env/check_env.py"]},
   {"state": "merged",
    "produces": [],
    "paths": ["web/"],
@@ -146,7 +147,7 @@
     "pytest tools",
     "python -m tools.arch print --detail 3",
     "python -m tools.arch svg -o arch.svg"]},
-  {"state": "planned",
+  {"state": "running",
    "produces": [],
    "paths":
    ["pipeline/load_model.py",
