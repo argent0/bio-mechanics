@@ -111,7 +111,7 @@
    "id": "E3",
    "consumes": ["C2", "C3"],
    "acceptance": ["cd web && npx tsc --noEmit", "cd web && npx eslint src"]},
-  {"state": "planned",
+  {"state": "running",
    "produces": [],
    "paths": ["spec/BioMech/CheckGraph.lean", "spec/BioMech/Conform.lean"],
    "name": "Lean checkers",

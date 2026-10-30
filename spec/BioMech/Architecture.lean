@@ -83,7 +83,7 @@ def modules : List Module := [
   { id := .E3, name := "Movement views", lang := "TypeScript", model := "sonnet", state := .planned,
     paths := ["web/src/viewer/", "web/src/timeline/", "web/src/phase/"],
     acceptance := ["cd web && npx tsc --noEmit", "cd web && npx eslint src"] },
-  { id := .F, name := "Lean checkers", lang := "Lean", model := "opus", state := .planned,
+  { id := .F, name := "Lean checkers", lang := "Lean", model := "opus", state := .running,
     paths := ["spec/BioMech/CheckGraph.lean", "spec/BioMech/Conform.lean"],
     acceptance := ["cd spec && lake exe checkGraph ../data/fixtures/graph.sample.json"] },
   { id := .G, name := "CI and traces", lang := "YAML", model := "sonnet", state := .planned,
