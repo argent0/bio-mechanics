@@ -462,7 +462,7 @@ Every module of `pipeline/` a stage script imports is another stage's script;
 def Stage.imports : Stage → List Stage
   | .buildModel => [.loadModel, .segmentPhases, .exportMeshes]
   | .loadModel => []
-  | .runStaticOpt => [.loadModel]
+  | .runStaticOpt => [.loadModel, .buildModel]
   | .computeMomentArms => [.loadModel]
   | .segmentPhases => [.loadModel, .computeMomentArms]
   | .labelRoles => [.loadModel, .segmentPhases]

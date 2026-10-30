@@ -415,8 +415,8 @@
         "writes": ["activations"],
         "inputs": ["data/work/model.osim", "data/raw/rajagopal/walk_pipeline/ID/grf_walk.xml", "data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot", "data/work/kinematics.csv"],
         "outputs": ["data/work/activations.csv"],
-        "imports": ["loadModel"],
-        "codeInputs": ["pipeline/static_opt.py", "pipeline/load_model.py"]
+        "imports": ["loadModel", "buildModel"],
+        "codeInputs": ["pipeline/static_opt.py", "pipeline/build_model.py", "pipeline/load_model.py", "pipeline/moment_arms.py", "pipeline/segment_phases.py", "pipeline/export_meshes.py"]
       },
       {
         "name": "computeMomentArms",

@@ -1,10 +1,10 @@
 """Workstream M acceptance: static optimisation on the merged model over the stride.
 
-Static optimisation on the merged model (462 muscles) takes minutes, so these tests read the
-outputs the pipeline wrote (`ninja -f generated/pipeline.ninja`: `data/work/static_opt.json`,
-`forces.csv`, `activations.csv`, `grf.csv`) and skip when they come from another model. The leg
-reference runs here: stages 1-2 on the scaled Rajagopal model (legs only) and its raw inverse
-kinematics, today's leg-only pipeline (≈ 30 s).
+Static optimisation on the merged model (462 muscles) takes about a minute on 4 worker
+processes, so these tests read the outputs the pipeline wrote (`ninja -f generated/pipeline.ninja`:
+`data/work/static_opt.json`, `forces.csv`, `activations.csv`, `grf.csv`) and skip when they come
+from another model. The leg reference runs here: stages 1-2 on the scaled Rajagopal model (legs
+only) and its raw inverse kinematics, the leg-only pipeline (a few seconds).
 
 Stride: from the first to the second right initial contact (vertical GRF above the contact
 threshold, `contact_intervals`), the stride the knowledge graph describes.

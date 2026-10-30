@@ -28,7 +28,7 @@ build loadModel: phony data/work/model.json data/work/kinematics.csv data/work/g
 rule runStaticOpt
   command = $python -m pipeline.static_opt
   description = runStaticOpt: Static optimisation: muscle activations per frame.
-build data/work/activations.csv: runStaticOpt data/work/model.osim data/raw/rajagopal/walk_pipeline/ID/grf_walk.xml data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot data/work/kinematics.csv | pipeline/static_opt.py pipeline/load_model.py
+build data/work/activations.csv: runStaticOpt data/work/model.osim data/raw/rajagopal/walk_pipeline/ID/grf_walk.xml data/raw/rajagopal/walk_pipeline/ExpData/grf_walk.mot data/work/kinematics.csv | pipeline/static_opt.py pipeline/build_model.py pipeline/load_model.py pipeline/moment_arms.py pipeline/segment_phases.py pipeline/export_meshes.py
 build runStaticOpt: phony data/work/activations.csv
 
 # Moment arm and muscle-tendon length per muscle, coordinate, and frame;

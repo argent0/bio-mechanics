@@ -1197,6 +1197,18 @@ class Coupler:
     scale: float
 
 
+def model_couplers(osim: Any, model: Any) -> list[Coupler]:
+    """The model's coordinate couplers: dependent = scale * function(independents)."""
+    out = []
+    cons = model.getConstraintSet()
+    for i in range(cons.getSize()):
+        c = osim.CoordinateCouplerConstraint.safeDownCast(cons.get(i))
+        if c is not None:
+            ind = c.getIndependentCoordinateNames()
+            out.append(Coupler(str(c.getDependentCoordinateName()), [str(ind.get(k)) for k in range(ind.getSize())], c.getFunction(), float(c.getPropertyByName("scale_factor").toString())))
+    return out
+
+
 class Poser:
     """Poses the merged model from independent coordinate values; couplers give the rest."""
 
@@ -1207,13 +1219,7 @@ class Poser:
         cs = model.getCoordinateSet()
         self.names = [str(cs.get(i).getName()) for i in range(cs.getSize())]
         self.defaults = {n: float(cs.get(n).getDefaultValue()) for n in self.names}
-        self.couplers: list[Coupler] = []
-        cons = model.getConstraintSet()
-        for i in range(cons.getSize()):
-            c = osim.CoordinateCouplerConstraint.safeDownCast(cons.get(i))
-            if c is not None:
-                ind = c.getIndependentCoordinateNames()
-                self.couplers.append(Coupler(str(c.getDependentCoordinateName()), [str(ind.get(k)) for k in range(ind.getSize())], c.getFunction(), float(c.getPropertyByName("scale_factor").toString())))
+        self.couplers = model_couplers(osim, model)
 
     def complete(self, values: dict[str, float]) -> dict[str, float]:
         """Every coordinate: the given values, coupled ones from their couplers, else defaults."""
