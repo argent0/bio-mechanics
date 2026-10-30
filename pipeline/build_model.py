@@ -16,13 +16,15 @@ The merged model is the scaled Rajagopal model plus
 
 Rules (each one is code below; `pipeline/tests/test_m_*.py` pins the outcomes):
 
-Points. A source point is taken in the source's ground frame at its reference pose
-(`Source.ground`), placed in the target body's generic frame (`Placement.place`), and multiplied
-per axis by the target body's scale factors from the subject's scale set (`ScaleFactors`). Every
-target body is axis-aligned with ground in the reference pose (every Rajagopal coordinate 0;
-`Target` checks it), so a placement is a uniform scale and a shift. An added body's frame lies
-on the frame of the Rajagopal body it names in `newBodies`, at the reference pose, so its points
-take that body's placement and scale factors. Mirroring (left arm) maps z to -z.
+Points. A source point is taken in the source's ground frame at its reference pose (free
+coordinates at 0 unless `referencePose` sets them; `Source`), placed in the target body's generic
+frame (`Placement.place`), and multiplied per axis by the target body's scale factors from the
+subject's scale set (`ScaleFactors`). Every target body is axis-aligned with ground in the
+reference pose (every Rajagopal coordinate 0; `Target` checks it), so a placement is a uniform
+scale, a turn and a shift (`placements`: one anchor point, two anchor points, a joint axis laid
+along a joint axis, or a mesh registration). An added body's frame lies on the frame of the
+Rajagopal body it names in `newBodies` at the reference pose, so its points take that body's
+placement and scale factors. Mirroring (left arm) maps z to -z.
 
 Via bodies (Holzbaur's massless bodies on coupled translations, which emulate moving via points)
 and conditional path points freeze at the via pose (`viaPose`, the right arm's mean posture over
