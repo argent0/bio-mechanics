@@ -138,6 +138,7 @@ Risks for M from K19: lumbar vertebra bodies and couplers (normalised axial coef
 | K30 Accept P4's commit `2622579` outside its paths: leg-only and web tests follow the whole-body output (231 muscles per side, 25 Hz, 37 bodies, 33 coordinates); Uberon subset recut | merged | as K27 |
 | K32 Accept M's commit `d8f554d` in `test_l_stages.py`: gasmed_l mean activation sits on the D-006 floor (0.04997 exact QP, 0.05021 IPOPT); the test pins the mean within 1 % of the floor and the role following it | merged | left medial gastrocnemius leaves the left mid-stance braking example |
 | K34 P4 re-pins its tests on the exact-QP output (827 nodes, 5013 edges) | merged | teaching examples hold; `TMIN_r` joins the floor list; `runStaticOpt` imports `build_model` (Pipeline.lean) |
+| K35 CI run 41099521047: pipeline stages 717 s on the runner (target 15 min); `test_graph_holds_the_whole_body` held edges exactly (5014 on the runner against 5013); now within 1 % | merged | coordinator fix in P4's test |
 | K33 `moment_arms.py` over frames in parallel, or reuse static optimisation's moment arms (computeMomentArms 312 s, now the slowest stage) | todo | M proposal |
 | K31 buildModel attaches Mortensen's `cerv1..6.vtp`, `rotatedcerv7.vtp` to `cerv1..7`; `export_meshes` reads `data/raw/mortensen/Geometry` | todo | M after K26, then P4's export |
 | K29 ninja: stages also depend on the generated `gait_fsm.py` and `schema.py` they import | todo | S proposal; optional |
@@ -167,7 +168,7 @@ L findings: left vasti brake left knee flexion in reference pre-swing (left load
 | Fixture references replaced by real output; full gate on `main` | merged (the app reads `data/out/`; web unit tests keep the fixture by design) |
 | Whole-body walking trace; `lake exe conform` | merged (`data/fixtures/trace.walking-session.json`: ui 6, gait 22 + 15 steps, headless Chromium on the dev server) |
 | `README.md` pointers, `handover.md` | merged |
-| Deploy; `#/walking` shows both legs, trunk and arms | todo (needs a push; director: FBLS licence and publishing) |
+| Deploy; `#/walking` shows both legs, trunk and arms | merged (director: push and deploy; run 41099521047 deploy job green) |
 
 ## Escalations (whole body)
 
