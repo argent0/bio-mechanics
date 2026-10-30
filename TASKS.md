@@ -14,7 +14,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | 0.3a Module map + `lake exe arch check / export / print` | coordinator | opus | merged | **C4** `generated/modules.json` | `arch check`; `arch print --detail 1` |
 | 0.4 `lake exe gen`: `types.ts`, `schema.py` by reflection over C1 | coordinator | opus | merged | **C2** | regenerate gives an empty diff |
 | 0.5 Fixture `data/fixtures/graph.sample.json` | coordinator | opus | merged | **C3** fixture, 24 nodes, 51 edges | `pytest tests/test_fixture.py` |
-| 0.6 Director: initial contact as a DFA state or an instant | coordinator | opus | todo | `DECISIONS.md` | answer before A starts |
+| 0.6 Director: initial contact as a DFA state or an instant | coordinator | opus | merged | `DECISIONS.md` D-001: an instant | answer before A starts |
 
 ## Wave 1
 
@@ -60,7 +60,6 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 
 ## Open items for the director
 
-1. Initial contact: own DFA state, or an instant at the start of loading response (blocks A).
-2. Role-classification thresholds (blocks P2).
-3. Hosting target (blocks G deployment).
-4. Order of later movements (Wave 4).
+1. Role-classification thresholds (blocks P2).
+2. Hosting target (blocks G deployment).
+3. Order of later movements (Wave 4).
