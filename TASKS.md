@@ -33,7 +33,7 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 | C | Emitters | opus / high | `a0d7098928e70d129` | 0 | merged | A, B | regenerate gives an empty diff; `ninja -n` |
 | P1 | Pipeline stages 1–3 | opus / high | `aa1666b96d68aaa97` | 0 | merged | D, C2 | `mypy`; tibialis anterior and gluteus medius plausibility |
 | F | Lean checkers | opus / high | `a4950df23482a4305` | 0 | merged | C1, A, C3 | fixture passes; bad edge and bad trace fail by name |
-| E2 | ArchitectureView | sonnet / medium | — | 0 | todo | C (`architecture.json`) | `tsc`; four diagrams render |
+| E2 | ArchitectureView | sonnet / medium | `ab4fb0d019ad1eadf` | 0 | running | C (`architecture.json`) | `tsc`; four diagrams render |
 
 ## Coordinator tasks
 
@@ -47,9 +47,9 @@ States: `todo` · `running` · `review` · `merged`. Fails: gate rounds failed b
 
 | ID | Workstream | Model / effort | Worker ID | Fails | State | Inputs | Acceptance |
 |---|---|---|---|---|---|---|---|
-| P2 | Pipeline stages 4–7 | opus / high | — | 0 | todo | P1, C, D-002 | `ninja`; `lake exe checkGraph data/out/graph.json` |
+| P2 | Pipeline stages 4–7 | opus / high | `ab4d531a834c2a987` | 0 | running | P1, C, D-002 | `ninja`; `lake exe checkGraph data/out/graph.json` |
 | E3 | Movement views | sonnet / high | — | 0 | todo | C, P2 | `tsc`, eslint boundaries; walking plays and scrubs |
-| G | CI and traces | sonnet / medium | — | 0 | todo | F, C | CI green on `main` |
+| G | CI and traces | sonnet / medium | `a9065076c8beaed8a` | 0 | running | F, C | CI green on `main` |
 
 ## Wave 4 — Integration (coordinator)
 
