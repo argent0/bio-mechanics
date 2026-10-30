@@ -35,7 +35,7 @@ build computeMomentArms: phony data/work/moment_arms.csv data/work/mt_lengths.cs
 rule segmentPhases
   command = $python -m pipeline.segment_phases
   description = segmentPhases: Detect gait events and drive the generated gait FSM to label each frame with its phase.
-build data/work/phases.csv: segmentPhases data/work/kinematics.csv data/work/grf.csv | pipeline/segment_phases.py
+build data/work/phases.csv: segmentPhases data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/work/kinematics.csv data/work/grf.csv | pipeline/segment_phases.py
 build segmentPhases: phony data/work/phases.csv
 
 # Classify each muscle per phase and joint action as main mover, helper,
@@ -43,7 +43,7 @@ build segmentPhases: phony data/work/phases.csv
 rule labelRoles
   command = $python -m pipeline.label_roles
   description = labelRoles: Classify each muscle per phase and joint action as main mover, helper, stabiliser, or antagonist.
-build data/work/roles.json: labelRoles data/work/activations.csv data/work/moment_arms.csv data/work/mt_lengths.csv data/work/phases.csv data/work/kinematics.csv pipeline/config/roles.yaml | pipeline/label_roles.py
+build data/work/roles.json: labelRoles data/work/model.json data/work/activations.csv data/work/moment_arms.csv data/work/mt_lengths.csv data/work/phases.csv data/work/kinematics.csv pipeline/config/roles.yaml | pipeline/label_roles.py
 build labelRoles: phony data/work/roles.json
 
 # Add common names, ontology identifiers, attachments, and innervation.
@@ -60,12 +60,12 @@ rule exportGraph
 build data/out/graph.json: exportGraph data/work/enriched.json | pipeline/export_graph.py
 build exportGraph: phony data/out/graph.json
 
-# Convert the model's bone geometry to glTF, scaled by each body's scale
-# factors from `model.json`.
+# Convert the model's bone geometry to glTF, each mesh multiplied by its
+# scale factors from the scaled model.
 rule exportMeshes
   command = $python -m pipeline.export_meshes
-  description = exportMeshes: Convert the model's bone geometry to glTF, scaled by each body's scale factors from `model.json`.
-build data/out/meshes/index.json: exportMeshes data/work/model.json data/raw/rajagopal/Geometry | pipeline/export_meshes.py
+  description = exportMeshes: Convert the model's bone geometry to glTF, each mesh multiplied by its scale factors from the scaled model.
+build data/out/meshes/index.json: exportMeshes data/raw/rajagopal/walk_pipeline/Scale/subject_scaled_walk.osim data/work/model.json data/raw/rajagopal/Geometry | pipeline/export_meshes.py
 build exportMeshes: phony data/out/meshes/index.json
 
 # Write muscle path points per frame for the tube renderer.
